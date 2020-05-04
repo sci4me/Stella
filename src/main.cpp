@@ -14,6 +14,7 @@
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
+#define IMGUI_IMPL_OPENGL_LOADER_GLEW
 #include "imgui/imgui_impl_opengl3.h"
 
 #define GL_DEBUG
@@ -105,7 +106,7 @@ GLuint load_program(const char *name, GLenum flags) {
 }
 
 template<u32 segments = 32>
-void generate_disc_vertices(float *a, f32 cx, f32 cy, f32 r) {
+void generate_disc_vertices(f32 *a, f32 cx, f32 cy, f32 r) {
     static_assert(segments >= 3);
 
     f32 half_r = r / 2.0f;
@@ -116,7 +117,7 @@ void generate_disc_vertices(float *a, f32 cx, f32 cy, f32 r) {
     f32 x = r;
     f32 y = 0;
 
-    float *ptr = a;
+    f32 *ptr = a;
     for (u32 i = 0; i <= segments; i++) {
         *(ptr++) = cx + x;
         *(ptr++) = cy + y;
@@ -197,7 +198,7 @@ s32 main(s32 argc, char **argv) {
     glUseProgram(0);
 
     // generate the vertices for our disc
-    constexpr u32 N = 64 ;
+    constexpr u32 N = 64;
     float vertices[(N + 1) * 2];
     generate_disc_vertices<N>(vertices, 500.0f, 500.0f, 100.0f);
 
