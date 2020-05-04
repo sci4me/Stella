@@ -5,16 +5,16 @@
 #define SCI_H_IMPL
 #include "sci.h"
 
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
-
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
+
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 
 #define GL_DEBUG
 
@@ -197,7 +197,7 @@ s32 main(s32 argc, char **argv) {
     glUseProgram(0);
 
     // generate the vertices for our disc
-    constexpr u32 N = 64;
+    constexpr u32 N = 64 ;
     float vertices[(N + 1) * 2];
     generate_disc_vertices<N>(vertices, 500.0f, 500.0f, 100.0f);
 
@@ -220,7 +220,7 @@ s32 main(s32 argc, char **argv) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    glClearColor(0, 0, 0, 1);
+    glClearColor(0.2, 0.1, 0.5, 1);
 
     f32 my_color[4] = { 1, 0, 0, 1 };
 
@@ -229,7 +229,7 @@ s32 main(s32 argc, char **argv) {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-
+        // render our mesh
         glUseProgram(program);
         {
             glUniform4fv(1, 1, my_color);
@@ -242,12 +242,11 @@ s32 main(s32 argc, char **argv) {
         }
         glUseProgram(0);
 
-
+        // imgui rendering pass
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
         {
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-            
             {
                 ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
                 ImGui::SetNextWindowBgAlpha(0.35f);
@@ -267,10 +266,9 @@ s32 main(s32 argc, char **argv) {
                 ImGui::ColorEdit4("Color", my_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_PickerHueWheel);
                 ImGui::End();
             }
-
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
     }
