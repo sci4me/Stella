@@ -17,116 +17,14 @@
 #define IMGUI_IMPL_OPENGL_LOADER_GLEW
 #include "imgui/imgui_impl_opengl3.h"
 
+#define STB_DS_IMPLEMENTATION
+#include "stb_ds.h"
+
 #define GL_DEBUG
 
-constexpr f64 PI = 3.14159265358979323846;
-
-char* read_entire_file(char *name) {
-    FILE *fp = fopen(name, "rb");
-    if (!fp) {
-        return 0;
-    }
-
-    fseek(fp, 0L, SEEK_END);
-    u32 size = ftell(fp);
-    rewind(fp);
-
-    char *code = (char*) malloc(size + 1);
-
-    // TODO: use fread
-    for (u32 i = 0; i < size; i++) {
-        code[i] = fgetc(fp);
-    }
-    code[size] = 0;
-
-    return code;
-}
-
-void program_attach_shader(GLuint program, char *name, GLenum type) {
-    const char *source = read_entire_file(name);
-
-    GLuint id = glCreateShader(type);
-    glShaderSource(id, 1, &source, 0);
-    glCompileShader(id);
-
-    GLint success;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        GLint info_log_length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &info_log_length);
-
-        GLchar *info_log = (GLchar*) alloca(sizeof(GLchar) * (info_log_length + 1));
-        glGetShaderInfoLog(id, info_log_length, 0, info_log);
-
-        fprintf(stderr, "Error compiling shader `%s`:\n%s\n", name, info_log);
-        exit(1);
-    }
-
-    glAttachShader(program, id);
-}
-
-enum {
-    VERTEX_SHADER = 1,
-    GEOMETRY_SHADER = 2,
-    FRAGMENT_SHADER = 4
-};
-
-GLuint load_program(const char *name, GLenum flags) {
-    GLuint p = glCreateProgram();
-
-    char buffer[1024];
-
-    #define SHADER_TYPE(t, n, s)\
-        if(flags & t) {\
-            sprintf(buffer, "res/shaders/%s/%s.glsl", name, n);\
-            program_attach_shader(p, buffer, s);\
-        }
-
-    SHADER_TYPE(VERTEX_SHADER, "vert", GL_VERTEX_SHADER)
-    SHADER_TYPE(GEOMETRY_SHADER, "geom", GL_GEOMETRY_SHADER)
-    SHADER_TYPE(FRAGMENT_SHADER, "frag", GL_FRAGMENT_SHADER)
-
-    #undef SHADER_TYPE
-
-    GLint success;
-    glLinkProgram(p);
-    glGetProgramiv(p, GL_LINK_STATUS, &success);
-    if (!success) {
-        GLint info_log_length;
-        glGetProgramiv(p, GL_INFO_LOG_LENGTH, &info_log_length);
-
-        GLchar *info_log = (GLchar*)alloca(sizeof(GLchar) * (info_log_length + 1));
-        glGetProgramInfoLog(p, info_log_length, 0, info_log);
-
-        fprintf(stderr, "%s\n", info_log);
-        exit(1);
-    }
-
-    return p;
-}
-
-template<u32 segments = 32>
-void generate_disc_vertices(f32 *a, f32 cx, f32 cy, f32 r) {
-    static_assert(segments >= 3);
-
-    f32 half_r = r / 2.0f;
-    f32 theta = 2.0f * (f32)PI / ((f32)segments);
-    f32 c = cosf(theta);
-    f32 s = sinf(theta);
-
-    f32 x = r;
-    f32 y = 0;
-
-    f32 *ptr = a;
-    for (u32 i = 0; i <= segments; i++) {
-        *(ptr++) = cx + x;
-        *(ptr++) = cy + y;
-
-        f32 t = x;
-        x = c * x - s * y;
-        y = s * t + c * y;
-    }
-}
+#include "util.cpp"
+#include "shader.cpp"
+#include "batch_renderer.cpp"
 
 #ifdef GL_DEBUG
 void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
@@ -138,6 +36,10 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
     fflush(stdout);
 }
 #endif
+
+f32 randf32() {
+    return (f32)rand() / (f32)RAND_MAX;
+}
 
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
@@ -170,6 +72,9 @@ s32 main(s32 argc, char **argv) {
         return 1;
     }
 
+    time_t t;
+    srand((unsigned) time(&t));
+
     #ifdef GL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -188,60 +93,55 @@ s32 main(s32 argc, char **argv) {
     ImGui::StyleColorsDark(); // default but do it anyway
 
     // create our projection matrix
-    glm::mat4 proj = glm::ortho(0.0f, 1920.0f, 1080.0f, 0.0f, 0.0f, 10000.0f); // TODO: we need to update this for the shader any time a resize occurs
+    glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, 0.0f, 10000.0f); // TODO: we need to update this for the shader any time a resize occurs
 
-    // load and enable our shader program
-    GLuint program = load_program("basic", VERTEX_SHADER | FRAGMENT_SHADER);
-
-    glUseProgram(program);
-    glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(proj));
-    glUseProgram(0);
-
-    // generate the vertices for our disc
-    constexpr u32 N = 64;
-    float vertices[(N + 1) * 2];
-    generate_disc_vertices<N>(vertices, 500.0f, 500.0f, 100.0f);
-
-    // create and set up VBO and VAO
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    
-    glBindVertexArray(vao);
-    
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    // unbind buffers
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    // set up batch renderer
+    Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
+    batch_renderer_init(r);
+    batch_renderer_set_projection(r, proj);
 
     glClearColor(0.2, 0.1, 0.5, 1);
 
-    f32 my_color[4] = { 1, 0, 0, 1 };
+    auto quad_color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+    struct Q {
+        glm::vec2 pos;
+        glm::vec2 size;
+        f32 speed;
+    };
+
+    constexpr u32 N_QS = 100;
+    Q qs[N_QS];
+
+    #define SPAWN_Q(i) {\
+            Q *q = &qs[i];\
+            q->pos = glm::vec2(randf32() * 1280, -200);\
+            q->size = glm::vec2(10 + randf32() * 100, 10 + randf32() * 100);\
+            q->speed = (0.2f + (randf32() * 0.5f)) * 5.0f;\
+        }
+
+    for(u32 i = 0; i < N_QS; i++) SPAWN_Q(i);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // render our mesh
-        glUseProgram(program);
-        {
-            glUniform4fv(1, 1, my_color);
+        batch_renderer_begin_frame(r);
 
-            glBindVertexArray(vao);
+        for(u32 i = 0; i < N_QS; i++) {
+            Q *q = &qs[i];
 
-            glDrawArrays(GL_TRIANGLE_FAN, 0, (N + 1) * 2);
+            if(q->pos.y > 720) {
+                SPAWN_Q(i);
+            } else {
+                q->pos.y += q->speed;
+            }
 
-            glBindVertexArray(0);
+            batch_renderer_push_quad(r, q->pos.x, q->pos.y, q->size.x, q->size.y, quad_color);
         }
-        glUseProgram(0);
+
+        batch_renderer_end_frame(r);
 
         // imgui rendering pass
         ImGui_ImplOpenGL3_NewFrame();
@@ -254,9 +154,19 @@ s32 main(s32 argc, char **argv) {
                 ImGui::Begin("Metrics", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
                 {
                     ImGui::Text("Metrics");
+                    
                     ImGui::Separator();
+                    
                     ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
                     ImGui::Text("FPS: %.1f", io.Framerate);
+                    
+                    ImGui::Separator();
+
+                    auto stats = r->per_frame_stats;
+                    ImGui::Text("Quads: %u", stats.quads);
+                    ImGui::Text("Vertices: %u", stats.vertices);
+                    ImGui::Text("Indices: %u", stats.indices);
+                    ImGui::Text("Draw Calls: %u", stats.draw_calls);
                 }
                 ImGui::End();
             }
@@ -264,15 +174,18 @@ s32 main(s32 argc, char **argv) {
             {
                 ImGui::SetNextWindowSize(ImVec2(120.0f, 60.0f));
                 ImGui::Begin("Shape Control", 0, ImGuiWindowFlags_NoResize);
-                ImGui::ColorEdit4("Color", my_color, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_PickerHueWheel);
+                ImGui::ColorEdit4("Color", glm::value_ptr(quad_color), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_PickerHueWheel);
                 ImGui::End();
             }
         }
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+    
         glfwSwapBuffers(window);
     }
+
+    batch_renderer_free(r);
+    free(r);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
