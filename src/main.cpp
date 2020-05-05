@@ -121,8 +121,7 @@ s32 main(s32 argc, char **argv) {
     GLuint t_stone = load_texture("res/textures/stone.png");
     GLuint t_grass = load_texture("res/textures/grass.png");
 
-    f32 x = 0;
-    f32 y = 0;
+    glm::vec2 pos = {0, 0};
 
     World world;
     world_init(&world);
@@ -134,14 +133,19 @@ s32 main(s32 argc, char **argv) {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) y -= 10.0f;
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) y += 10.0f;
-        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) x -= 10.0f;
-        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) x += 10.0f;
+        glm::vec2 dir = {0, 0};
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
+        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
+        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
+        if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
 
         batch_renderer_set_scale(r, scale);
 
         batch_renderer_begin_frame(r);
+
+        f32 x = pos.x;
+        f32 y = pos.y;
 
         s32 vp_min_x = (s32) floor((x - 640.0f / scale) / TILE_SIZE);
         s32 vp_min_y = (s32) floor((y - 360.0f / scale) / TILE_SIZE);
