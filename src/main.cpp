@@ -129,46 +129,19 @@ s32 main(s32 argc, char **argv) {
 
     TileType selected_tile_type = N_TILE_TYPES;
 
-
-    GLuint light_shader = load_shader_program("light", VERTEX_SHADER | FRAGMENT_SHADER);
-
-    GLuint t_scene;
-    glCreateTextures(GL_TEXTURE_2D, 1, &t_scene);
-    glTextureStorage2D(t_scene, 1, GL_RGBA8, 1280, 720);
-    glTextureParameteri(t_scene, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(t_scene, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(t_scene, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTextureParameteri(t_scene, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    GLuint scene_fbo;
-    glGenFramebuffers(1, &scene_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, scene_fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t_scene, 0);
-    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    GLuint quad_vao;
-    glGenVertexArrays(1, &quad_vao);
-    glBindVertexArray(quad_vao);
-    glVertexAttrib1f(0, 0);
-    glBindVertexArray(0);
-    
-
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         glClear(GL_COLOR_BUFFER_BIT);
 
         glm::vec2 dir = {0, 0};
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = 1.0f;
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = -1.0f;
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
         if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
         if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
 
         batch_renderer_set_scale(r, scale);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, scene_fbo);
 
         batch_renderer_begin(r);
 
@@ -248,19 +221,6 @@ s32 main(s32 argc, char **argv) {
         }
 
         batch_renderer_push_solid_quad(r, -5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-        batch_renderer_end(r);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        glUseProgram(light_shader);
-        glBindVertexArray(quad_vao);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTextureUnit(0, t_scene);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glBindTextureUnit(0, 0);
-        glBindVertexArray(0);
-        glUseProgram(0);
 
         auto per_frame_stats = batch_renderer_end_frame(r);
 
