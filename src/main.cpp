@@ -43,6 +43,12 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 }
 #endif
 
+f32 scale = 1.0f;
+
+void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
+    scale = clampf(scale + y * 0.05f, 0.5f, 5.0f);
+}
+
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
@@ -68,6 +74,8 @@ s32 main(s32 argc, char **argv) {
     }
 
     glfwMakeContextCurrent(window);
+
+    glfwSetScrollCallback(window, scroll_callback);
 
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW!\n");
@@ -96,7 +104,8 @@ s32 main(s32 argc, char **argv) {
     ImGui::StyleColorsDark(); // default but do it anyway
 
     // create our projection matrix
-    glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, 0.0f, 10000.0f); // TODO: we need to update this for the shader any time a resize occurs
+    // glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, 0.0f, 10000.0f); // TODO: we need to update this for the shader any time a resize occurs
+    glm::mat4 proj = glm::ortho(-640.0f, 640.0f, 360.0f, -360.0f, 0.0f, 10000.0f);
 
     // set up batch renderer
     Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
@@ -125,12 +134,14 @@ s32 main(s32 argc, char **argv) {
         if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) x -= 10.0f;
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) x += 10.0f;
 
+        batch_renderer_set_scale(r, scale);
+
         batch_renderer_begin_frame(r);
 
-        s32 vp_min_x = (s32) floor(x / TILE_SIZE);
-        s32 vp_min_y = (s32) floor(y / TILE_SIZE);
-        s32 vp_max_x = (s32) ceil((x + 1280.0f) / TILE_SIZE);
-        s32 vp_max_y = (s32) ceil((y + 720.0f) / TILE_SIZE);
+        s32 vp_min_x = (s32) floor((x - 640.0f / scale) / TILE_SIZE);
+        s32 vp_min_y = (s32) floor((y - 360.0f / scale) / TILE_SIZE);
+        s32 vp_max_x = (s32) ceil((x + 640.0f / scale) / TILE_SIZE);
+        s32 vp_max_y = (s32) ceil((y + 360.0f / scale) / TILE_SIZE);
 
         s32 vp_min_cx = (s32) floor((f32)vp_min_x / (f32)CHUNK_SIZE);
         s32 vp_min_cy = (s32) floor((f32)vp_min_y / (f32)CHUNK_SIZE);
@@ -146,7 +157,11 @@ s32 main(s32 argc, char **argv) {
                         f32 tx = ((i * CHUNK_SIZE) + k) * (f32)TILE_SIZE - x;
                         f32 ty = ((j * CHUNK_SIZE) + l) * (f32)TILE_SIZE - y;
 
-                        if(tx > 1280 || ty > 720 || tx + TILE_SIZE < 0 || ty + TILE_SIZE < 0) continue;
+                        if(tx + TILE_SIZE < (-640.0f / scale) || 
+                            ty + TILE_SIZE < (-360.0f / scale) || 
+                            tx - TILE_SIZE > (640.0f / scale) || 
+                            ty - TILE_SIZE > (360.0f / scale)) 
+                            continue;
 
                         GLuint tex;
                         switch(c->tiles[k][l]) {
@@ -160,24 +175,7 @@ s32 main(s32 argc, char **argv) {
             }
         }
 
-        /*
-        for(s32 i = vp_min_x; i <= vp_max_x; i++) {
-            for(s32 j = vp_min_y; j <= vp_max_y; j++) {
-                f32 tx = i * (f32)TILE_SIZE - x;
-                f32 ty = j * (f32)TILE_SIZE - y;
-
-                if(tx > 1280 || ty > 720 || tx + TILE_SIZE < 0 || ty + TILE_SIZE < 0) continue;
-
-                GLuint tex;
-                switch(world_get_tile(&world, i, j)) {
-                    case TILE_STONE: tex = t_stone; break;
-                    case TILE_GRASS: tex = t_grass; break;
-                    default: tex = t_test; break;
-                }
-                batch_renderer_push_textured_quad(r, tx, ty, TILE_SIZE, TILE_SIZE, tex);
-            }
-        }
-        */
+        batch_renderer_push_solid_quad(r, -5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
         batch_renderer_end_frame(r);
 
@@ -200,6 +198,7 @@ s32 main(s32 argc, char **argv) {
                     ImGui::Separator();
 
                     auto stats = r->per_frame_stats;
+                    ImGui::Text("Quads: %u", stats.quads);
                     ImGui::Text("Vertices: %u", stats.vertices);
                     ImGui::Text("Indices: %u", stats.indices);
                     ImGui::Text("Textures: %u", stats.textures);
@@ -209,19 +208,11 @@ s32 main(s32 argc, char **argv) {
             }
 
             {
-                ImGui::SetNextWindowPos(ImVec2(10.0f, 160.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
+                ImGui::SetNextWindowPos(ImVec2(10.0f, 180.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
                 ImGui::SetNextWindowBgAlpha(0.35f);
                 ImGui::Begin("Data", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
                 {
-                    ImGui::Text("Chunks: %d", hmlen(world.chunks));
-
-                    ImGui::Separator();
-
-                    ImGui::Text("Position: (%0.3f, %0.3f)", x, y);
-                    ImGui::Text("vp_min: (%d, %d)", vp_min_x, vp_min_y);
-                    ImGui::Text("vp_max: (%d, %d)", vp_max_x, vp_max_y);
-                    ImGui::Text("vp_min_c: (%d, %d)", vp_min_cx, vp_min_cy);
-                    ImGui::Text("vp_max_c: (%d, %d)", vp_max_cx, vp_max_cy);
+                    ImGui::Text("Scale: %0.3f\n", scale);
                 }
                 ImGui::End();
             }

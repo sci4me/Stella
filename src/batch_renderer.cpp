@@ -6,6 +6,7 @@ struct Batch_Vertex {
 };
 
 struct Batch_Renderer_Per_Frame_Stats {
+    u32 quads;
     u32 vertices;
     u32 indices;
     u32 textures;
@@ -41,7 +42,7 @@ void batch_renderer_init(Batch_Renderer *r) {
     s32 samplers[Batch_Renderer::MAX_TEXTURE_SLOTS];
     for(s32 i = 0; i < Batch_Renderer::MAX_TEXTURE_SLOTS; i++) 
         samplers[i] = i;
-    glProgramUniform1iv(r->shader, 1, Batch_Renderer::MAX_TEXTURE_SLOTS, samplers);
+    glProgramUniform1iv(r->shader, 2, Batch_Renderer::MAX_TEXTURE_SLOTS, samplers);
 
     glCreateTextures(GL_TEXTURE_2D, 1, &r->white_texture);
     glTextureStorage2D(r->white_texture, 1, GL_RGBA8, 1, 1);
@@ -86,6 +87,10 @@ void batch_renderer_free(Batch_Renderer *r) {
 
 void batch_renderer_set_projection(Batch_Renderer *r, glm::mat4 proj) {
     glProgramUniformMatrix4fv(r->shader, 0, 1, GL_FALSE, glm::value_ptr(proj));
+}
+
+void batch_renderer_set_scale(Batch_Renderer *r, f32 zoom) {
+    glProgramUniform1f(r->shader, 1, zoom);
 }
 
 void batch_renderer_flush(Batch_Renderer *r) {
@@ -191,6 +196,8 @@ void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm
     batch_renderer_push_index(r, br);
     batch_renderer_push_index(r, bl);
     batch_renderer_push_index(r, tl);
+
+    r->per_frame_stats.quads++;
 }
 
 void batch_renderer_push_solid_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm::vec4 color) {

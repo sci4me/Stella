@@ -1,5 +1,5 @@
-#define TILE_SIZE 16
-#define CHUNK_SIZE 8
+#define TILE_SIZE 16.0f
+#define CHUNK_SIZE 32
 
 enum TileType {
     TILE_STONE,
