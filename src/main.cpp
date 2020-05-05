@@ -164,7 +164,7 @@ s32 main(s32 argc, char **argv) {
             q->size = glm::vec2(10 + randf32() * 100, 10 + randf32() * 100);\
             q->speed = (0.2f + (randf32() * 0.5f)) * 5.0f;\
             q->texture = randf32() < 0.5f ? t_stone : t_grass;\
-            q->has_texture = randf32() < 0.1f;\
+            q->has_texture = randf32() < 0.6f;\
         }
 
     for(u32 i = 0; i < N_QS; i++) SPAWN_Q(i);

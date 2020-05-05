@@ -2,7 +2,7 @@ struct Batch_Vertex {
     glm::vec2 pos;
     glm::vec4 color;
     glm::vec2 uv;
-    f32 tex;
+    s32 tex;
 };
 
 struct Batch_Renderer_Per_Frame_Stats {
@@ -72,7 +72,7 @@ void batch_renderer_init(Batch_Renderer *r) {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, pos));
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, color));
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, uv));
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, tex));
+    glVertexAttribIPointer(3, 1, GL_INT, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, tex));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(r->indices), 0, GL_DYNAMIC_DRAW);
@@ -169,10 +169,10 @@ void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm
 
     r->per_frame_stats.quads++;
 
-    PUSH_VERTEX(glm::vec2(x,     y    ), color, glm::vec2(0, 0), (f32)tex_index);
-    PUSH_VERTEX(glm::vec2(x + w, y    ), color, glm::vec2(1, 0), (f32)tex_index);
-    PUSH_VERTEX(glm::vec2(x + w, y + h), color, glm::vec2(1, 1), (f32)tex_index);
-    PUSH_VERTEX(glm::vec2(x,     y + h), color, glm::vec2(0, 1), (f32)tex_index);
+    PUSH_VERTEX(glm::vec2(x,     y    ), color, glm::vec2(0, 0), tex_index);
+    PUSH_VERTEX(glm::vec2(x + w, y    ), color, glm::vec2(1, 0), tex_index);
+    PUSH_VERTEX(glm::vec2(x + w, y + h), color, glm::vec2(1, 1), tex_index);
+    PUSH_VERTEX(glm::vec2(x,     y + h), color, glm::vec2(0, 1), tex_index);
 
     auto tl = r->vertex_count - 4;
     auto tr = r->vertex_count - 3;
