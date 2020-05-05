@@ -79,6 +79,41 @@ GLuint load_texture(const char *path) {
     return texture;
 }
 
+template<u32 triangles = 32>
+void push_circle(Batch_Renderer *r, f32 cx, f32 cy, f32 radius, glm::vec4 color) {
+    static_assert(triangles >= 3);
+    static_assert(triangles * 2 + 1 <= Batch_Renderer::MAX_VERTICES);
+    static_assert(triangles * 3 <= Batch_Renderer::MAX_INDICES);
+
+    batch_renderer_ensure_available(r, triangles * 2 + 1, triangles * 3);
+
+    f32 half_radius = radius / 2.0f;
+    f32 theta = 2.0f * PI / (f32)triangles;
+    f32 s = sinf(theta);
+    f32 c = cosf(theta);
+    
+    f32 x = half_radius;
+    f32 y = 0;
+    
+    auto vc = batch_renderer_push_vertex(r, {{cx, cy}, color, glm::vec2(), 0});
+
+    for(u32 i = 0; i < triangles; i++) {
+        f32 lx = x;
+        f32 ly = y;
+
+        f32 t = x;
+        x = c*t - s*y;
+        y = s*t + c*y;
+
+        auto v1 = batch_renderer_push_vertex(r, {{cx + lx, cy + ly}, color, glm::vec2(), 0});
+        auto v2 = batch_renderer_push_vertex(r, {{cx + x, cy + y}, color, glm::vec2(), 0});
+
+        batch_renderer_push_index(r, v1);
+        batch_renderer_push_index(r, v2);
+        batch_renderer_push_index(r, vc);
+    }
+}
+
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
@@ -142,6 +177,7 @@ s32 main(s32 argc, char **argv) {
     glClearColor(0.2, 0.1, 0.5, 1);
 
     auto quad_color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    auto circle_color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 
     GLuint t_test = load_texture("res/textures/test.png");
     GLuint t_stone = load_texture("res/textures/stone.png");
@@ -155,7 +191,7 @@ s32 main(s32 argc, char **argv) {
         bool has_texture;
     };
 
-    constexpr u32 N_QS = 10;
+    constexpr u32 N_QS = 100;
     Q qs[N_QS];
 
     #define SPAWN_Q(i) {\
@@ -175,6 +211,8 @@ s32 main(s32 argc, char **argv) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         batch_renderer_begin_frame(r);
+
+        push_circle(r, 300, 100, 50, circle_color);
 
         for(u32 i = 0; i < N_QS; i++) {
             Q *q = &qs[i];
@@ -214,7 +252,6 @@ s32 main(s32 argc, char **argv) {
                     ImGui::Separator();
 
                     auto stats = r->per_frame_stats;
-                    ImGui::Text("Quads: %u", stats.quads);
                     ImGui::Text("Vertices: %u", stats.vertices);
                     ImGui::Text("Indices: %u", stats.indices);
                     ImGui::Text("Textures: %u", stats.textures);
