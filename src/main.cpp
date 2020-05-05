@@ -20,6 +20,9 @@
 #define STB_DS_IMPLEMENTATION
 #include "stb_ds.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #define GL_DEBUG
 
 #include "util.cpp"
@@ -41,12 +44,48 @@ f32 randf32() {
     return (f32)rand() / (f32)RAND_MAX;
 }
 
+GLuint load_texture(const char *path) {
+    s32 w, h, n;
+    u8 *image = stbi_load(path, &w, &h, &n, 0);    
+
+    GLenum internal_format;
+    GLenum data_format;
+    switch(n) {
+        case 3:
+            internal_format = GL_RGB8;
+            data_format = GL_RGB;
+            break;
+        case 4:
+            internal_format = GL_RGBA8;
+            data_format = GL_RGBA;
+            break;
+        default:
+            assert(0);
+    }
+
+    GLuint texture;
+    glCreateTextures(GL_TEXTURE_2D, 1, &texture);
+
+    glTextureStorage2D(texture, 1, internal_format, w, h);
+    glTextureSubImage2D(texture, 0, 0, 0, w, h, data_format, GL_UNSIGNED_BYTE, image);
+
+    glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    stbi_image_free(image);
+
+    return texture;
+}
+
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
         return 1;
     }
 
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO
     glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
@@ -104,13 +143,19 @@ s32 main(s32 argc, char **argv) {
 
     auto quad_color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
+    GLuint t_test = load_texture("res/textures/test.png");
+    GLuint t_stone = load_texture("res/textures/stone.png");
+    GLuint t_grass = load_texture("res/textures/grass.png");
+
     struct Q {
         glm::vec2 pos;
         glm::vec2 size;
         f32 speed;
+        GLuint texture;
+        bool has_texture;
     };
 
-    constexpr u32 N_QS = 100;
+    constexpr u32 N_QS = 10;
     Q qs[N_QS];
 
     #define SPAWN_Q(i) {\
@@ -118,6 +163,8 @@ s32 main(s32 argc, char **argv) {
             q->pos = glm::vec2(randf32() * 1280, -200);\
             q->size = glm::vec2(10 + randf32() * 100, 10 + randf32() * 100);\
             q->speed = (0.2f + (randf32() * 0.5f)) * 5.0f;\
+            q->texture = randf32() < 0.5f ? t_stone : t_grass;\
+            q->has_texture = randf32() < 0.1f;\
         }
 
     for(u32 i = 0; i < N_QS; i++) SPAWN_Q(i);
@@ -138,7 +185,11 @@ s32 main(s32 argc, char **argv) {
                 q->pos.y += q->speed;
             }
 
-            batch_renderer_push_quad(r, q->pos.x, q->pos.y, q->size.x, q->size.y, quad_color);
+            if(q->has_texture) {
+                batch_renderer_push_textured_quad(r, q->pos.x, q->pos.y, q->size.x, q->size.y, q->texture);
+            } else {
+                batch_renderer_push_solid_quad(r, q->pos.x, q->pos.y, q->size.x, q->size.y, quad_color);                
+            }
         }
 
         batch_renderer_end_frame(r);
@@ -166,6 +217,7 @@ s32 main(s32 argc, char **argv) {
                     ImGui::Text("Quads: %u", stats.quads);
                     ImGui::Text("Vertices: %u", stats.vertices);
                     ImGui::Text("Indices: %u", stats.indices);
+                    ImGui::Text("Textures: %u", stats.textures);
                     ImGui::Text("Draw Calls: %u", stats.draw_calls);
                 }
                 ImGui::End();

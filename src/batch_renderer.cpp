@@ -2,13 +2,14 @@ struct Batch_Vertex {
     glm::vec2 pos;
     glm::vec4 color;
     glm::vec2 uv;
-    s32 tex;
+    f32 tex;
 };
 
 struct Batch_Renderer_Per_Frame_Stats {
     u32 quads;
     u32 vertices;
     u32 indices;
+    u32 textures;
     u32 draw_calls;
 };
 
@@ -71,7 +72,7 @@ void batch_renderer_init(Batch_Renderer *r) {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, pos));
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, color));
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, uv));
-    glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, tex));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Batch_Vertex), (void*) offsetof(Batch_Vertex, tex));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(r->indices), 0, GL_DYNAMIC_DRAW);
@@ -107,8 +108,10 @@ void batch_renderer_flush(Batch_Renderer *r) {
     glUseProgram(r->shader);
     glBindVertexArray(r->vao);
 
-    for(u32 i = 0; i < r->texture_count; i++)
+    for(u32 i = 0; i < r->texture_count; i++) {
+        glActiveTexture(GL_TEXTURE0 + i);
         glBindTextureUnit(i, r->textures[i]);
+    }
 
     glDrawElements(GL_TRIANGLES, r->index_count, GL_UNSIGNED_INT, 0);
 
@@ -125,8 +128,10 @@ void batch_renderer_flush(Batch_Renderer *r) {
 void batch_renderer_begin_frame(Batch_Renderer *r) {
     r->vertex_count = 0;
     r->index_count = 0;
+    r->texture_count = 1;
 
     memset(&r->per_frame_stats, 0, sizeof(Batch_Renderer_Per_Frame_Stats));
+    r->per_frame_stats.textures = 1;
 }
 
 void batch_renderer_end_frame(Batch_Renderer *r) {
@@ -136,34 +141,58 @@ void batch_renderer_end_frame(Batch_Renderer *r) {
 #define PUSH_VERTEX(p, c, u, t) r->vertices[r->vertex_count++] = {p, c, u, t};
 #define PUSH_INDEX(i) r->indices[r->index_count++] = i;
 
-void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm::vec4 color) {
+void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm::vec4 color, GLuint texture) {
     // TODO: the condition of if statement is stupid
     if(r->vertex_count + 4 > Batch_Renderer::MAX_VERTICES || r->index_count + 6 > Batch_Renderer::MAX_INDICES) {
         batch_renderer_flush(r);
     }
 
+    s32 tex_index = 0;
+    if(texture) {
+        for(u32 i = 1; i < r->texture_count; i++) {
+            if(r->textures[i] == texture) {
+                tex_index = i;
+                break;
+            }
+        }
+        if(!tex_index) {
+            if(r->texture_count < Batch_Renderer::MAX_TEXTURE_SLOTS) {
+                r->textures[r->texture_count] = texture;
+                tex_index = r->texture_count;
+                r->texture_count++;
+                r->per_frame_stats.textures++;
+            } else {
+                assert(0); // TODO
+            }
+        }
+    }
+
     r->per_frame_stats.quads++;
 
-    PUSH_VERTEX(glm::vec2(x, y + h), color, glm::vec2(), 0);
-    PUSH_VERTEX(glm::vec2(x + w, y + h), color, glm::vec2(), 0);
-    PUSH_VERTEX(glm::vec2(x, y), color, glm::vec2(), 0);
-    PUSH_VERTEX(glm::vec2(x + w, y), color, glm::vec2(), 0);
+    PUSH_VERTEX(glm::vec2(x,     y    ), color, glm::vec2(0, 0), (f32)tex_index);
+    PUSH_VERTEX(glm::vec2(x + w, y    ), color, glm::vec2(1, 0), (f32)tex_index);
+    PUSH_VERTEX(glm::vec2(x + w, y + h), color, glm::vec2(1, 1), (f32)tex_index);
+    PUSH_VERTEX(glm::vec2(x,     y + h), color, glm::vec2(0, 1), (f32)tex_index);
 
     auto tl = r->vertex_count - 4;
     auto tr = r->vertex_count - 3;
-    auto bl = r->vertex_count - 2;
-    auto br = r->vertex_count - 1;
+    auto br = r->vertex_count - 2;
+    auto bl = r->vertex_count - 1;
 
     PUSH_INDEX(tl);
-    PUSH_INDEX(bl);
     PUSH_INDEX(tr);
-    PUSH_INDEX(bl);
     PUSH_INDEX(br);
-    PUSH_INDEX(tr);
+    PUSH_INDEX(br);
+    PUSH_INDEX(bl);
+    PUSH_INDEX(tl);
 }
 
-void batch_renderer_push_textured_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, f32 u, f32 v, GLuint texture) {
-    assert(0);
+void batch_renderer_push_solid_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm::vec4 color) {
+    batch_renderer_push_quad(r, x, y, w, h, color, 0);
+}
+
+void batch_renderer_push_textured_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, GLuint texture) {
+    batch_renderer_push_quad(r, x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), texture);
 }
 
 #undef PUSH_VERTEX
