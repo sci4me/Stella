@@ -13,9 +13,8 @@ struct Batch_Renderer_Per_Frame_Stats {
 };
 
 struct Batch_Renderer {
-    static const u32 MAX_QUADS = 17;
-    static const u32 MAX_VERTICES = MAX_QUADS * 4;
-    static const u32 MAX_INDICES = MAX_QUADS * 6;
+    static const u32 MAX_VERTICES = 1024 * 64;
+    static const u32 MAX_INDICES = MAX_VERTICES * 3;
     static const u32 MAX_TEXTURE_SLOTS = 8; // TODO
 
     GLuint shader;

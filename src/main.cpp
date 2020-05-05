@@ -40,80 +40,6 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 }
 #endif
 
-f32 randf32() {
-    return (f32)rand() / (f32)RAND_MAX;
-}
-
-GLuint load_texture(const char *path) {
-    s32 w, h, n;
-    u8 *image = stbi_load(path, &w, &h, &n, 0);    
-
-    GLenum internal_format;
-    GLenum data_format;
-    switch(n) {
-        case 3:
-            internal_format = GL_RGB8;
-            data_format = GL_RGB;
-            break;
-        case 4:
-            internal_format = GL_RGBA8;
-            data_format = GL_RGBA;
-            break;
-        default:
-            assert(0);
-    }
-
-    GLuint texture;
-    glCreateTextures(GL_TEXTURE_2D, 1, &texture);
-
-    glTextureStorage2D(texture, 1, internal_format, w, h);
-    glTextureSubImage2D(texture, 0, 0, 0, w, h, data_format, GL_UNSIGNED_BYTE, image);
-
-    glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    stbi_image_free(image);
-
-    return texture;
-}
-
-template<u32 triangles = 32>
-void push_circle(Batch_Renderer *r, f32 cx, f32 cy, f32 radius, glm::vec4 color) {
-    static_assert(triangles >= 3);
-    static_assert(triangles * 2 + 1 <= Batch_Renderer::MAX_VERTICES);
-    static_assert(triangles * 3 <= Batch_Renderer::MAX_INDICES);
-
-    batch_renderer_ensure_available(r, triangles * 2 + 1, triangles * 3);
-
-    f32 half_radius = radius / 2.0f;
-    f32 theta = 2.0f * PI / (f32)triangles;
-    f32 s = sinf(theta);
-    f32 c = cosf(theta);
-    
-    f32 x = half_radius;
-    f32 y = 0;
-    
-    auto vc = batch_renderer_push_vertex(r, {{cx, cy}, color, glm::vec2(), 0});
-
-    for(u32 i = 0; i < triangles; i++) {
-        f32 lx = x;
-        f32 ly = y;
-
-        f32 t = x;
-        x = c*t - s*y;
-        y = s*t + c*y;
-
-        auto v1 = batch_renderer_push_vertex(r, {{cx + lx, cy + ly}, color, glm::vec2(), 0});
-        auto v2 = batch_renderer_push_vertex(r, {{cx + x, cy + y}, color, glm::vec2(), 0});
-
-        batch_renderer_push_index(r, v1);
-        batch_renderer_push_index(r, v2);
-        batch_renderer_push_index(r, vc);
-    }
-}
-
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
@@ -191,7 +117,7 @@ s32 main(s32 argc, char **argv) {
         bool has_texture;
     };
 
-    constexpr u32 N_QS = 100;
+    constexpr u32 N_QS = 10;
     Q qs[N_QS];
 
     #define SPAWN_Q(i) {\
@@ -211,8 +137,6 @@ s32 main(s32 argc, char **argv) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         batch_renderer_begin_frame(r);
-
-        push_circle(r, 300, 100, 50, circle_color);
 
         for(u32 i = 0; i < N_QS; i++) {
             Q *q = &qs[i];
