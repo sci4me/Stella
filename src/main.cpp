@@ -121,31 +121,43 @@ s32 main(s32 argc, char **argv) {
     f32 frequency = 10.0f;
     f32 stone_threshold = 0.5f;
 
+    f32 x = 0;
+    f32 y = 0;
+
+    const u32 TILE_SIZE = 16;
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // main rendering
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) y -= 10.0f;
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) y += 10.0f;
+        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) x -= 10.0f;
+        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) x += 10.0f;
+
         batch_renderer_begin_frame(r);
 
-        const f32 w = 16;
-        const f32 h = 16;
-        for(u32 i = 0; i < 1280 / w; i++) {
-            for(u32 j = 0; j < 720 / h; j++) {
-                f32 k = noise.noise2D_0_1(i / frequency, j / frequency);
+        s32 vp_min_x = (s32) floor(x / TILE_SIZE);
+        s32 vp_min_y = (s32) floor(y / TILE_SIZE);
+        s32 vp_max_x = (s32) ceil((x + 1280.0f) / TILE_SIZE);
+        s32 vp_max_y = (s32) ceil((y + 720.0f) / TILE_SIZE);
 
-                GLuint tex;
-                if(k < stone_threshold) tex = t_stone;
-                else tex = t_grass;
+        for(s32 i = vp_min_x; i <= vp_max_x; i++) {
+            for(s32 j = vp_min_y; j <= vp_max_y; j++) {
+                f32 m = noise.noise2D_0_1((f32) i / frequency, (f32) j / frequency);
 
-                batch_renderer_push_textured_quad(r, i * w, j * h, w, h, tex);
+                f32 tx = i * (f32)TILE_SIZE - x;
+                f32 ty = j * (f32)TILE_SIZE - y;
+
+                if(tx > 1280 || ty > 720 || tx + TILE_SIZE < 0 || ty + TILE_SIZE < 0) continue;
+
+                batch_renderer_push_textured_quad(r, tx, ty, TILE_SIZE, TILE_SIZE, m < stone_threshold ? t_stone : t_grass);
             }
         }
 
         batch_renderer_end_frame(r);
 
-        // imgui rendering pass
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -172,13 +184,27 @@ s32 main(s32 argc, char **argv) {
                 }
                 ImGui::End();
             }
+
+            {
+                ImGui::SetNextWindowPos(ImVec2(10.0f, 160.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
+                ImGui::SetNextWindowBgAlpha(0.35f);
+                ImGui::Begin("Data", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
+                {
+                    ImGui::Text("Position: (%0.3f, %0.3f)", x, y);
+                    ImGui::Text("vp_min: (%d, %d)", vp_min_x, vp_min_y);
+                    ImGui::Text("vp_max: (%d, %d)", vp_max_x, vp_max_y);
+                }
+                ImGui::End();
+            }
             
+            /*
             {
                 ImGui::Begin("Controls", 0, ImGuiWindowFlags_None);
                 ImGui::SliderFloat("Frequency", &frequency, 2.0f, 64.0f);
                 ImGui::SliderFloat("Stone Threshold", &stone_threshold, 0.0f, 1.0f);
                 ImGui::End();
             }
+            */
         }
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
