@@ -83,6 +83,9 @@ s32 main(s32 argc, char **argv) {
         return 1;
     }
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+
     time_t t;
     srand((unsigned) time(&t));
 
@@ -123,6 +126,8 @@ s32 main(s32 argc, char **argv) {
 
     World world;
     world_init(&world);
+
+    TileType selected_tile_type = N_TILE_TYPES;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -176,6 +181,40 @@ s32 main(s32 argc, char **argv) {
             }
         }
 
+        if(glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) selected_tile_type = TILE_STONE;
+        else if(glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) selected_tile_type = TILE_GRASS;
+
+        if(selected_tile_type != N_TILE_TYPES) {
+            f64 mx, my;
+            glfwGetCursorPos(window, &mx, &my);
+
+            f32 i = x + (mx - 640.0f) / scale;
+            f32 j = y + (my - 360.0f) / scale;
+
+            s32 k = floor(i / TILE_SIZE);
+            s32 l = floor(j / TILE_SIZE);
+
+            bool mp = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+            static bool p = false;
+            if(mp) {
+                world_set_tile(&world, k, l, selected_tile_type);
+            } else if(!mp) {
+                p = false;
+            }
+
+            f32 m = k * TILE_SIZE - x;
+            f32 n = l * TILE_SIZE - y;
+
+            GLuint tex;
+            switch(selected_tile_type) {
+                case TILE_STONE: tex = t_stone; break;
+                case TILE_GRASS: tex = t_grass; break;
+                default: assert(0); break;
+            }
+            batch_renderer_push_solid_quad(r, m, n, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 0.0f, 0.5f));
+            batch_renderer_push_textured_quad(r, m + TILE_SIZE/4, n + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2, tex);
+        }
+
         batch_renderer_push_solid_quad(r, -5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
         batch_renderer_end_frame(r);
@@ -208,6 +247,7 @@ s32 main(s32 argc, char **argv) {
                 ImGui::End();
             }
 
+            /*
             {
                 ImGui::SetNextWindowPos(ImVec2(10.0f, 180.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
                 ImGui::SetNextWindowBgAlpha(0.35f);
@@ -218,6 +258,7 @@ s32 main(s32 argc, char **argv) {
                 }
                 ImGui::End();
             }
+            */
         }
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

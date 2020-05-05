@@ -1,11 +1,11 @@
 #define TILE_SIZE 16.0f
-#define CHUNK_SIZE 32
+#define CHUNK_SIZE 16 // must be a power of 2!
 
 enum TileType {
     TILE_STONE,
     TILE_GRASS,
 
-    N_TILES
+    N_TILE_TYPES
 };
 
 struct World {
@@ -70,7 +70,19 @@ Chunk* world_get_chunk(World *w, s32 x, s32 y) {
     return w->chunks[i].value;
 }
 
+Chunk* world_get_chunk_containing(World *w, s32 x, s32 y) {
+    s32 cx = (s32)floor(x / (f32)CHUNK_SIZE);
+    s32 cy = (s32)floor(y / (f32)CHUNK_SIZE);
+    return world_get_chunk(w, cx, cy);
+}
+
 TileType world_get_tile(World *w, s32 x, s32 y) {
-    Chunk *c = world_get_chunk(w, x / CHUNK_SIZE, y / CHUNK_SIZE);
-    return c->tiles[((s32) abs(x)) % CHUNK_SIZE][((s32) abs(y)) % CHUNK_SIZE];
+    Chunk *c = world_get_chunk_containing(w, x, y);
+    return c->tiles[x & CHUNK_SIZE-1][y & CHUNK_SIZE-1];
+}
+
+void world_set_tile(World *w, s32 x, s32 y, TileType type) {
+    assert(type != N_TILE_TYPES);
+    Chunk *c = world_get_chunk_containing(w, x, y);
+    c->tiles[x & CHUNK_SIZE-1][y & CHUNK_SIZE-1] = type;
 }

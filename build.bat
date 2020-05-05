@@ -7,6 +7,8 @@ set Libs=../vendor/GLEW/lib/glew32s.lib ../vendor/GLFW/lib/glfw3.lib opengl32.li
 set ImGuiCPPs=../vendor/imgui/imgui/imgui.cpp ../vendor/imgui/imgui/imgui_draw.cpp ../vendor/imgui/imgui/imgui_impl_glfw.cpp ../vendor/imgui/imgui/imgui_impl_opengl3.cpp ../vendor/imgui/imgui/imgui_widgets.cpp
 
 mkdir build
+
+REM remove the pushd/popd! it's more annoyance than it's worth
 pushd build
 cl %CFlags% %Includes% ../src/main.cpp %ImGuiCPPs% %Libs% /link %LDFlags%
 popd

@@ -21,7 +21,12 @@ char* read_entire_file(char *name) {
 
 GLuint load_texture(const char *path) {
     s32 w, h, n;
-    u8 *image = stbi_load(path, &w, &h, &n, 0);    
+    u8 *image = stbi_load(path, &w, &h, &n, 0);
+
+    if(!image) {
+        fprintf(stderr, "Failed to load texture '%s'\n", path);
+        exit(1);
+    }
 
     GLenum internal_format;
     GLenum data_format;
