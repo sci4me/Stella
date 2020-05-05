@@ -30,6 +30,7 @@
 #include "util.cpp"
 #include "shader.cpp"
 #include "batch_renderer.cpp"
+#include "world.cpp"
 
 #ifdef GL_DEBUG
 void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
@@ -41,14 +42,6 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
     fflush(stdout);
 }
 #endif
-
-bool show_metrics = true;
-
-void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mods) {
-    if(key == GLFW_KEY_F3 && action == GLFW_RELEASE) {
-        show_metrics = !show_metrics;
-    }
-}
 
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
@@ -75,8 +68,6 @@ s32 main(s32 argc, char **argv) {
     }
 
     glfwMakeContextCurrent(window);
-
-    glfwSetKeyCallback(window, key_callback);
 
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW!\n");
@@ -114,17 +105,15 @@ s32 main(s32 argc, char **argv) {
 
     glClearColor(0.2, 0.1, 0.5, 1);
 
+    GLuint t_test = load_texture("res/textures/test.png");
     GLuint t_stone = load_texture("res/textures/stone.png");
     GLuint t_grass = load_texture("res/textures/grass.png");
-
-    siv::PerlinNoise noise;
-    f32 frequency = 10.0f;
-    f32 stone_threshold = 0.5f;
 
     f32 x = 0;
     f32 y = 0;
 
-    const u32 TILE_SIZE = 16;
+    World world;
+    world_init(&world);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -143,18 +132,52 @@ s32 main(s32 argc, char **argv) {
         s32 vp_max_x = (s32) ceil((x + 1280.0f) / TILE_SIZE);
         s32 vp_max_y = (s32) ceil((y + 720.0f) / TILE_SIZE);
 
+        s32 vp_min_cx = (s32) floor((f32)vp_min_x / (f32)CHUNK_SIZE);
+        s32 vp_min_cy = (s32) floor((f32)vp_min_y / (f32)CHUNK_SIZE);
+        s32 vp_max_cx = (s32) ceil((f32)vp_max_x / (f32)CHUNK_SIZE);
+        s32 vp_max_cy = (s32) ceil((f32)vp_max_y / (f32)CHUNK_SIZE);
+
+        for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
+            for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
+                Chunk *c = world_get_chunk(&world, i, j);
+
+                for(s32 k = 0; k < CHUNK_SIZE; k++) {
+                    for(s32 l = 0; l < CHUNK_SIZE; l++) {
+                        f32 tx = ((i * CHUNK_SIZE) + k) * (f32)TILE_SIZE - x;
+                        f32 ty = ((j * CHUNK_SIZE) + l) * (f32)TILE_SIZE - y;
+
+                        if(tx > 1280 || ty > 720 || tx + TILE_SIZE < 0 || ty + TILE_SIZE < 0) continue;
+
+                        GLuint tex;
+                        switch(c->tiles[k][l]) {
+                            case TILE_STONE: tex = t_stone; break;
+                            case TILE_GRASS: tex = t_grass; break;
+                            default: assert(0); break;
+                        }
+                        batch_renderer_push_textured_quad(r, tx, ty, TILE_SIZE, TILE_SIZE, tex);
+                    }
+                }
+            }
+        }
+
+        /*
         for(s32 i = vp_min_x; i <= vp_max_x; i++) {
             for(s32 j = vp_min_y; j <= vp_max_y; j++) {
-                f32 m = noise.noise2D_0_1((f32) i / frequency, (f32) j / frequency);
-
                 f32 tx = i * (f32)TILE_SIZE - x;
                 f32 ty = j * (f32)TILE_SIZE - y;
 
                 if(tx > 1280 || ty > 720 || tx + TILE_SIZE < 0 || ty + TILE_SIZE < 0) continue;
 
-                batch_renderer_push_textured_quad(r, tx, ty, TILE_SIZE, TILE_SIZE, m < stone_threshold ? t_stone : t_grass);
+                GLuint tex;
+                switch(world_get_tile(&world, i, j)) {
+                    case TILE_STONE: tex = t_stone; break;
+                    case TILE_GRASS: tex = t_grass; break;
+                    default: tex = t_test; break;
+                }
+                batch_renderer_push_textured_quad(r, tx, ty, TILE_SIZE, TILE_SIZE, tex);
             }
         }
+        */
 
         batch_renderer_end_frame(r);
 
@@ -162,7 +185,7 @@ s32 main(s32 argc, char **argv) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         {
-            if(show_metrics) {
+            {
                 ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
                 ImGui::SetNextWindowBgAlpha(0.35f);
                 ImGui::Begin("Metrics", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
@@ -190,27 +213,26 @@ s32 main(s32 argc, char **argv) {
                 ImGui::SetNextWindowBgAlpha(0.35f);
                 ImGui::Begin("Data", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
                 {
+                    ImGui::Text("Chunks: %d", hmlen(world.chunks));
+
+                    ImGui::Separator();
+
                     ImGui::Text("Position: (%0.3f, %0.3f)", x, y);
                     ImGui::Text("vp_min: (%d, %d)", vp_min_x, vp_min_y);
                     ImGui::Text("vp_max: (%d, %d)", vp_max_x, vp_max_y);
+                    ImGui::Text("vp_min_c: (%d, %d)", vp_min_cx, vp_min_cy);
+                    ImGui::Text("vp_max_c: (%d, %d)", vp_max_cx, vp_max_cy);
                 }
                 ImGui::End();
             }
-            
-            /*
-            {
-                ImGui::Begin("Controls", 0, ImGuiWindowFlags_None);
-                ImGui::SliderFloat("Frequency", &frequency, 2.0f, 64.0f);
-                ImGui::SliderFloat("Stone Threshold", &stone_threshold, 0.0f, 1.0f);
-                ImGui::End();
-            }
-            */
         }
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
         glfwSwapBuffers(window);
     }
+
+    world_free(&world);
 
     batch_renderer_free(r);
     free(r);
