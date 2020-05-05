@@ -157,12 +157,13 @@ s32 main(s32 argc, char **argv) {
                         f32 tx = ((i * CHUNK_SIZE) + k) * (f32)TILE_SIZE - x;
                         f32 ty = ((j * CHUNK_SIZE) + l) * (f32)TILE_SIZE - y;
 
-                        if(tx + TILE_SIZE < (-640.0f / scale) || 
-                            ty + TILE_SIZE < (-360.0f / scale) || 
-                            tx - TILE_SIZE > (640.0f / scale) || 
-                            ty - TILE_SIZE > (360.0f / scale)) 
-                            continue;
-
+                        if(
+                            tx + 2 * (TILE_SIZE * scale) < (-640.0f / scale) || 
+                            ty + 2 * (TILE_SIZE * scale) < (-360.0f / scale) || 
+                            tx - 2 * (TILE_SIZE * scale) > (640.0f / scale) || 
+                            ty - 2 * (TILE_SIZE * scale) > (360.0f / scale)
+                        ) continue;
+            
                         GLuint tex;
                         switch(c->tiles[k][l]) {
                             case TILE_STONE: tex = t_stone; break;
@@ -212,7 +213,8 @@ s32 main(s32 argc, char **argv) {
                 ImGui::SetNextWindowBgAlpha(0.35f);
                 ImGui::Begin("Data", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
                 {
-                    ImGui::Text("Scale: %0.3f\n", scale);
+                    ImGui::Text("Position: (%0.3f, %0.3f)", x, y);
+                    ImGui::Text("Scale: %0.3f", scale);
                 }
                 ImGui::End();
             }
