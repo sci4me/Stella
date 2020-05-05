@@ -23,6 +23,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "PerlinNoise.hpp"
+
 #define GL_DEBUG
 
 #include "util.cpp"
@@ -39,6 +41,14 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
     fflush(stdout);
 }
 #endif
+
+bool show_metrics = true;
+
+void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mods) {
+    if(key == GLFW_KEY_F3 && action == GLFW_RELEASE) {
+        show_metrics = !show_metrics;
+    }
+}
 
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
@@ -65,6 +75,8 @@ s32 main(s32 argc, char **argv) {
     }
 
     glfwMakeContextCurrent(window);
+
+    glfwSetKeyCallback(window, key_callback);
 
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW!\n");
@@ -102,55 +114,32 @@ s32 main(s32 argc, char **argv) {
 
     glClearColor(0.2, 0.1, 0.5, 1);
 
-    auto quad_color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    auto circle_color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-
-    GLuint t_test = load_texture("res/textures/test.png");
     GLuint t_stone = load_texture("res/textures/stone.png");
     GLuint t_grass = load_texture("res/textures/grass.png");
 
-    struct Q {
-        glm::vec2 pos;
-        glm::vec2 size;
-        f32 speed;
-        GLuint texture;
-        bool has_texture;
-    };
-
-    constexpr u32 N_QS = 10;
-    Q qs[N_QS];
-
-    #define SPAWN_Q(i) {\
-            Q *q = &qs[i];\
-            q->pos = glm::vec2(randf32() * 1280, -200);\
-            q->size = glm::vec2(10 + randf32() * 100, 10 + randf32() * 100);\
-            q->speed = (0.2f + (randf32() * 0.5f)) * 5.0f;\
-            q->texture = randf32() < 0.5f ? t_stone : t_grass;\
-            q->has_texture = randf32() < 0.6f;\
-        }
-
-    for(u32 i = 0; i < N_QS; i++) SPAWN_Q(i);
+    siv::PerlinNoise noise;
+    f32 frequency = 10.0f;
+    f32 stone_threshold = 0.5f;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // main rendering
         batch_renderer_begin_frame(r);
 
-        for(u32 i = 0; i < N_QS; i++) {
-            Q *q = &qs[i];
+        const f32 w = 16;
+        const f32 h = 16;
+        for(u32 i = 0; i < 1280 / w; i++) {
+            for(u32 j = 0; j < 720 / h; j++) {
+                f32 k = noise.noise2D_0_1(i / frequency, j / frequency);
 
-            if(q->pos.y > 720) {
-                SPAWN_Q(i);
-            } else {
-                q->pos.y += q->speed;
-            }
+                GLuint tex;
+                if(k < stone_threshold) tex = t_stone;
+                else tex = t_grass;
 
-            if(q->has_texture) {
-                batch_renderer_push_textured_quad(r, q->pos.x, q->pos.y, q->size.x, q->size.y, q->texture);
-            } else {
-                batch_renderer_push_solid_quad(r, q->pos.x, q->pos.y, q->size.x, q->size.y, quad_color);                
+                batch_renderer_push_textured_quad(r, i * w, j * h, w, h, tex);
             }
         }
 
@@ -161,7 +150,7 @@ s32 main(s32 argc, char **argv) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         {
-            {
+            if(show_metrics) {
                 ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
                 ImGui::SetNextWindowBgAlpha(0.35f);
                 ImGui::Begin("Metrics", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
@@ -183,11 +172,11 @@ s32 main(s32 argc, char **argv) {
                 }
                 ImGui::End();
             }
-
+            
             {
-                ImGui::SetNextWindowSize(ImVec2(120.0f, 60.0f));
-                ImGui::Begin("Shape Control", 0, ImGuiWindowFlags_NoResize);
-                ImGui::ColorEdit4("Color", glm::value_ptr(quad_color), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_PickerHueWheel);
+                ImGui::Begin("Controls", 0, ImGuiWindowFlags_None);
+                ImGui::SliderFloat("Frequency", &frequency, 2.0f, 64.0f);
+                ImGui::SliderFloat("Stone Threshold", &stone_threshold, 0.0f, 1.0f);
                 ImGui::End();
             }
         }
