@@ -46,7 +46,7 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 f32 scale = 1.0f;
 
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
-    scale = clampf(scale + y * 0.05f, 0.1f, 5.0f);
+    scale = clampf(scale + y * 0.05f, 0.25f, 5.0f);
 }
 
 s32 main(s32 argc, char **argv) {
@@ -116,6 +116,7 @@ s32 main(s32 argc, char **argv) {
     batch_renderer_set_projection(r, proj);
 
     glClearColor(0.2, 0.1, 0.5, 1);
+    glViewport(0, 0, 1280, 720); // TODO: resize
 
     GLuint t_test = load_texture("res/textures/test.png");
     GLuint t_stone = load_texture("res/textures/stone.png");
@@ -128,21 +129,48 @@ s32 main(s32 argc, char **argv) {
 
     TileType selected_tile_type = N_TILE_TYPES;
 
+
+    GLuint light_shader = load_shader_program("light", VERTEX_SHADER | FRAGMENT_SHADER);
+
+    GLuint t_scene;
+    glCreateTextures(GL_TEXTURE_2D, 1, &t_scene);
+    glTextureStorage2D(t_scene, 1, GL_RGBA8, 1280, 720);
+    glTextureParameteri(t_scene, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(t_scene, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(t_scene, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(t_scene, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    GLuint scene_fbo;
+    glGenFramebuffers(1, &scene_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, scene_fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t_scene, 0);
+    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    GLuint quad_vao;
+    glGenVertexArrays(1, &quad_vao);
+    glBindVertexArray(quad_vao);
+    glVertexAttrib1f(0, 0);
+    glBindVertexArray(0);
+    
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         glClear(GL_COLOR_BUFFER_BIT);
 
         glm::vec2 dir = {0, 0};
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = 1.0f;
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = -1.0f;
         if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
         if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
 
         batch_renderer_set_scale(r, scale);
 
-        batch_renderer_begin_frame(r);
+        glBindFramebuffer(GL_FRAMEBUFFER, scene_fbo);
+
+        batch_renderer_begin(r);
 
         f32 x = pos.x;
         f32 y = pos.y;
@@ -221,7 +249,20 @@ s32 main(s32 argc, char **argv) {
 
         batch_renderer_push_solid_quad(r, -5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-        batch_renderer_end_frame(r);
+        batch_renderer_end(r);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glUseProgram(light_shader);
+        glBindVertexArray(quad_vao);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTextureUnit(0, t_scene);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glBindTextureUnit(0, 0);
+        glBindVertexArray(0);
+        glUseProgram(0);
+
+        auto per_frame_stats = batch_renderer_end_frame(r);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -241,12 +282,11 @@ s32 main(s32 argc, char **argv) {
                     
                     ImGui::Separator();
 
-                    auto stats = r->per_frame_stats;
-                    ImGui::Text("Quads: %u", stats.quads);
-                    ImGui::Text("Vertices: %u", stats.vertices);
-                    ImGui::Text("Indices: %u", stats.indices);
-                    ImGui::Text("Textures: %u", stats.textures);
-                    ImGui::Text("Draw Calls: %u", stats.draw_calls);
+                    ImGui::Text("Quads: %u", per_frame_stats.quads);
+                    ImGui::Text("Vertices: %u", per_frame_stats.vertices);
+                    ImGui::Text("Indices: %u", per_frame_stats.indices);
+                    ImGui::Text("Textures: %u", per_frame_stats.textures);
+                    ImGui::Text("Draw Calls: %u", per_frame_stats.draw_calls);
                 }
                 ImGui::End();
             }

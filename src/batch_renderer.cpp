@@ -140,17 +140,21 @@ void batch_renderer_ensure_available(Batch_Renderer *r, u32 v, u32 i) {
     }
 }
 
-void batch_renderer_begin_frame(Batch_Renderer *r) {
+void batch_renderer_begin(Batch_Renderer *r) {
     r->vertex_count = 0;
     r->index_count = 0;
     r->texture_count = 1;
-
-    memset(&r->per_frame_stats, 0, sizeof(Batch_Renderer_Per_Frame_Stats));
-    r->per_frame_stats.textures = 1;
 }
 
-void batch_renderer_end_frame(Batch_Renderer *r) {
+void batch_renderer_end(Batch_Renderer *r) {
     if(r->vertex_count > 0) batch_renderer_flush(r);
+}
+
+Batch_Renderer_Per_Frame_Stats batch_renderer_end_frame(Batch_Renderer *r) {
+    batch_renderer_end(r);
+    auto stats = r->per_frame_stats;
+    memset(&r->per_frame_stats, 0, sizeof(Batch_Renderer_Per_Frame_Stats));
+    return stats;
 }
 
 inline u32 batch_renderer_push_vertex(Batch_Renderer *r, Batch_Vertex v) {

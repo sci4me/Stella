@@ -14,8 +14,8 @@ out vec2 pass_uv;
 flat out int pass_tex;
 
 void main() {
+    gl_Position = u_proj * vec4(v_pos.xy * u_scale, 0.0, 1.0);
     pass_color = v_color;
     pass_uv = v_uv;
     pass_tex = v_tex;
-    gl_Position = u_proj * vec4(v_pos.xy * u_scale, 0.0, 1.0);
 }
