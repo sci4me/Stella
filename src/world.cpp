@@ -25,8 +25,8 @@ struct Chunk {
 };
 
 void generate_chunk(Chunk *c) {
-    constexpr f32 frequency = 10.0f;
-    constexpr f32 stone_threshold = 0.5f;
+    constexpr f32 frequency = 70.0f;
+    constexpr f32 stone_threshold = 0.3f;
 
     for(s32 i = 0; i < CHUNK_SIZE; i++) {
         for(s32 j = 0; j < CHUNK_SIZE; j++) {
@@ -35,8 +35,8 @@ void generate_chunk(Chunk *c) {
                 ((f32) ((c->y * CHUNK_SIZE) + j)) / frequency
             );
 
-            if(m < 0.5f) c->tiles[i][j] = TILE_STONE;
-            else         c->tiles[i][j] = TILE_GRASS;
+            if(m < stone_threshold) c->tiles[i][j] = TILE_STONE;
+            else                    c->tiles[i][j] = TILE_GRASS;
         }
     }
 }

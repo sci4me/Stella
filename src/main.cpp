@@ -46,7 +46,7 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 f32 scale = 1.0f;
 
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
-    scale = clampf(scale + y * 0.05f, 0.5f, 5.0f);
+    scale = clampf(scale + y * 0.05f, 0.1f, 5.0f);
 }
 
 s32 main(s32 argc, char **argv) {
@@ -251,18 +251,18 @@ s32 main(s32 argc, char **argv) {
                 ImGui::End();
             }
 
-            /*
             {
                 ImGui::SetNextWindowPos(ImVec2(10.0f, 180.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
                 ImGui::SetNextWindowBgAlpha(0.35f);
-                ImGui::Begin("Data", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
+                ImGui::Begin("Info", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
                 {
+                    ImGui::Text("Info");
+                    ImGui::Separator();
                     ImGui::Text("Position: (%0.3f, %0.3f)", x, y);
                     ImGui::Text("Scale: %0.3f", scale);
                 }
                 ImGui::End();
             }
-            */
         }
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
