@@ -1,14 +1,23 @@
 @echo off
- 
-set CFlags=/FeStella.exe /Zi /std:c++17 -D_CRT_SECURE_NO_WARNINGS
-set LDFlags=/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib /ignore:4099 
-set Includes=/I ../vendor/GLEW/include /I ../vendor/GLFW/include /I ../vendor/glm /I ../vendor/imgui /I ../vendor/sci.h /I ../vendor/stb /I ../vendor/siv
-set Libs=../vendor/GLEW/lib/glew32s.lib ../vendor/GLFW/lib/glfw3.lib opengl32.lib gdi32.lib user32.lib shell32.lib
-set ImGuiCPPs=../vendor/imgui/imgui/imgui.cpp ../vendor/imgui/imgui/imgui_draw.cpp ../vendor/imgui/imgui/imgui_impl_glfw.cpp ../vendor/imgui/imgui/imgui_impl_opengl3.cpp ../vendor/imgui/imgui/imgui_widgets.cpp
 
-mkdir build
+set BasePath=%~dp0
+set VendorPath=%BasePath%vendor
+
+set CFlags=/FeStella.exe /Zi /DEBUG:FULL /std:c++17 -D_CRT_SECURE_NO_WARNINGS
+set LDFlags=/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib /ignore:4099 /nologo
+set Includes=/I %VendorPath%\GLEW\include /I %VendorPath%\GLFW\include /I %VendorPath%\glm /I %VendorPath%\imgui /I %VendorPath%\sci.h /I %VendorPath%\stb /I %VendorPath%\siv
+set Libs=%VendorPath%\GLEW\lib\glew32s.lib %VendorPath%\GLFW\lib\glfw3.lib %VendorPath%\imgui\lib\imgui.lib opengl32.lib gdi32.lib user32.lib shell32.lib
+
+REM we use goto because blocks don't work; thx microsoft
+if exist %BasePath%\vendor\imgui\lib\imgui.lib goto :imgui_exists
+pushd %BasePath%\vendor\imgui
+call build_static.bat
+popd
+:imgui_exists
+
+if not exist build mkdir build
 
 REM remove the pushd/popd! it's more annoyance than it's worth
 pushd build
-cl %CFlags% %Includes% ../src/main.cpp %ImGuiCPPs% %Libs% /link %LDFlags%
+cl %CFlags% %Includes% %BasePath%src\main.cpp /link %LDFlags% %Libs%
 popd

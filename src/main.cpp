@@ -199,12 +199,8 @@ s32 main(s32 argc, char **argv) {
             s32 k = floor(i / TILE_SIZE);
             s32 l = floor(j / TILE_SIZE);
 
-            bool mp = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
-            static bool p = false;
-            if(mp) {
+            if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
                 world_set_tile(&world, k, l, selected_tile_type);
-            } else if(!mp) {
-                p = false;
             }
 
             f32 m = k * TILE_SIZE - x;
