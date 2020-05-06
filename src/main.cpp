@@ -3,6 +3,7 @@
 #include <math.h>
 
 #define SCI_H_IMPL
+#define SCI_H_TEMP_STORAGE_ASSERT_NO_OVERRUN
 #include "sci.h"
 
 #define GLEW_STATIC
@@ -29,6 +30,7 @@
 
 #include "util.cpp"
 #include "shader.cpp"
+#include "texture_atlas.cpp"
 #include "batch_renderer.cpp"
 #include "world.cpp"
 
@@ -83,11 +85,13 @@ s32 main(s32 argc, char **argv) {
         return 1;
     }
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+
+    tinit();
+
 
     time_t t;
     srand((unsigned) time(&t));
+
 
     #ifdef GL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
@@ -95,6 +99,7 @@ s32 main(s32 argc, char **argv) {
         glDebugMessageCallback((GLDEBUGPROCARB)gl_debug_callback, 0);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     #endif
+
 
     IMGUI_CHECKVERSION(); // TODO ?
     ImGui::CreateContext();
@@ -106,6 +111,7 @@ s32 main(s32 argc, char **argv) {
 
     ImGui::StyleColorsDark(); // default but do it anyway
 
+
     // create our projection matrix
     // glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, 0.0f, 10000.0f); // TODO: we need to update this for the shader any time a resize occurs
     glm::mat4 proj = glm::ortho(-640.0f, 640.0f, 360.0f, -360.0f, 0.0f, 10000.0f);
@@ -115,12 +121,15 @@ s32 main(s32 argc, char **argv) {
     batch_renderer_init(r);
     batch_renderer_set_projection(r, proj);
 
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
     glClearColor(0.2, 0.1, 0.5, 1);
     glViewport(0, 0, 1280, 720); // TODO: resize
 
-    GLuint t_test = load_texture("res/textures/test.png");
-    GLuint t_stone = load_texture("res/textures/stone.png");
-    GLuint t_grass = load_texture("res/textures/grass.png");
+
+    load_tile_textures();
+
 
     glm::vec2 pos = {0, 0};
 
@@ -134,6 +143,7 @@ s32 main(s32 argc, char **argv) {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
+
         glm::vec2 dir = {0, 0};
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
         if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
@@ -141,84 +151,40 @@ s32 main(s32 argc, char **argv) {
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
         if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
 
-        batch_renderer_set_scale(r, scale);
-
-        batch_renderer_begin(r);
-
-        f32 x = pos.x;
-        f32 y = pos.y;
-
-        s32 vp_min_x = (s32) floor((x - 640.0f / scale) / TILE_SIZE);
-        s32 vp_min_y = (s32) floor((y - 360.0f / scale) / TILE_SIZE);
-        s32 vp_max_x = (s32) ceil((x + 640.0f / scale) / TILE_SIZE);
-        s32 vp_max_y = (s32) ceil((y + 360.0f / scale) / TILE_SIZE);
-
-        s32 vp_min_cx = (s32) floor((f32)vp_min_x / (f32)CHUNK_SIZE);
-        s32 vp_min_cy = (s32) floor((f32)vp_min_y / (f32)CHUNK_SIZE);
-        s32 vp_max_cx = (s32) ceil((f32)vp_max_x / (f32)CHUNK_SIZE);
-        s32 vp_max_cy = (s32) ceil((f32)vp_max_y / (f32)CHUNK_SIZE);
-
-        for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
-            for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
-                Chunk *c = world_get_chunk(&world, i, j);
-
-                for(s32 k = 0; k < CHUNK_SIZE; k++) {
-                    for(s32 l = 0; l < CHUNK_SIZE; l++) {
-                        f32 tx = ((i * CHUNK_SIZE) + k) * (f32)TILE_SIZE - x;
-                        f32 ty = ((j * CHUNK_SIZE) + l) * (f32)TILE_SIZE - y;
-
-                        if(
-                            tx + 2 * (TILE_SIZE * scale) < (-640.0f / scale) || 
-                            ty + 2 * (TILE_SIZE * scale) < (-360.0f / scale) || 
-                            tx - 2 * (TILE_SIZE * scale) > (640.0f / scale) || 
-                            ty - 2 * (TILE_SIZE * scale) > (360.0f / scale)
-                        ) continue;
-            
-                        GLuint tex;
-                        switch(c->tiles[k][l]) {
-                            case TILE_STONE: tex = t_stone; break;
-                            case TILE_GRASS: tex = t_grass; break;
-                            default: assert(0); break;
-                        }
-                        batch_renderer_push_textured_quad(r, tx, ty, TILE_SIZE, TILE_SIZE, tex);
-                    }
-                }
-            }
-        }
-
         if(glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) selected_tile_type = TILE_STONE;
         else if(glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) selected_tile_type = TILE_GRASS;
 
-        if(selected_tile_type != N_TILE_TYPES) {
-            f64 mx, my;
-            glfwGetCursorPos(window, &mx, &my);
 
-            f32 i = x + (mx - 640.0f) / scale;
-            f32 j = y + (my - 360.0f) / scale;
+        batch_renderer_set_scale(r, scale);
+        batch_renderer_begin(r);
+        {
+            world_render_around_player(&world, r, pos, scale);
 
-            s32 k = floor(i / TILE_SIZE);
-            s32 l = floor(j / TILE_SIZE);
+            if(selected_tile_type != N_TILE_TYPES) {
+                f64 mx, my;
+                glfwGetCursorPos(window, &mx, &my);
 
-            if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-                world_set_tile(&world, k, l, selected_tile_type);
+                f32 i = pos.x + (mx - 640.0f) / scale;
+                f32 j = pos.y + (my - 360.0f) / scale;
+
+                s32 k = floor(i / TILE_SIZE);
+                s32 l = floor(j / TILE_SIZE);
+
+                if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                    world_set_tile(&world, k, l, selected_tile_type);
+                }
+
+                f32 m = k * TILE_SIZE - pos.x;
+                f32 n = l * TILE_SIZE - pos.y;
+
+                batch_renderer_push_solid_quad(r, m, n, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 0.0f, 0.5f));
+                batch_renderer_push_textured_quad(r, m + TILE_SIZE/4, n + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2, &tile_texture_atlas, (u32)selected_tile_type);
             }
 
-            f32 m = k * TILE_SIZE - x;
-            f32 n = l * TILE_SIZE - y;
-
-            GLuint tex;
-            switch(selected_tile_type) {
-                case TILE_STONE: tex = t_stone; break;
-                case TILE_GRASS: tex = t_grass; break;
-                default: assert(0); break;
-            }
-            batch_renderer_push_solid_quad(r, m, n, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 0.0f, 0.5f));
-            batch_renderer_push_textured_quad(r, m + TILE_SIZE/4, n + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2, tex);
+            batch_renderer_push_solid_quad(r, -5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         }
-
-        batch_renderer_push_solid_quad(r, -5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
         auto per_frame_stats = batch_renderer_end_frame(r);
+
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -254,8 +220,9 @@ s32 main(s32 argc, char **argv) {
                 {
                     ImGui::Text("Info");
                     ImGui::Separator();
-                    ImGui::Text("Position: (%0.3f, %0.3f)", x, y);
+                    ImGui::Text("Position: (%0.3f, %0.3f)", pos.x, pos.y);
                     ImGui::Text("Scale: %0.3f", scale);
+                    ImGui::Text("Chunks: %d", hmlen(world.chunks));
                 }
                 ImGui::End();
             }
@@ -264,9 +231,13 @@ s32 main(s32 argc, char **argv) {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
         glfwSwapBuffers(window);
+
+        treset();
     }
 
     world_free(&world);
+
+    tfree();
 
     batch_renderer_free(r);
     free(r);

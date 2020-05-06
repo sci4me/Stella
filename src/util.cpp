@@ -20,34 +20,19 @@ char* read_entire_file(char *name) {
 }
 
 GLuint load_texture(const char *path) {
-    s32 w, h, n;
-    u8 *image = stbi_load(path, &w, &h, &n, 0);
+    s32 w, h, _n;
+    u8 *image = stbi_load(path, &w, &h, &_n, 4);
 
     if(!image) {
         fprintf(stderr, "Failed to load texture '%s'\n", path);
         exit(1);
     }
 
-    GLenum internal_format;
-    GLenum data_format;
-    switch(n) {
-        case 3:
-            internal_format = GL_RGB8;
-            data_format = GL_RGB;
-            break;
-        case 4:
-            internal_format = GL_RGBA8;
-            data_format = GL_RGBA;
-            break;
-        default:
-            assert(0);
-    }
-
     GLuint texture;
     glCreateTextures(GL_TEXTURE_2D, 1, &texture);
 
-    glTextureStorage2D(texture, 1, internal_format, w, h);
-    glTextureSubImage2D(texture, 0, 0, 0, w, h, data_format, GL_UNSIGNED_BYTE, image);
+    glTextureStorage2D(texture, 1, GL_RGBA8, w, h);
+    glTextureSubImage2D(texture, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, image);
 
     glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

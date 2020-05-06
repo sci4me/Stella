@@ -1,12 +1,20 @@
 #define TILE_SIZE 16.0f
-#define CHUNK_SIZE 16 // must be a power of 2!
+#define CHUNK_SIZE 32 // must be a power of 2!
 
 enum TileType {
-    TILE_STONE,
-    TILE_GRASS,
+    TILE_STONE = 0,
+    TILE_GRASS = 1,
 
     N_TILE_TYPES
 };
+
+Texture_Atlas tile_texture_atlas;
+
+void load_tile_textures() {
+    tile_texture_atlas.init(16, 16, 2, 2);
+    assert(tile_texture_atlas.add("res/textures/stone.png") == TILE_STONE);
+    assert(tile_texture_atlas.add("res/textures/grass.png") == TILE_GRASS);
+}
 
 struct World {
     siv::PerlinNoise noise;
@@ -85,4 +93,41 @@ void world_set_tile(World *w, s32 x, s32 y, TileType type) {
     assert(type != N_TILE_TYPES);
     Chunk *c = world_get_chunk_containing(w, x, y);
     c->tiles[x & CHUNK_SIZE-1][y & CHUNK_SIZE-1] = type;
+}
+
+void world_render_around_player(World *w, Batch_Renderer *r, glm::vec2 pos, f32 scale) {
+    f32 x = pos.x;
+    f32 y = pos.y;
+
+    s32 vp_min_x = (s32) floor((x - 640.0f / scale) / TILE_SIZE);
+    s32 vp_min_y = (s32) floor((y - 360.0f / scale) / TILE_SIZE);
+    s32 vp_max_x = (s32) ceil((x + 640.0f / scale) / TILE_SIZE);
+    s32 vp_max_y = (s32) ceil((y + 360.0f / scale) / TILE_SIZE);
+
+    s32 vp_min_cx = (s32) floor((f32)vp_min_x / (f32)CHUNK_SIZE);
+    s32 vp_min_cy = (s32) floor((f32)vp_min_y / (f32)CHUNK_SIZE);
+    s32 vp_max_cx = (s32) ceil((f32)vp_max_x / (f32)CHUNK_SIZE);
+    s32 vp_max_cy = (s32) ceil((f32)vp_max_y / (f32)CHUNK_SIZE);
+
+    for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
+        for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
+            Chunk *c = world_get_chunk(w, i, j);
+
+            for(s32 k = 0; k < CHUNK_SIZE; k++) {
+                for(s32 l = 0; l < CHUNK_SIZE; l++) {
+                    f32 tx = ((i * CHUNK_SIZE) + k) * (f32)TILE_SIZE - x;
+                    f32 ty = ((j * CHUNK_SIZE) + l) * (f32)TILE_SIZE - y;
+
+                    if(
+                        tx + 2 * (TILE_SIZE * scale) < (-640.0f / scale) || 
+                        ty + 2 * (TILE_SIZE * scale) < (-360.0f / scale) || 
+                        tx - 2 * (TILE_SIZE * scale) > (640.0f / scale) || 
+                        ty - 2 * (TILE_SIZE * scale) > (360.0f / scale)
+                    ) continue;
+        
+                    batch_renderer_push_textured_quad(r, tx, ty, TILE_SIZE, TILE_SIZE, &tile_texture_atlas, (u32)c->tiles[k][l]);
+                }
+            }
+        }
+    }
 }

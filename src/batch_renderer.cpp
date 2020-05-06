@@ -113,10 +113,8 @@ void batch_renderer_flush(Batch_Renderer *r) {
     glUseProgram(r->shader);
     glBindVertexArray(r->vao);
 
-    for(u32 i = 0; i < r->texture_count; i++) {
-        glActiveTexture(GL_TEXTURE0 + i);
+    for(u32 i = 0; i < r->texture_count; i++)
         glBindTextureUnit(i, r->textures[i]);
-    }
 
     glDrawElements(GL_TRIANGLES, r->index_count, GL_UNSIGNED_INT, 0);
 
@@ -166,7 +164,7 @@ inline void batch_renderer_push_index(Batch_Renderer *r, u32 i) {
     r->indices[r->index_count++] = i;
 }
 
-void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm::vec4 color, GLuint texture) {
+void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm::vec4 color, glm::vec2 uvs[4], GLuint texture) {
     batch_renderer_ensure_available(r, 4, 6);
 
     s32 tex_index = 0;
@@ -189,10 +187,10 @@ void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm
         }
     }
 
-    u32 tl = batch_renderer_push_vertex(r, {glm::vec2(x,     y    ), color, glm::vec2(0, 0), tex_index});
-    u32 tr = batch_renderer_push_vertex(r, {glm::vec2(x + w, y    ), color, glm::vec2(1, 0), tex_index});
-    u32 br = batch_renderer_push_vertex(r, {glm::vec2(x + w, y + h), color, glm::vec2(1, 1), tex_index});
-    u32 bl = batch_renderer_push_vertex(r, {glm::vec2(x,     y + h), color, glm::vec2(0, 1), tex_index});
+    u32 tl = batch_renderer_push_vertex(r, {glm::vec2(x,     y    ), color, uvs[0], tex_index});
+    u32 tr = batch_renderer_push_vertex(r, {glm::vec2(x + w, y    ), color, uvs[1], tex_index});
+    u32 br = batch_renderer_push_vertex(r, {glm::vec2(x + w, y + h), color, uvs[2], tex_index});
+    u32 bl = batch_renderer_push_vertex(r, {glm::vec2(x,     y + h), color, uvs[3], tex_index});
 
     batch_renderer_push_index(r, tl);
     batch_renderer_push_index(r, tr);
@@ -204,10 +202,25 @@ void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm
     r->per_frame_stats.quads++;
 }
 
+void batch_renderer_push_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm::vec4 color, GLuint texture) {
+    glm::vec2 uvs[] = {
+        glm::vec2(0.0f, 0.0f),
+        glm::vec2(1.0f, 0.0f),
+        glm::vec2(1.0f, 1.0f),
+        glm::vec2(0.0f, 1.0f)
+    };
+    batch_renderer_push_quad(r, x, y, w, h, color, uvs, texture);
+}
+
 void batch_renderer_push_solid_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, glm::vec4 color) {
     batch_renderer_push_quad(r, x, y, w, h, color, 0);
 }
 
 void batch_renderer_push_textured_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, GLuint texture) {
     batch_renderer_push_quad(r, x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), texture);
+}
+
+void batch_renderer_push_textured_quad(Batch_Renderer *r, f32 x, f32 y, f32 w, f32 h, Texture_Atlas *atlas, u32 id) {
+    auto entry = atlas->entries[id];
+    batch_renderer_push_quad(r, x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), entry.uvs, atlas->id);
 }
