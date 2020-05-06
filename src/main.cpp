@@ -46,9 +46,14 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 #endif
 
 f32 scale = 1.0f;
+bool show_debug_info = false;
 
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
     scale = clampf(scale + y * 0.05f, 0.25f, 5.0f);
+}
+
+void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mods) {
+    if(key == GLFW_KEY_F3 && action == GLFW_RELEASE) show_debug_info = !show_debug_info;
 }
 
 s32 main(s32 argc, char **argv) {
@@ -77,6 +82,7 @@ s32 main(s32 argc, char **argv) {
     glfwMakeContextCurrent(window);
 
     glfwSetScrollCallback(window, scroll_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW!\n");
@@ -188,16 +194,14 @@ s32 main(s32 argc, char **argv) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        {
+
+        if(show_debug_info) {
+            ImGui::SetNextWindowBgAlpha(0.5f);
+            ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav);
             {
-                ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
-                ImGui::SetNextWindowBgAlpha(0.35f);
-                ImGui::Begin("Metrics", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
-                {
-                    ImGui::Text("Metrics");
-                    
-                    ImGui::Separator();
-                    
+                ImGui::Dummy(ImVec2(100, 0));
+
+                if(ImGui::CollapsingHeader("Metrics")) {
                     ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
                     ImGui::Text("FPS: %.1f", io.Framerate);
                     
@@ -209,23 +213,16 @@ s32 main(s32 argc, char **argv) {
                     ImGui::Text("Textures: %u", per_frame_stats.textures);
                     ImGui::Text("Draw Calls: %u", per_frame_stats.draw_calls);
                 }
-                ImGui::End();
-            }
 
-            {
-                ImGui::SetNextWindowPos(ImVec2(10.0f, 180.0f), ImGuiCond_Always, ImVec2(0.0f, 0.0f));
-                ImGui::SetNextWindowBgAlpha(0.35f);
-                ImGui::Begin("Info", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
-                {
-                    ImGui::Text("Info");
-                    ImGui::Separator();
+                if(ImGui::CollapsingHeader("World")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", pos.x, pos.y);
                     ImGui::Text("Scale: %0.3f", scale);
                     ImGui::Text("Chunks: %d", hmlen(world.chunks));
                 }
-                ImGui::End();
             }
+            ImGui::End();
         }
+    
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
