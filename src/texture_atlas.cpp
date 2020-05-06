@@ -54,17 +54,14 @@ struct Texture_Atlas {
         u32 row = index / columns;
         u32 x = col * sprite_width;
         u32 y = row * sprite_height;
-
         glTextureSubImage2D(id, 0, x, y, sprite_width, sprite_height, data_format, GL_UNSIGNED_BYTE, image);
 
         u32 atlas_width = sprite_width * columns;
         u32 atlas_height = sprite_height * rows;
-
         f32 u1 = ((f32) x) / ((f32) atlas_width);
         f32 v1 = ((f32) y) / ((f32) atlas_height);
         f32 u2 = ((f32) (x + sprite_width)) / ((f32) atlas_width);
         f32 v2 = ((f32) (y + sprite_height)) / ((f32) atlas_height);
-
         Texture_Atlas_Entry entry = {
             this,
             {
