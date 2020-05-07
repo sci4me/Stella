@@ -1,6 +1,6 @@
 #version 440 core
 
-layout(location = 2) uniform sampler2D u_textures[16];
+uniform sampler2D u_textures[16];
 
 in vec4 pass_color;
 in vec2 pass_uv;

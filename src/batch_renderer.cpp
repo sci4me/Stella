@@ -18,7 +18,10 @@ struct Batch_Renderer {
     static const u32 MAX_TEXTURE_SLOTS = 16; // TODO
 
     GLuint shader;
-    
+    GLint u_textures;
+    GLint u_proj;
+    GLint u_view;
+
     GLuint textures[MAX_TEXTURE_SLOTS];
     GLuint white_texture;
     u32 texture_count;
@@ -36,11 +39,14 @@ struct Batch_Renderer {
 
     void init() {
         shader = load_shader_program("batch", VERTEX_SHADER | FRAGMENT_SHADER);
+        u_textures = glGetUniformLocation(shader, "u_textures");
+        u_proj = glGetUniformLocation(shader, "u_proj");
+        u_view = glGetUniformLocation(shader, "u_view");
 
         s32 samplers[MAX_TEXTURE_SLOTS];
         for(s32 i = 0; i < MAX_TEXTURE_SLOTS; i++) 
             samplers[i] = i;
-        glProgramUniform1iv(shader, 2, MAX_TEXTURE_SLOTS, samplers);
+        glProgramUniform1iv(shader, u_textures, MAX_TEXTURE_SLOTS, samplers);
 
         glCreateTextures(GL_TEXTURE_2D, 1, &white_texture);
         glTextureStorage2D(white_texture, 1, GL_RGBA8, 1, 1);
@@ -86,11 +92,11 @@ struct Batch_Renderer {
     }
 
     void set_projection(glm::mat4 proj) {
-        glProgramUniformMatrix4fv(shader, 0, 1, GL_FALSE, glm::value_ptr(proj));
+        glProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, glm::value_ptr(proj));
     }
 
-    void set_scale(f32 zoom) {
-        glProgramUniform1f(shader, 1, zoom);
+    void set_view(glm::mat4 proj) {
+        glProgramUniformMatrix4fv(shader, u_view, 1, GL_FALSE, glm::value_ptr(proj));
     }
 
     void flush() {

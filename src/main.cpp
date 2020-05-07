@@ -129,7 +129,9 @@ s32 main(s32 argc, char **argv) {
 
 
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquation(GL_FUNC_ADD);
+
     glClearColor(0.2, 0.1, 0.5, 1);
     glViewport(0, 0, 1280, 720); // TODO: resize
 
@@ -141,8 +143,6 @@ s32 main(s32 argc, char **argv) {
 
     World world;
     world.init();
-
-    TileType selected_tile_type = N_TILE_TYPES;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -157,44 +157,39 @@ s32 main(s32 argc, char **argv) {
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
         if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
 
-        if(glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) selected_tile_type = TILE_STONE;
-        else if(glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) selected_tile_type = TILE_GRASS;
-
-
-        r->set_scale(scale);
-        r->begin();
-        {
-            world.render_around_player(r, pos, scale);
-
-            if(selected_tile_type != N_TILE_TYPES) {
-                f64 mx, my;
-                glfwGetCursorPos(window, &mx, &my);
-
-                f32 i = pos.x + (mx - 640.0f) / scale;
-                f32 j = pos.y + (my - 360.0f) / scale;
-
-                s32 k = floor(i / TILE_SIZE);
-                s32 l = floor(j / TILE_SIZE);
-
-                if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-                    world.set_tile(k, l, selected_tile_type);
-                }
-
-                f32 m = k * TILE_SIZE - pos.x;
-                f32 n = l * TILE_SIZE - pos.y;
-
-                r->push_solid_quad(m, n, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 0.0f, 0.5f));
-                r->push_textured_quad(m + TILE_SIZE/4, n + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2, &tile_textures[(u32)selected_tile_type]);
-            }
-
-            r->push_solid_quad(-5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        }
-        auto per_frame_stats = r->end_frame();
-
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+
+        // r->set_view(
+        //     glm::scale(
+        //         glm::translate(
+        //             glm::mat4(1.0f),
+        //             glm::vec3(-pos.x, -pos.y, 0.0f)
+        //         ),
+        //         glm::vec3(scale, scale, 0.0f)
+        //     )
+        // );
+        r->set_view(
+            glm::translate(
+                glm::scale(
+                    glm::mat4(1.0f),
+                    glm::vec3(scale, scale, 1.0f)
+                ),
+                glm::vec3(-pos.x, -pos.y, 0.0f)
+            )
+        );
+
+        r->begin();
+        {
+            world.render_around(r, pos, scale);
+
+            r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        }
+        auto per_frame_stats = r->end_frame();
+
 
         if(show_debug_info) {
             ImGui::SetNextWindowBgAlpha(0.5f);
