@@ -150,7 +150,7 @@ s32 main(s32 argc, char **argv) {
     load_tile_textures();
 
 
-    glm::vec2 pos = {0, 0};
+    glm::vec2 pos = {0, 8};
 
     World world;
     world.init();
