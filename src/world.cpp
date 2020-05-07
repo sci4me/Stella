@@ -8,12 +8,13 @@ enum TileType {
     N_TILE_TYPES
 };
 
-Texture_Atlas tile_texture_atlas;
+// TODO: Convert this to a texture atlas once
+//       we figure out how to fix the artifacts...
+GLuint tile_textures[N_TILE_TYPES];
 
 void load_tile_textures() {
-    tile_texture_atlas.init(16, 16, 2, 2);
-    assert(tile_texture_atlas.add("res/textures/stone.png") == TILE_STONE);
-    assert(tile_texture_atlas.add("res/textures/grass.png") == TILE_GRASS);
+    tile_textures[TILE_STONE] = load_texture("res/textures/stone.png");
+    tile_textures[TILE_GRASS] = load_texture("res/textures/grass.png");
 }
 
 struct World {
@@ -86,16 +87,20 @@ Chunk* world_get_chunk_containing(World *w, s32 x, s32 y) {
 
 TileType world_get_tile(World *w, s32 x, s32 y) {
     Chunk *c = world_get_chunk_containing(w, x, y);
-    return c->tiles[x & CHUNK_SIZE-1][y & CHUNK_SIZE-1];
+    return c->tiles[x & (CHUNK_SIZE-1)][y & (CHUNK_SIZE-1)];
 }
 
 void world_set_tile(World *w, s32 x, s32 y, TileType type) {
     assert(type != N_TILE_TYPES);
     Chunk *c = world_get_chunk_containing(w, x, y);
-    c->tiles[x & CHUNK_SIZE-1][y & CHUNK_SIZE-1] = type;
+    c->tiles[x & (CHUNK_SIZE-1)][y & (CHUNK_SIZE-1)] = type;
 }
 
 void world_render_around_player(World *w, Batch_Renderer *r, glm::vec2 pos, f32 scale) {
+    // TODO: Make this actually correct, lol.
+    //       Currently it "works" well enough, but...
+    //       there are artifacts, etc.
+
     f32 x = pos.x;
     f32 y = pos.y;
 
@@ -125,7 +130,7 @@ void world_render_around_player(World *w, Batch_Renderer *r, glm::vec2 pos, f32 
                         ty - 2 * (TILE_SIZE * scale) > (360.0f / scale)
                     ) continue;
         
-                    r->push_textured_quad(tx, ty, TILE_SIZE, TILE_SIZE, &tile_texture_atlas, (u32)c->tiles[k][l]);
+                    r->push_textured_quad(tx, ty, TILE_SIZE, TILE_SIZE, tile_textures[(u32)c->tiles[k][l]]);
                 }
             }
         }

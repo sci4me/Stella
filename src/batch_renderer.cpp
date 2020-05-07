@@ -127,9 +127,7 @@ struct Batch_Renderer {
         glBindVertexArray(0);
         glUseProgram(0);
 
-        vertex_count = 0;
-        index_count = 0;
-        texture_count = 1;
+        begin(); // this is a bit weird but it's correct
     }
 
     void ensure_available(u32 v, u32 i) {
@@ -139,6 +137,8 @@ struct Batch_Renderer {
     }
 
     void begin() {
+        if(texture_count > per_frame_stats.textures) per_frame_stats.textures = texture_count;
+
         vertex_count = 0;
         index_count = 0;
         texture_count = 1;
@@ -161,6 +161,9 @@ struct Batch_Renderer {
     }
 
     inline void push_index(u32 i) {
+        // Remove this assertion if we ever need the ability
+        // to push indices before vertices...
+        assert(i < vertex_count);
         indices[index_count++] = i;
     }
 
@@ -180,7 +183,6 @@ struct Batch_Renderer {
                     textures[texture_count] = texture;
                     tex_index = texture_count;
                     texture_count++;
-                    per_frame_stats.textures++;
                 } else {
                     assert(0); // TODO
                 }
