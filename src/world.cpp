@@ -125,7 +125,7 @@ void world_render_around_player(World *w, Batch_Renderer *r, glm::vec2 pos, f32 
                         ty - 2 * (TILE_SIZE * scale) > (360.0f / scale)
                     ) continue;
         
-                    batch_renderer_push_textured_quad(r, tx, ty, TILE_SIZE, TILE_SIZE, &tile_texture_atlas, (u32)c->tiles[k][l]);
+                    r->push_textured_quad(tx, ty, TILE_SIZE, TILE_SIZE, &tile_texture_atlas, (u32)c->tiles[k][l]);
                 }
             }
         }

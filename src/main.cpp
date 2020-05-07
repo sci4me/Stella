@@ -123,8 +123,8 @@ s32 main(s32 argc, char **argv) {
 
     // set up batch renderer
     Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
-    batch_renderer_init(r);
-    batch_renderer_set_projection(r, proj);
+    r->init();
+    r->set_projection(proj);
 
 
     glEnable(GL_BLEND);
@@ -160,8 +160,8 @@ s32 main(s32 argc, char **argv) {
         else if(glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) selected_tile_type = TILE_GRASS;
 
 
-        batch_renderer_set_scale(r, scale);
-        batch_renderer_begin(r);
+        r->set_scale(scale);
+        r->begin();
         {
             world_render_around_player(&world, r, pos, scale);
 
@@ -182,13 +182,13 @@ s32 main(s32 argc, char **argv) {
                 f32 m = k * TILE_SIZE - pos.x;
                 f32 n = l * TILE_SIZE - pos.y;
 
-                batch_renderer_push_solid_quad(r, m, n, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 0.0f, 0.5f));
-                batch_renderer_push_textured_quad(r, m + TILE_SIZE/4, n + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2, &tile_texture_atlas, (u32)selected_tile_type);
+                r->push_solid_quad(m, n, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 0.0f, 0.5f));
+                r->push_textured_quad(m + TILE_SIZE/4, n + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2, &tile_texture_atlas, (u32)selected_tile_type);
             }
 
-            batch_renderer_push_solid_quad(r, -5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+            r->push_solid_quad(-5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         }
-        auto per_frame_stats = batch_renderer_end_frame(r);
+        auto per_frame_stats = r->end_frame();
 
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -197,8 +197,7 @@ s32 main(s32 argc, char **argv) {
 
         if(show_debug_info) {
             ImGui::SetNextWindowBgAlpha(0.5f);
-            ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav);
-            {
+            if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
                 ImGui::Dummy(ImVec2(100, 0));
 
                 if(ImGui::CollapsingHeader("Metrics")) {
@@ -235,7 +234,7 @@ s32 main(s32 argc, char **argv) {
 
     tfree();
 
-    batch_renderer_free(r);
+    r->free();
     free(r);
 
     ImGui_ImplOpenGL3_Shutdown();
