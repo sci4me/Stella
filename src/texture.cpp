@@ -38,50 +38,45 @@ struct Texture {
     }
 };
 
-f32 square(f32 x) { return x * x; } 
+inline f32 square(f32 x) { return x * x; } 
 
-/*
-glm::vec4 rgba255_to_linear(u32 c) {
+inline glm::vec4 rgba255_to_rgba1(u32 c) {
     u8 r = (c & 0xFF000000) >> 24;
     u8 g = (c & 0x00FF0000) >> 16;
     u8 b = (c & 0x0000FF00) >> 8;
     u8 a = c & 0xFF;
     return {
-        square((f32)r / 255.0f),
-        square((f32)g / 255.0f),
-        square((f32)b / 255.0f),
+        (f32)r / 255.0f,
+        (f32)g / 255.0f,
+        (f32)b / 255.0f,
         (f32)a / 255.0f
     };
 }
 
-u32 linear_to_rgba255(glm::vec4 c) {
-    u8 r = (u8) (sqrtf(c.x) * 255.0f);
-    u8 g = (u8) (sqrtf(c.y) * 255.0f);
-    u8 b = (u8) (sqrtf(c.z) * 255.0f);
+inline u32 rgba1_to_rgba255(glm::vec4 c) {
+    u8 r = (u8) (c.x * 255.0f);
+    u8 g = (u8) (c.y * 255.0f);
+    u8 b = (u8) (c.z * 255.0f);
     u8 a = (u8) (c.w * 255.0f);
     return r << 24 | g << 16 | b << 8 | a;
 }
-*/
 
-glm::vec4 rgba255_to_linear(u32 c) {
-    u8 r = (c & 0xFF000000) >> 24;
-    u8 g = (c & 0x00FF0000) >> 16;
-    u8 b = (c & 0x0000FF00) >> 8;
-    u8 a = c & 0xFF;
+inline glm::vec4 rgba1_to_linear(glm::vec4 c) {
     return {
-        powf((f32)r / 255.0f, 2.2f),
-        powf((f32)g / 255.0f, 2.2f),
-        powf((f32)b / 255.0f, 2.2f),
-        (f32)a / 255.0f
+        square(c.x),
+        square(c.y),
+        square(c.z),
+        c.w
     };
 }
 
-u32 linear_to_rgba255(glm::vec4 c) {
-    u8 r = (u8) (powf(c.x, 1.0f/2.2f) * 255.0f);
-    u8 g = (u8) (powf(c.y, 1.0f/2.2f) * 255.0f);
-    u8 b = (u8) (powf(c.z, 1.0f/2.2f) * 255.0f);
-    u8 a = (u8) (c.w * 255.0f);
-    return r << 24 | g << 16 | b << 8 | a;
+inline glm::vec4 linear_to_rgba1(glm::vec4 c) {
+    return {
+        sqrtf(c.x),
+        sqrtf(c.y),
+        sqrtf(c.z),
+        c.w
+    };
 }
 
 void downsample_2x_in_place(u8 *image, u32 size) {
@@ -95,14 +90,14 @@ void downsample_2x_in_place(u8 *image, u32 size) {
         u32 *source_pixel_1 = source_row + size;
         
         for(u32 x = 0; x < result_size; x++) {
-            auto p00 = rgba255_to_linear(*source_pixel_0++);
-            auto p10 = rgba255_to_linear(*source_pixel_0++);
-            auto p01 = rgba255_to_linear(*source_pixel_1++);
-            auto p11 = rgba255_to_linear(*source_pixel_1++);
+            auto p00 = rgba1_to_linear(rgba255_to_rgba1(*source_pixel_0++));
+            auto p10 = rgba1_to_linear(rgba255_to_rgba1(*source_pixel_0++));
+            auto p01 = rgba1_to_linear(rgba255_to_rgba1(*source_pixel_1++));
+            auto p11 = rgba1_to_linear(rgba255_to_rgba1(*source_pixel_1++));
 
-            auto c = 0.25f * (p00 + p10 + p01 + p11);
+            auto c = (p00 + p10 + p01 + p11) / 4.0f;
 
-            *dest_pixel++ = linear_to_rgba255(c);
+            *dest_pixel++ = rgba1_to_rgba255(linear_to_rgba1(c));
         }
 
         source_row += 2 * size;
