@@ -139,7 +139,7 @@ s32 main(s32 argc, char **argv) {
     glm::vec2 pos = {0, 0};
 
     World world;
-    world_init(&world);
+    world.init();
 
     TileType selected_tile_type = N_TILE_TYPES;
 
@@ -163,7 +163,7 @@ s32 main(s32 argc, char **argv) {
         r->set_scale(scale);
         r->begin();
         {
-            world_render_around_player(&world, r, pos, scale);
+            world.render_around_player(r, pos, scale);
 
             if(selected_tile_type != N_TILE_TYPES) {
                 f64 mx, my;
@@ -176,7 +176,7 @@ s32 main(s32 argc, char **argv) {
                 s32 l = floor(j / TILE_SIZE);
 
                 if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-                    world_set_tile(&world, k, l, selected_tile_type);
+                    world.set_tile(k, l, selected_tile_type);
                 }
 
                 f32 m = k * TILE_SIZE - pos.x;
@@ -230,7 +230,7 @@ s32 main(s32 argc, char **argv) {
         treset();
     }
 
-    world_free(&world);
+    world.free();
 
     tfree();
 
