@@ -51,8 +51,6 @@ struct Batch_Renderer {
         glTextureParameteri(white_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTextureParameteri(white_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(white_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        textures[0] = white_texture;
-        texture_count = 1;
 
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
@@ -141,7 +139,7 @@ struct Batch_Renderer {
 
         vertex_count = 0;
         index_count = 0;
-        texture_count = 1;
+        texture_count = 0;
     }
 
     void end() {
@@ -155,6 +153,7 @@ struct Batch_Renderer {
         return stats;
     }
 
+private:
     inline u32 push_vertex(Vertex v) {
         vertices[vertex_count] = v;
         return vertex_count++;
@@ -166,6 +165,7 @@ struct Batch_Renderer {
         assert(i < vertex_count);
         indices[index_count++] = i;
     }
+public:
 
     void push_quad(f32 x, f32 y, f32 w, f32 h, glm::vec4 color, glm::vec2 uvs[4], GLuint texture) {
         ensure_available(4, 6);
@@ -215,7 +215,7 @@ struct Batch_Renderer {
     }
 
     void push_solid_quad(f32 x, f32 y, f32 w, f32 h, glm::vec4 color) {
-        push_quad(x, y, w, h, color, 0);
+        push_quad(x, y, w, h, color, white_texture);
     }
 
     void push_textured_quad(f32 x, f32 y, f32 w, f32 h, GLuint texture) {
