@@ -19,31 +19,6 @@ char* read_entire_file(char *name) {
     return code;
 }
 
-GLuint load_texture(const char *path) {
-    s32 w, h, _n;
-    u8 *image = stbi_load(path, &w, &h, &_n, 4);
-
-    if(!image) {
-        fprintf(stderr, "Failed to load texture '%s'\n", path);
-        exit(1);
-    }
-
-    GLuint texture;
-    glCreateTextures(GL_TEXTURE_2D, 1, &texture);
-
-    glTextureStorage2D(texture, 1, GL_RGBA8, w, h);
-    glTextureSubImage2D(texture, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-    glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    stbi_image_free(image);
-
-    return texture;
-}
-
 f32 randf32() {
     // TODO REMOVEME
     return (f32)rand() / (f32)RAND_MAX;

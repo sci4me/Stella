@@ -9,11 +9,11 @@ enum TileType {
 
 // TODO: Convert this to a texture atlas once
 //       we figure out how to fix the artifacts...
-GLuint tile_textures[N_TILE_TYPES];
+Texture tile_textures[N_TILE_TYPES];
 
 void load_tile_textures() {
-    tile_textures[TILE_STONE] = load_texture("res/textures/stone.png");
-    tile_textures[TILE_GRASS] = load_texture("res/textures/grass.png");
+    tile_textures[TILE_STONE] = load_texture_from_file("res/textures/stone.png");
+    tile_textures[TILE_GRASS] = load_texture_from_file("res/textures/grass.png");
 }
 
 struct Chunk {
@@ -116,7 +116,7 @@ struct World {
                             ty - 2 * (TILE_SIZE * scale) > (360.0f / scale)
                         ) continue;
             
-                        r->push_textured_quad(tx, ty, TILE_SIZE, TILE_SIZE, tile_textures[(u32)c->tiles[k][l]]);
+                        r->push_textured_quad(tx, ty, TILE_SIZE, TILE_SIZE, &tile_textures[(u32)c->tiles[k][l]]);
                     }
                 }
             }

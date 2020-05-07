@@ -219,6 +219,10 @@ public:
         push_quad(x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), texture);
     }
 
+    void push_textured_quad(f32 x, f32 y, f32 w, f32 h, Texture *texture) {
+        push_quad(x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), texture->id);
+    }
+
     void push_textured_quad(f32 x, f32 y, f32 w, f32 h, Texture_Atlas *atlas, u32 id) {
         auto entry = atlas->entries[id];
         push_quad(x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), entry.uvs, atlas->id);

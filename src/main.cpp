@@ -30,6 +30,7 @@
 
 #include "util.cpp"
 #include "shader.cpp"
+#include "texture.cpp"
 #include "texture_atlas.cpp"
 #include "batch_renderer.cpp"
 #include "world.cpp"
@@ -183,7 +184,7 @@ s32 main(s32 argc, char **argv) {
                 f32 n = l * TILE_SIZE - pos.y;
 
                 r->push_solid_quad(m, n, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 0.0f, 0.5f));
-                r->push_textured_quad(m + TILE_SIZE/4, n + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2, tile_textures[(u32)selected_tile_type]);
+                r->push_textured_quad(m + TILE_SIZE/4, n + TILE_SIZE/4, TILE_SIZE/2, TILE_SIZE/2, &tile_textures[(u32)selected_tile_type]);
             }
 
             r->push_solid_quad(-5, -5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
