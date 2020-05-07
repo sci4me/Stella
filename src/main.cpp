@@ -209,7 +209,6 @@ s32 main(s32 argc, char **argv) {
                     ImGui::Text("Quads: %u", per_frame_stats.quads);
                     ImGui::Text("Vertices: %u", per_frame_stats.vertices);
                     ImGui::Text("Indices: %u", per_frame_stats.indices);
-                    ImGui::Text("Textures: %u", per_frame_stats.textures);
                     ImGui::Text("Draw Calls: %u", per_frame_stats.draw_calls);
                 }
 

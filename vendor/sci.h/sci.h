@@ -16,6 +16,7 @@ TODO:
  - More #defines
     For example, the ability to enable/disable parts of the library
  - Allow Arenas to have different block sizes?
+ - Better C++ support
 
 */
 
@@ -23,6 +24,8 @@ TODO:
 #define SCI_H
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 //
@@ -214,14 +217,24 @@ void treset(void) {
 void* talloc(u64 x) {
     u64 n = (x + (SCI_H_ARENA_ALIGNMENT-1)) & ~(SCI_H_ARENA_ALIGNMENT-1);
 
-#ifdef SCI_H_TEMP_STORAGE_ASSERT_NO_OVERRUN
-    assert(n <= (SCI_H_TEMP_STORAGE_SIZE - sci__temporary_storage_used));
-#else
-    return calloc(n, sizeof(u8));
-#endif
+    if(sci__temporary_storage_used + n > SCI_H_TEMP_STORAGE_SIZE) {
+        #ifdef SCI_H_TEMP_STORAGE_ASSERT_NO_OVERRUN
+            assert(n <= (SCI_H_TEMP_STORAGE_SIZE - sci__temporary_storage_used));
+        #endif        
+
+        fprintf(stderr, "WARNING: talloc requested %llu (%llu, aligned) bytes but only %llu were available; spilled to heap!\n", n, x, SCI_H_TEMP_STORAGE_SIZE - sci__temporary_storage_used);
+        return calloc(n, sizeof(u8));
+    }
 
     u8 *result = sci__temporary_storage_buffer + sci__temporary_storage_used;
     sci__temporary_storage_used += n;
+
+    // NOTE: We use `n` instead of `x` here. Not 100% sure why I made this choice but I did.
+    // I was drunk, so, it's between God and I.
+    // And well, actually, probably by the time anyone reads this, only God will know.
+    // #YayUselessDrunkComments #BestBrogrammerEvar2k20
+    memset(result, 0, n);
+
     return result;
 }
 

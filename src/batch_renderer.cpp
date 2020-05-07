@@ -10,7 +10,6 @@ struct Batch_Renderer {
         u32 quads;
         u32 vertices;
         u32 indices;
-        u32 textures;
         u32 draw_calls;
     };
 
@@ -135,8 +134,6 @@ struct Batch_Renderer {
     }
 
     void begin() {
-        if(texture_count > per_frame_stats.textures) per_frame_stats.textures = texture_count;
-
         vertex_count = 0;
         index_count = 0;
         texture_count = 0;
