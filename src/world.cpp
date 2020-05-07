@@ -86,14 +86,17 @@ struct World {
         c->tiles[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)][layer] = type;
     }
 
-    void render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale) {
+    void render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height) {
         f32 x = pos.x * scale;
         f32 y = pos.y * scale;
 
-        s32 vp_min_x = (s32) floor(((x - 640.0f) / scale) / TILE_SIZE);
-        s32 vp_min_y = (s32) floor(((y - 360.0f) / scale) / TILE_SIZE);
-        s32 vp_max_x = (s32) ceil(((x + 640.0f) / scale) / TILE_SIZE);
-        s32 vp_max_y = (s32) ceil(((y + 360.0f) / scale) / TILE_SIZE);
+        s32 half_window_width = window_width / 2;
+        s32 half_window_height = window_height / 2;
+
+        s32 vp_min_x = (s32) floor(((x - half_window_width) / scale) / TILE_SIZE);
+        s32 vp_min_y = (s32) floor(((y - half_window_height) / scale) / TILE_SIZE);
+        s32 vp_max_x = (s32) ceil(((x + half_window_width) / scale) / TILE_SIZE);
+        s32 vp_max_y = (s32) ceil(((y + half_window_height) / scale) / TILE_SIZE);
 
         s32 vp_min_cx = (s32) floor((f32)vp_min_x / (f32)Chunk::SIZE);
         s32 vp_min_cy = (s32) floor((f32)vp_min_y / (f32)Chunk::SIZE);

@@ -46,8 +46,14 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 }
 #endif
 
+
+s32 window_width = 1280;
+s32 window_height = 720;
+bool window_resized = true;
+
 f32 scale = 1.0f;
 bool show_debug_info = false;
+
 
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
     scale = clampf(scale + y * 0.05f, 0.25f, 5.0f);
@@ -57,14 +63,19 @@ void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mod
     if(key == GLFW_KEY_F3 && action == GLFW_RELEASE) show_debug_info = !show_debug_info;
 }
 
+void window_size_callback(GLFWwindow* window, s32 width, s32 height) {
+    window_width = width;
+    window_height = height;
+    window_resized = true;
+}
+
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
         return 1;
     }
 
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO
-    glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, 1); // TODO: GLFW_TRUE instead of 1?
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -73,7 +84,7 @@ s32 main(s32 argc, char **argv) {
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
     #endif
 
-    GLFWwindow *window = glfwCreateWindow(1280, 720, "Stella", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(window_width, window_height, "Stella", nullptr, nullptr);
     if (!window) {
         fprintf(stderr, "Failed to create GLFW window!");
         glfwTerminate();
@@ -84,6 +95,7 @@ s32 main(s32 argc, char **argv) {
 
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetKeyCallback(window, key_callback);
+    glfwSetWindowSizeCallback(window, window_size_callback);
 
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW!\n");
@@ -118,14 +130,10 @@ s32 main(s32 argc, char **argv) {
     ImGui::StyleColorsDark(); // default but do it anyway
 
 
-    // create our projection matrix
-    // glm::mat4 proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, 0.0f, 10000.0f); // TODO: we need to update this for the shader any time a resize occurs
-    glm::mat4 proj = glm::ortho(-640.0f, 640.0f, 360.0f, -360.0f, 0.0f, 10000.0f);
 
     // set up batch renderer
     Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
     r->init();
-    r->set_projection(proj);
 
 
     glEnable(GL_BLEND);
@@ -133,7 +141,6 @@ s32 main(s32 argc, char **argv) {
     glBlendEquation(GL_FUNC_ADD);
 
     glClearColor(0.2, 0.1, 0.5, 1);
-    glViewport(0, 0, 1280, 720); // TODO: resize
 
 
     load_tile_textures();
@@ -146,6 +153,13 @@ s32 main(s32 argc, char **argv) {
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+
+        if(window_resized) {
+            window_resized = false;
+
+            glViewport(0, 0, window_width, window_height);
+            r->set_projection(glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f));
+        }
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -163,28 +177,19 @@ s32 main(s32 argc, char **argv) {
         ImGui::NewFrame();
 
 
-        // r->set_view(
-        //     glm::scale(
-        //         glm::translate(
-        //             glm::mat4(1.0f),
-        //             glm::vec3(-pos.x, -pos.y, 0.0f)
-        //         ),
-        //         glm::vec3(scale, scale, 0.0f)
-        //     )
-        // );
         r->set_view(
             glm::translate(
                 glm::scale(
                     glm::mat4(1.0f),
                     glm::vec3(scale, scale, 1.0f)
                 ),
-                glm::vec3(-pos.x, -pos.y, 0.0f)
+                glm::vec3(window_width/2/scale -pos.x, window_height/2/scale -pos.y, 0.0f)
             )
         );
 
         r->begin();
         {
-            world.render_around(r, pos, scale);
+            world.render_around(r, pos, scale, window_width, window_height);
 
             r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         }
