@@ -1,5 +1,7 @@
 @echo off
 
+ctime -begin stella.ctm
+
 set BasePath=%~dp0
 set VendorPath=%BasePath%vendor
 
@@ -20,4 +22,7 @@ if not exist build mkdir build
 REM remove the pushd/popd! it's more annoyance than it's worth
 pushd build
 cl %CFlags% %Includes% %BasePath%src\main.cpp /link %LDFlags% %Libs%
+set LastError=%ERRORLEVEL%
 popd
+
+ctime -end stella.ctm %LastError%

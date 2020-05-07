@@ -49,6 +49,10 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 
 s32 window_width = 1280;
 s32 window_height = 720;
+
+// Set to true so that we don't have to do
+// any sizing code before the main loop.
+//          - sci4me, 5/7/20
 bool window_resized = true;
 
 f32 scale = 1.0f;
