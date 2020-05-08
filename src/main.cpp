@@ -56,7 +56,13 @@ s32 window_height = 720;
 bool window_resized = true;
 
 f32 scale = 1.0f;
-bool show_debug_info = false;
+
+bool show_debug_window = true;
+
+bool vsync = true;
+
+bool fullscreen_changed = false;
+bool fullscreen = false;
 
 
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
@@ -64,7 +70,12 @@ void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
 }
 
 void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mods) {
-    if(key == GLFW_KEY_F3 && action == GLFW_RELEASE) show_debug_info = !show_debug_info;
+    if(key == GLFW_KEY_F3 && action == GLFW_RELEASE) show_debug_window = !show_debug_window;
+
+    if(key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
+        fullscreen = !fullscreen;
+        fullscreen_changed = true;
+    }
 }
 
 void window_size_callback(GLFWwindow* window, s32 width, s32 height) {
@@ -165,6 +176,24 @@ s32 main(s32 argc, char **argv) {
             r->set_projection(glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f));
         }
 
+        if(fullscreen_changed) {
+            fullscreen_changed = false;
+
+            static s32 wx, wy, ww, wh;
+            if(fullscreen) {
+                glfwGetWindowPos(window, &wx, &wy);
+                glfwGetWindowSize(window, &ww, &wh);
+
+                auto monitor = glfwGetPrimaryMonitor();
+                auto mode = glfwGetVideoMode(monitor);
+                glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, 0);
+            } else {
+                glfwSetWindowMonitor(window, nullptr, wx, wy, ww, wh, 0);
+            }
+
+            continue;
+        }
+
         glClear(GL_COLOR_BUFFER_BIT);
 
 
@@ -200,7 +229,7 @@ s32 main(s32 argc, char **argv) {
         auto per_frame_stats = r->end_frame();
 
 
-        if(show_debug_info) {
+        if(show_debug_window) {
             ImGui::SetNextWindowBgAlpha(0.5f);
             if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
                 ImGui::Dummy(ImVec2(100, 0));
@@ -221,6 +250,13 @@ s32 main(s32 argc, char **argv) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", pos.x, pos.y);
                     ImGui::Text("Scale: %0.3f", scale);
                     ImGui::Text("Chunks: %d", hmlen(world.chunks));
+                }
+
+                if(ImGui::CollapsingHeader("Settings")) {
+                    if(ImGui::Checkbox("V-SYNC", &vsync)) {
+                        if(vsync) glfwSwapInterval(1);
+                        else      glfwSwapInterval(0);
+                    }
                 }
             }
             ImGui::End();
