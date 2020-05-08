@@ -14,9 +14,11 @@ enum TileType {
 Texture tile_textures[N_TILE_TYPES];
 
 void load_tile_textures() {
-    tile_textures[TILE_STONE]       = load_texture_from_file("res/textures/stone.png", true);
-    tile_textures[TILE_GRASS]       = load_texture_from_file("res/textures/grass.png", true);
-    tile_textures[TILE_COAL_ORE]    = load_texture_from_file("res/textures/coal_ore.png", true); 
+    constexpr bool MIPS = true;
+
+    tile_textures[TILE_STONE]       = load_texture_from_file("res/textures/stone.png", MIPS);
+    tile_textures[TILE_GRASS]       = load_texture_from_file("res/textures/grass.png", MIPS);
+    tile_textures[TILE_COAL_ORE]    = load_texture_from_file("res/textures/coal_ore.png", MIPS); 
 }
 
 struct Chunk {
