@@ -108,11 +108,11 @@ void alpha_premultiply(u32 *image, u32 w, u32 h) {
     u32 *pixel = image;
     for(u32 y = 0; y < h; y++) {
         for(u32 x = 0; x < w; x++) {
-            auto p = rgba255_to_rgba1(*pixel);
+            auto p = rgba1_to_linear(rgba255_to_rgba1(*pixel));
             p.x *= p.w;
             p.y *= p.w;
             p.z *= p.w;
-            *pixel++ = rgba1_to_rgba255(p);
+            *pixel++ = rgba1_to_rgba255(linear_to_rgba1(p));
         }
     }
 }
