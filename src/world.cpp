@@ -1,6 +1,6 @@
-#define TILE_SIZE 16.0f
+#define TILE_SIZE 32.0f
 
-enum TileType {
+enum TileType : u8 {
     TILE_NONE,
     TILE_STONE,
     TILE_GRASS,
@@ -22,7 +22,7 @@ void load_tile_textures() {
 }
 
 struct Chunk {
-    static const s32 SIZE = 32; // must be a power of 2!
+    static const s32 SIZE = 64; // must be a power of 2!
     static const s32 LAYERS = 3;
 
     struct World *world;
@@ -104,19 +104,6 @@ struct World {
         s32 vp_min_cy = (s32) floor((f32)vp_min_y / (f32)Chunk::SIZE);
         s32 vp_max_cx = (s32) ceil((f32)vp_max_x / (f32)Chunk::SIZE);
         s32 vp_max_cy = (s32) ceil((f32)vp_max_y / (f32)Chunk::SIZE);
-
-        /*
-        ImGui::Begin("render_around", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
-        ImGui::Dummy(ImVec2(110, 0));
-        ImGui::Text("vp_min: (%d, %d)", vp_min_x, vp_min_y);
-        ImGui::Text("vp_max: (%d, %d)", vp_max_x, vp_max_y);
-        ImGui::Text("delta: (%d, %d)", vp_max_x - vp_min_x, vp_max_y - vp_min_y);
-        ImGui::Separator();
-        ImGui::Text("vp_min_c: (%d, %d)", vp_min_cx, vp_min_cy);
-        ImGui::Text("vp_max_c: (%d, %d)", vp_max_cx, vp_max_cy);
-        ImGui::Text("delta_c: (%d, %d)", vp_max_cx - vp_min_cx, vp_max_cy - vp_min_cy);
-        ImGui::End();
-        */
 
         for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
             for(s32 j = vp_min_cy; j < vp_max_cy; j++) {

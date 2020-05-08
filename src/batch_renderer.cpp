@@ -13,7 +13,7 @@ struct Batch_Renderer {
         u32 draw_calls;
     };
 
-    static const u32 MAX_VERTICES = 1024 * 64;
+    static const u32 MAX_VERTICES = 1024 * 128;
     static const u32 MAX_INDICES = MAX_VERTICES * 3;
     static const u32 MAX_TEXTURE_SLOTS = 16; // TODO
 
