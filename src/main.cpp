@@ -140,11 +140,11 @@ s32 main(s32 argc, char **argv) {
     r->init();
 
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBlendEquation(GL_FUNC_ADD);
+    glClearColor(0, 0, 0, 0);
 
-    glClearColor(0.2, 0.1, 0.5, 1);
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 
     load_tile_textures();
@@ -187,7 +187,7 @@ s32 main(s32 argc, char **argv) {
                     glm::mat4(1.0f),
                     glm::vec3(scale, scale, 1.0f)
                 ),
-                glm::vec3(window_width/2/scale -pos.x, window_height/2/scale -pos.y, 0.0f)
+                glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) -pos.y, 0.0f)
             )
         );
 

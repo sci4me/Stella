@@ -41,10 +41,10 @@ struct Texture {
 inline f32 square(f32 x) { return x * x; } 
 
 inline glm::vec4 rgba255_to_rgba1(u32 c) {
-    u8 r = (c & 0xFF000000) >> 24;
-    u8 g = (c & 0x00FF0000) >> 16;
-    u8 b = (c & 0x0000FF00) >> 8;
-    u8 a = c & 0xFF;
+    u8 r = c & 0xFF;
+    u8 g = (c >> 8) & 0xFF;
+    u8 b = (c >> 16) & 0xFF;
+    u8 a = (c >> 24) & 0xFF;
     return {
         (f32)r / 255.0f,
         (f32)g / 255.0f,
@@ -54,11 +54,11 @@ inline glm::vec4 rgba255_to_rgba1(u32 c) {
 }
 
 inline u32 rgba1_to_rgba255(glm::vec4 c) {
-    u8 r = (u8) (c.x * 255.0f);
-    u8 g = (u8) (c.y * 255.0f);
-    u8 b = (u8) (c.z * 255.0f);
-    u8 a = (u8) (c.w * 255.0f);
-    return r << 24 | g << 16 | b << 8 | a;
+    u8 r = (u8) roundf(c.x * 255.0f);
+    u8 g = (u8) roundf(c.y * 255.0f);
+    u8 b = (u8) roundf(c.z * 255.0f);
+    u8 a = (u8) roundf(c.w * 255.0f);
+    return a << 24 | b << 16 | g << 8 | r;
 }
 
 inline glm::vec4 rgba1_to_linear(glm::vec4 c) {
@@ -104,6 +104,19 @@ void downsample_2x_in_place(u8 *image, u32 size) {
     }
 }
 
+void alpha_premultiply(u32 *image, u32 w, u32 h) {
+    u32 *pixel = image;
+    for(u32 y = 0; y < h; y++) {
+        for(u32 x = 0; x < w; x++) {
+            auto p = rgba255_to_rgba1(*pixel);
+            p.x *= p.w;
+            p.y *= p.w;
+            p.z *= p.w;
+            *pixel++ = rgba1_to_rgba255(p);
+        }
+    }
+}
+
 Texture load_texture_from_file(const char *path, bool generate_mipmaps = false) {
     s32 w, h, _n;
     u8 *image = stbi_load(path, &w, &h, &_n, 4);
@@ -112,6 +125,8 @@ Texture load_texture_from_file(const char *path, bool generate_mipmaps = false) 
         fprintf(stderr, "Failed to load texture '%s'\n", path);
         exit(1);
     }
+
+    alpha_premultiply((u32*)image, w, h);
 
     Texture result;
 
