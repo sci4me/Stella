@@ -307,14 +307,12 @@ void Chunk::render() {
             f32 k = ((x * SIZE) + i) * TILE_SIZE;
             f32 l = ((y * SIZE) + j) * TILE_SIZE;
 
-            f32 uv_rotation;
-            switch(rnd_pcg_range(&rand, 0, 3)) {
-                case 0: uv_rotation = 0.0f; break;
-                case 1: uv_rotation = PI * 0.5f; break;
-                case 2: uv_rotation = PI; break;
-                case 3: uv_rotation = PI * 1.5f; break;
-                default: assert(0); break;
-            }
+            // NOTE: We are using `rnd_pcg_range` instead of `rnd_pcg_nextf` on purpose!
+            // They end up giving us a totally different distribution, which makes sense
+            // I guess. But, well, I think what we get from `rnd_pcg_range` looks better.
+            //              - sci4me, 5/9/20
+            f32 uv_rotation = PI * 2.0f * ((f32)rnd_pcg_range(&rand, 0, 3) / 4.0f);
+            assert(uv_rotation >= 0.0f && uv_rotation <= PI * 2.0f);
 
             u32 tl = vertex_count++; vertices[tl] = { {k, l}, rotateUV({0.0f, 0.0f}, uv_rotation), tex_index };
             u32 tr = vertex_count++; vertices[tr] = { {k + TILE_SIZE, l}, rotateUV({1.0f, 0.0f}, uv_rotation), tex_index };
