@@ -22,6 +22,7 @@ void load_tile_textures() {
 }
 
 struct Chunk {
+    // TODO: abstract this stuff somehow
     #pragma pack(push, 1)
     struct Vertex {
         glm::vec2 pos;
@@ -43,22 +44,27 @@ struct Chunk {
     s32 y;
     TileType tiles[SIZE][SIZE][LAYERS];
 
+    // TODO: abstract this stuff somehow
     GLuint vao;
     GLuint vbo;
     GLuint ibo;
     u32 textures[MAX_TEXTURE_SLOTS];
     u32 texture_count;
 
-    void init();
+    void init(struct World *world, s32 x, s32 y);
     void free();
 
     void generate();
     void render();
     void draw();
+
+    rnd_pcg_t make_rng_for_chunk();
 };
 
 struct World {
     siv::PerlinNoise noise;
+
+    u32 seed;
 
     struct {
         glm::ivec2 key;
@@ -70,7 +76,10 @@ struct World {
     GLuint u_proj;
     GLuint u_view;
 
-    void init() {
+    void init(u32 seed = 0) {
+        this->seed = seed;
+        noise.reseed(seed);
+
         chunk_shader = load_shader_program("chunk", VERTEX_SHADER | FRAGMENT_SHADER);
 
         u_textures = glGetUniformLocation(chunk_shader, "u_textures");
@@ -102,10 +111,7 @@ struct World {
 
         if(i == -1) {
             Chunk *c = (Chunk*) calloc(1, sizeof(Chunk));
-            c->world = this;
-            c->x = x;
-            c->y = y;
-            c->init();
+            c->init(this, x, y);
 
             c->generate();
             c->render();
@@ -198,7 +204,11 @@ struct World {
     }
 };
 
-void Chunk::init() {  
+void Chunk::init(World *world, s32 x, s32 y) {
+    this->world = world;
+    this->x = x;
+    this->y = y;
+
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
     glGenBuffers(1, &ibo);
@@ -277,8 +287,7 @@ void Chunk::render() {
     u32 vertex_count = 0;
     u32 index_count = 0;
 
-    rnd_pcg_t rand;
-    rnd_pcg_seed(&rand, x * y);
+    rnd_pcg_t l0rot = make_rng_for_chunk();
 
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
@@ -311,7 +320,7 @@ void Chunk::render() {
             // They end up giving us a totally different distribution, which makes sense
             // I guess. But, well, I think what we get from `rnd_pcg_range` looks better.
             //              - sci4me, 5/9/20
-            f32 uv_rotation = PI * 2.0f * ((f32)rnd_pcg_range(&rand, 0, 3) / 4.0f);
+            f32 uv_rotation = PI * 2.0f * ((f32)rnd_pcg_range(&l0rot, 0, 3) / 4.0f);
             assert(uv_rotation >= 0.0f && uv_rotation <= PI * 2.0f);
 
             u32 tl = vertex_count++; vertices[tl] = { {k, l}, rotateUV({0.0f, 0.0f}, uv_rotation), tex_index };
@@ -355,4 +364,10 @@ void Chunk::draw() {
         glBindTextureUnit(i, 0);
 
     glBindVertexArray(0);
+}
+
+rnd_pcg_t Chunk::make_rng_for_chunk() {
+    rnd_pcg_t rand;
+    rnd_pcg_seed(&rand, x * world->seed + y * world->seed);
+    return rand;
 }
