@@ -211,11 +211,9 @@ void Chunk::init() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, uv));
     glVertexAttribIPointer(2, 1, GL_INT, sizeof(Vertex), (void*) offsetof(Vertex, tex));
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, uv_rotation));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES*sizeof(u32), 0, GL_STATIC_DRAW);
@@ -260,6 +258,14 @@ void Chunk::generate() {
             if(m < coal_threshold) tiles[i][j][1] = TILE_COAL_ORE;
         }
     }
+}
+
+glm::vec2 rotateUV(glm::vec2 uv, f32 rotation) {
+    f32 mid = 0.5f;
+    return {
+        cosf(rotation) * (uv.x - mid) + sinf(rotation) * (uv.y - mid) + mid,
+        cosf(rotation) * (uv.y - mid) - sinf(rotation) * (uv.x - mid) + mid
+    };
 }
 
 void Chunk::render() {
@@ -310,10 +316,10 @@ void Chunk::render() {
                 default: assert(0); break;
             }
 
-            u32 tl = vertex_count++; vertices[tl] = { {k, l}, {0.0f, 0.0f}, tex_index, uv_rotation };
-            u32 tr = vertex_count++; vertices[tr] = { {k + TILE_SIZE, l}, {1.0f, 0.0f}, tex_index, uv_rotation };
-            u32 br = vertex_count++; vertices[br] = { {k + TILE_SIZE, l + TILE_SIZE}, {1.0f, 1.0f}, tex_index, uv_rotation };
-            u32 bl = vertex_count++; vertices[bl] = { {k, l + TILE_SIZE}, {0.0f, 1.0f}, tex_index, uv_rotation };
+            u32 tl = vertex_count++; vertices[tl] = { {k, l}, rotateUV({0.0f, 0.0f}, uv_rotation), tex_index };
+            u32 tr = vertex_count++; vertices[tr] = { {k + TILE_SIZE, l}, rotateUV({1.0f, 0.0f}, uv_rotation), tex_index };
+            u32 br = vertex_count++; vertices[br] = { {k + TILE_SIZE, l + TILE_SIZE}, rotateUV({1.0f, 1.0f}, uv_rotation), tex_index };
+            u32 bl = vertex_count++; vertices[bl] = { {k, l + TILE_SIZE}, rotateUV({0.0f, 1.0f}, uv_rotation), tex_index };
 
             indices[index_count++] = tl;
             indices[index_count++] = tr;
