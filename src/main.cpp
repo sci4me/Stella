@@ -169,6 +169,7 @@ s32 main(s32 argc, char **argv) {
     World world;
     world.init();
 
+
     u32 chunk_draw_calls = 0;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

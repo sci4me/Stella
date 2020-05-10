@@ -270,14 +270,6 @@ void Chunk::generate() {
     }
 }
 
-glm::vec2 rotateUV(glm::vec2 uv, f32 rotation) {
-    f32 mid = 0.5f;
-    return {
-        cosf(rotation) * (uv.x - mid) + sinf(rotation) * (uv.y - mid) + mid,
-        cosf(rotation) * (uv.y - mid) - sinf(rotation) * (uv.x - mid) + mid
-    };
-}
-
 void Chunk::render() {
     texture_count = 0;
 
@@ -288,6 +280,13 @@ void Chunk::render() {
     u32 index_count = 0;
 
     rnd_pcg_t l0rot = make_rng_for_chunk();
+
+    static const glm::vec2 uvs[4][4] = {
+        { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } },
+        { { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } },
+        { { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } },
+        { { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f } }
+    };
 
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
@@ -316,17 +315,12 @@ void Chunk::render() {
             f32 k = ((x * SIZE) + i) * TILE_SIZE;
             f32 l = ((y * SIZE) + j) * TILE_SIZE;
 
-            // NOTE: We are using `rnd_pcg_range` instead of `rnd_pcg_nextf` on purpose!
-            // They end up giving us a totally different distribution, which makes sense
-            // I guess. But, well, I think what we get from `rnd_pcg_range` looks better.
-            //              - sci4me, 5/9/20
-            f32 uv_rotation = PI * 2.0f * ((f32)rnd_pcg_range(&l0rot, 0, 3) / 4.0f);
-            assert(uv_rotation >= 0.0f && uv_rotation <= PI * 2.0f);
+            auto rot = rnd_pcg_range(&l0rot, 0, 3);
 
-            u32 tl = vertex_count++; vertices[tl] = { {k, l}, rotateUV({0.0f, 0.0f}, uv_rotation), tex_index };
-            u32 tr = vertex_count++; vertices[tr] = { {k + TILE_SIZE, l}, rotateUV({1.0f, 0.0f}, uv_rotation), tex_index };
-            u32 br = vertex_count++; vertices[br] = { {k + TILE_SIZE, l + TILE_SIZE}, rotateUV({1.0f, 1.0f}, uv_rotation), tex_index };
-            u32 bl = vertex_count++; vertices[bl] = { {k, l + TILE_SIZE}, rotateUV({0.0f, 1.0f}, uv_rotation), tex_index };
+            u32 tl = vertex_count++; vertices[tl] = { {k, l}, uvs[rot][0], tex_index };
+            u32 tr = vertex_count++; vertices[tr] = { {k + TILE_SIZE, l}, uvs[rot][1], tex_index };
+            u32 br = vertex_count++; vertices[br] = { {k + TILE_SIZE, l + TILE_SIZE}, uvs[rot][2], tex_index };
+            u32 bl = vertex_count++; vertices[bl] = { {k, l + TILE_SIZE}, uvs[rot][3], tex_index };
 
             indices[index_count++] = tl;
             indices[index_count++] = tr;
