@@ -19,6 +19,7 @@ struct Batch_Renderer {
     static const u32 MAX_INDICES = MAX_VERTICES * 3;
     static const u32 MAX_TEXTURE_SLOTS = 16; // TODO
 
+private:
     GLuint shader;
     GLint u_textures;
     GLint u_proj;
@@ -38,6 +39,7 @@ struct Batch_Renderer {
     u32 index_count;
 
     Per_Frame_Stats per_frame_stats;
+public:
 
     void init() {
         shader = load_shader_program("batch", VERTEX_SHADER | FRAGMENT_SHADER);
@@ -158,20 +160,6 @@ struct Batch_Renderer {
         return stats;
     }
 
-private:
-    inline u32 push_vertex(Vertex v) {
-        vertices[vertex_count] = v;
-        return vertex_count++;
-    }
-
-    inline void push_index(u32 i) {
-        // Remove this assertion if we ever need the ability
-        // to push indices before vertices...
-        assert(i < vertex_count);
-        indices[index_count++] = i;
-    }
-public:
-
     void push_quad(f32 x, f32 y, f32 w, f32 h, glm::vec4 color, glm::vec2 uvs[4], GLuint texture) {
         ensure_available(4, 6);
 
@@ -194,17 +182,17 @@ public:
             }
         }
 
-        u32 tl = push_vertex({glm::vec2(x,     y    ), color, uvs[0], tex_index});
-        u32 tr = push_vertex({glm::vec2(x + w, y    ), color, uvs[1], tex_index});
-        u32 br = push_vertex({glm::vec2(x + w, y + h), color, uvs[2], tex_index});
-        u32 bl = push_vertex({glm::vec2(x,     y + h), color, uvs[3], tex_index});
+        u32 tl = vertex_count++; vertices[tl] = { {x,     y    }, color, uvs[0], tex_index };
+        u32 tr = vertex_count++; vertices[tr] = { {x + w, y    }, color, uvs[1], tex_index };
+        u32 br = vertex_count++; vertices[br] = { {x + w, y + h}, color, uvs[2], tex_index };
+        u32 bl = vertex_count++; vertices[bl] = { {x,     y + h}, color, uvs[3], tex_index };
 
-        push_index(tl);
-        push_index(tr);
-        push_index(br);
-        push_index(br);
-        push_index(bl);
-        push_index(tl);
+        indices[index_count++] = tl;
+        indices[index_count++] = tr;
+        indices[index_count++] = br;
+        indices[index_count++] = br;
+        indices[index_count++] = bl;
+        indices[index_count++] = tl;
 
         per_frame_stats.quads++;
     }

@@ -280,10 +280,10 @@ s32 main(s32 argc, char **argv) {
 
     world.free();
 
-    tfree();
-
     r->free();
     free(r);
+    
+    tfree();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
