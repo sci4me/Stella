@@ -26,6 +26,9 @@
 
 #include "PerlinNoise.hpp"
 
+#define RND_IMPLEMENTATION
+#include "rnd.h"
+
 #define GL_DEBUG
 
 #include "util.cpp"
@@ -170,6 +173,7 @@ s32 main(s32 argc, char **argv) {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
+
         if(window_resized) {
             window_resized = false;
 
@@ -198,6 +202,7 @@ s32 main(s32 argc, char **argv) {
 
             continue;
         }
+
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -270,6 +275,7 @@ s32 main(s32 argc, char **argv) {
             ImGui::End();
         }
     
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
@@ -282,7 +288,7 @@ s32 main(s32 argc, char **argv) {
 
     r->free();
     free(r);
-    
+
     tfree();
 
     ImGui_ImplOpenGL3_Shutdown();

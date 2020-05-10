@@ -27,6 +27,7 @@ struct Chunk {
         glm::vec2 pos;
         glm::vec2 uv;
         s32 tex;
+        f32 uv_rotation;
     };
     #pragma pack(pop)
 
@@ -156,33 +157,36 @@ struct World {
                 glm::mat4(1.0f),
                 glm::vec3(scale, scale, 1.0f)
             ),
-            glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) -pos.y, 0.0f)
+            glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) - pos.y, 0.0f)
         );
         glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, glm::value_ptr(view));
 
-        for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
-            for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
-                Chunk *c = get_chunk(i, j);
-                
-                // TODO: Instead of switching shaders like this, draw all the chunk
-                // background layers in one pass, then draw the rest. Maybe?
-                // Technically it doesn't matter that much currently since we're
-                // using the Batch_Renderer to draw layers 1 and 2 but, still.
+        for(s32 layer = 0; layer < Chunk::LAYERS; layer++) {
+            if(layer == 0) {
                 glUseProgram(chunk_shader);
-                c->draw();
+                for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
+                    for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
+                        Chunk *c = get_chunk(i, j);
+                        c->draw();
+                    }
+                }
                 glUseProgram(0);
+            } else {
+                for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
+                    for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
+                        Chunk *c = get_chunk(i, j);
 
-                for(s32 k = 0; k < Chunk::SIZE; k++) {
-                    for(s32 l = 0; l < Chunk::SIZE; l++) {
-                        s32 m = (i * Chunk::SIZE) + k;
-                        s32 n = (j * Chunk::SIZE) + l;
+                        for(s32 k = 0; k < Chunk::SIZE; k++) {
+                            for(s32 l = 0; l < Chunk::SIZE; l++) {
+                                s32 m = (i * Chunk::SIZE) + k;
+                                s32 n = (j * Chunk::SIZE) + l;
 
-                        if(m < vp_min_x || n < vp_min_y || m > vp_max_x || n > vp_max_y) continue;
+                                if(m < vp_min_x || n < vp_min_y || m > vp_max_x || n > vp_max_y) continue;
 
-                        for(s32 layer = 1; layer < Chunk::LAYERS; layer++) {
-                            auto type = c->tiles[k][l][layer];
-                            if(type != TILE_NONE) {
-                                r->push_textured_quad(m * TILE_SIZE, n * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32)type]);
+                                auto type = c->tiles[k][l][layer];
+                                if(type != TILE_NONE) {
+                                    r->push_textured_quad(m * TILE_SIZE, n * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32)type]);
+                                }
                             }
                         }
                     }
@@ -207,9 +211,11 @@ void Chunk::init() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, uv));
     glVertexAttribIPointer(2, 1, GL_INT, sizeof(Vertex), (void*) offsetof(Vertex, tex));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, uv_rotation));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES*sizeof(u32), 0, GL_STATIC_DRAW);
@@ -265,6 +271,9 @@ void Chunk::render() {
     u32 vertex_count = 0;
     u32 index_count = 0;
 
+    rnd_pcg_t rand;
+    rnd_pcg_seed(&rand, x * y);
+
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
             auto tile = tiles[i][j][0];
@@ -292,10 +301,19 @@ void Chunk::render() {
             f32 k = ((x * SIZE) + i) * TILE_SIZE;
             f32 l = ((y * SIZE) + j) * TILE_SIZE;
 
-            u32 tl = vertex_count++; vertices[tl] = { {k, l}, {0.0f, 0.0f}, tex_index };
-            u32 tr = vertex_count++; vertices[tr] = { {k + TILE_SIZE, l}, {1.0f, 0.0f}, tex_index };
-            u32 br = vertex_count++; vertices[br] = { {k + TILE_SIZE, l + TILE_SIZE}, {1.0f, 1.0f}, tex_index };
-            u32 bl = vertex_count++; vertices[bl] = { {k, l + TILE_SIZE}, {0.0f, 1.0f}, tex_index };
+            f32 uv_rotation;
+            switch(rnd_pcg_range(&rand, 0, 3)) {
+                case 0: uv_rotation = 0.0f; break;
+                case 1: uv_rotation = PI * 0.5f; break;
+                case 2: uv_rotation = PI; break;
+                case 3: uv_rotation = PI * 1.5f; break;
+                default: assert(0); break;
+            }
+
+            u32 tl = vertex_count++; vertices[tl] = { {k, l}, {0.0f, 0.0f}, tex_index, uv_rotation };
+            u32 tr = vertex_count++; vertices[tr] = { {k + TILE_SIZE, l}, {1.0f, 0.0f}, tex_index, uv_rotation };
+            u32 br = vertex_count++; vertices[br] = { {k + TILE_SIZE, l + TILE_SIZE}, {1.0f, 1.0f}, tex_index, uv_rotation };
+            u32 bl = vertex_count++; vertices[bl] = { {k, l + TILE_SIZE}, {0.0f, 1.0f}, tex_index, uv_rotation };
 
             indices[index_count++] = tl;
             indices[index_count++] = tr;
