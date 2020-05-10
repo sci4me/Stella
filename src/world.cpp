@@ -151,16 +151,14 @@ struct World {
         s32 vp_max_cx = (s32) ceil((f32)vp_max_x / (f32)Chunk::SIZE);
         s32 vp_max_cy = (s32) ceil((f32)vp_max_y / (f32)Chunk::SIZE);
 
-        if(chunk_vbos) {
-            glm::mat4 view = glm::translate(
-                glm::scale(
-                    glm::mat4(1.0f),
-                    glm::vec3(scale, scale, 1.0f)
-                ),
-                glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) -pos.y, 0.0f)
-            );
-            glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, glm::value_ptr(view));
-        }
+        glm::mat4 view = glm::translate(
+            glm::scale(
+                glm::mat4(1.0f),
+                glm::vec3(scale, scale, 1.0f)
+            ),
+            glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) -pos.y, 0.0f)
+        );
+        glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, glm::value_ptr(view));
 
         for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
             for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
