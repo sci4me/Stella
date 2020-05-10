@@ -173,7 +173,11 @@ s32 main(s32 argc, char **argv) {
             window_resized = false;
 
             glViewport(0, 0, window_width, window_height);
-            r->set_projection(glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f));
+            
+            auto proj = glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
+
+            r->set_projection(proj);
+            world.set_projection(proj);
         }
 
         if(fullscreen_changed) {
@@ -216,14 +220,19 @@ s32 main(s32 argc, char **argv) {
                     glm::mat4(1.0f),
                     glm::vec3(scale, scale, 1.0f)
                 ),
-                glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) -pos.y, 0.0f)
+                glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) - pos.y, 0.0f)
             )
         );
 
+
         r->begin();
         {
+            // NOTE: We render the world from within the Batch_Renderer frame since
+            // we are currently using the Batch_Renderer for any tiles that
+            // aren't on layer 0.
+            //              - sci4me, 5/9/20
             world.render_around(r, pos, scale, window_width, window_height);
-
+        
             r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         }
         auto per_frame_stats = r->end_frame();

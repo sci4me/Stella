@@ -1,10 +1,12 @@
 struct Batch_Renderer {
+    #pragma pack(push, 1)
     struct Vertex {
         glm::vec2 pos;
         glm::vec4 color;
         glm::vec2 uv;
         s32 tex;
     };
+    #pragma pack(pop)
 
     struct Per_Frame_Stats {
         u32 quads;
