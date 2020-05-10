@@ -166,6 +166,7 @@ s32 main(s32 argc, char **argv) {
     World world;
     world.init();
 
+    u32 chunk_draw_calls = 0;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -231,7 +232,7 @@ s32 main(s32 argc, char **argv) {
             // we are currently using the Batch_Renderer for any tiles that
             // aren't on layer 0.
             //              - sci4me, 5/9/20
-            world.render_around(r, pos, scale, window_width, window_height);
+            chunk_draw_calls = world.render_around(r, pos, scale, window_width, window_height);
         
             r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         }
@@ -239,7 +240,6 @@ s32 main(s32 argc, char **argv) {
 
 
         if(show_debug_window) {
-            ImGui::SetNextWindowBgAlpha(0.5f);
             if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
                 ImGui::Dummy(ImVec2(100, 0));
 
@@ -249,16 +249,22 @@ s32 main(s32 argc, char **argv) {
                     
                     ImGui::Separator();
 
-                    ImGui::Text("Quads: %u", per_frame_stats.quads);
-                    ImGui::Text("Vertices: %u", per_frame_stats.vertices);
-                    ImGui::Text("Indices: %u", per_frame_stats.indices);
-                    ImGui::Text("Draw Calls: %u", per_frame_stats.draw_calls);
+                    ImGui::Text("Batch Renderer:");
+                    ImGui::Text("  Quads: %u", per_frame_stats.quads);
+                    ImGui::Text("  Vertices: %u", per_frame_stats.vertices);
+                    ImGui::Text("  Indices: %u", per_frame_stats.indices);
+                    ImGui::Text("  Draw Calls: %u", per_frame_stats.draw_calls);
+
+                    ImGui::Separator();
+
+                    ImGui::Text("Chunks:");
+                    ImGui::Text("  Draw Calls: %d", chunk_draw_calls);
                 }
 
                 if(ImGui::CollapsingHeader("World")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", pos.x, pos.y);
                     ImGui::Text("Scale: %0.3f", scale);
-                    ImGui::Text("Chunks: %d", hmlen(world.chunks));
+                    ImGui::Text("Total Chunks: %d", hmlen(world.chunks));
                 }
 
                 if(ImGui::CollapsingHeader("Settings")) {

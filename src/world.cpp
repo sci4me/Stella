@@ -134,7 +134,7 @@ struct World {
         c->tiles[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)][layer] = type;
     }
 
-    void render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height) {
+    u32 render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height) {
         f32 x = pos.x * scale;
         f32 y = pos.y * scale;
 
@@ -189,6 +189,8 @@ struct World {
                 }
             }
         }
+
+        return (vp_max_cx - vp_min_cx) * (vp_max_cy - vp_min_cy);
     }
 };
 
