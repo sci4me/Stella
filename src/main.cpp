@@ -243,28 +243,21 @@ s32 main(s32 argc, char **argv) {
             if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
                 ImGui::Dummy(ImVec2(100, 0));
 
-                if(ImGui::CollapsingHeader("Metrics")) {
-                    ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
-                    ImGui::Text("FPS: %.1f", io.Framerate);
-                    
-                    ImGui::Separator();
+                ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
+                ImGui::Text("FPS: %.1f", io.Framerate);
 
-                    ImGui::Text("Batch Renderer:");
-                    ImGui::Text("  Quads: %u", per_frame_stats.quads);
-                    ImGui::Text("  Vertices: %u", per_frame_stats.vertices);
-                    ImGui::Text("  Indices: %u", per_frame_stats.indices);
-                    ImGui::Text("  Draw Calls: %u", per_frame_stats.draw_calls);
-
-                    ImGui::Separator();
-
-                    ImGui::Text("Chunks:");
-                    ImGui::Text("  Draw Calls: %d", chunk_draw_calls);
+                if(ImGui::CollapsingHeader("Batch Renderer")) {
+                    ImGui::Text("Quads: %u", per_frame_stats.quads);
+                    ImGui::Text("Vertices: %u", per_frame_stats.vertices);
+                    ImGui::Text("Indices: %u", per_frame_stats.indices);
+                    ImGui::Text("Draw Calls: %u", per_frame_stats.draw_calls);
                 }
 
                 if(ImGui::CollapsingHeader("World")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", pos.x, pos.y);
                     ImGui::Text("Scale: %0.3f", scale);
                     ImGui::Text("Total Chunks: %d", hmlen(world.chunks));
+                    ImGui::Text("Chunk Draw Calls: %d", chunk_draw_calls);
                 }
 
                 if(ImGui::CollapsingHeader("Settings")) {
