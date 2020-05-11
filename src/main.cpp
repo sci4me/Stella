@@ -87,6 +87,23 @@ void window_size_callback(GLFWwindow* window, s32 width, s32 height) {
     window_resized = true;
 }
 
+void dump_gl_info() {
+    // TODO: some kind of logging!!!
+
+    printf("OpenGL Info:\n");
+    printf("  GL_VENDOR                     %s\n", glGetString(GL_VENDOR));
+    printf("  GL_RENDERER                   %s\n", glGetString(GL_RENDERER));
+    printf("  GL_VERSION                    %s\n", glGetString(GL_VERSION));
+    printf("  GL_SHADING_LANGUAGE_VERSION   %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+
+    GLint major, minor; 
+    glGetIntegerv(GL_MAJOR_VERSION, &major); 
+    glGetIntegerv(GL_MINOR_VERSION, &minor); 
+    printf("  GL_MAJOR_VERSION              %d\n", major);
+    printf("  GL_MINOR_VERSION              %d\n", minor);
+}
+
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
@@ -141,6 +158,10 @@ s32 main(s32 argc, char **argv) {
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 440"); // TODO
+
+
+    dump_gl_info();
+
 
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;

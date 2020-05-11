@@ -19,6 +19,11 @@
      - Ability to bind and unbind them
      - Ability to configure what buffers/textures are attached to the FBO
        - i.e.  attach a texture to `GL_COLOR_ATTACHMENT0`
+ - Logging !!!
+   - Configurable (?)
+   - Console Logging
+   - File Logging
+   - printf style API
  - Combine `batch` and `chunk` shaders?
    - Maybe not; I'm not sure if this is a good idea or not
      - Maybe it will be in the short term but we'll have to change it later on anyway?
