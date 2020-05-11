@@ -30,6 +30,8 @@
 #include "rnd.h"
 
 #define GL_DEBUG
+#define GL_MAJOR 4
+#define GL_MINOR 4
 
 #include "util.cpp"
 #include "shader.cpp"
@@ -104,6 +106,27 @@ void dump_gl_info() {
     printf("  GL_MINOR_VERSION              %d\n", minor);
 }
 
+void init_imgui(GLFWwindow *window) {
+    char glsl_version_string[13];
+    assert(snprintf(glsl_version_string, sizeof(glsl_version_string)/sizeof(char), "#version %d%d0", GL_MAJOR, GL_MINOR) == 12);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version_string);
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
+
+    ImGui::StyleColorsDark();
+}
+
+void shutdown_imgui() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+}
+
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
@@ -111,8 +134,8 @@ s32 main(s32 argc, char **argv) {
     }
 
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GL_MAJOR);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GL_MINOR);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     #ifdef GL_DEBUG
@@ -139,11 +162,7 @@ s32 main(s32 argc, char **argv) {
     }
 
 
-    tinit();
-
-
-    time_t t;
-    srand((unsigned) time(&t));
+    dump_gl_info();
 
 
     #ifdef GL_DEBUG
@@ -154,20 +173,15 @@ s32 main(s32 argc, char **argv) {
     #endif
 
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 440"); // TODO
+    tinit();
 
 
-    dump_gl_info();
+    time_t t;
+    srand((unsigned) time(&t));
 
 
+    init_imgui(window);
     ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = nullptr;
-
-    // Default but do it anyway.
-    ImGui::StyleColorsDark();
 
 
     Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
@@ -309,9 +323,7 @@ s32 main(s32 argc, char **argv) {
 
     tfree();
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    shutdown_imgui();
 
     glfwTerminate();
 
