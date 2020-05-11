@@ -93,7 +93,7 @@ s32 main(s32 argc, char **argv) {
         return 1;
     }
 
-    glfwWindowHint(GLFW_DOUBLEBUFFER, 1); // TODO: GLFW_TRUE instead of 1?
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -137,7 +137,7 @@ s32 main(s32 argc, char **argv) {
     #endif
 
 
-    IMGUI_CHECKVERSION(); // TODO ?
+    IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 440"); // TODO
@@ -145,11 +145,10 @@ s32 main(s32 argc, char **argv) {
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
 
-    ImGui::StyleColorsDark(); // default but do it anyway
+    // Default but do it anyway.
+    ImGui::StyleColorsDark();
 
 
-
-    // set up batch renderer
     Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
     r->init();
 
