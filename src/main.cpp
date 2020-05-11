@@ -33,6 +33,8 @@
 #define GL_MAJOR 4
 #define GL_MINOR 4
 
+#include "imgui_support.cpp"
+
 #include "util.cpp"
 #include "shader.cpp"
 #include "texture.cpp"
@@ -64,10 +66,10 @@ f32 scale = 1.0f;
 
 bool show_debug_window = true;
 
-bool vsync = true;
-
 bool fullscreen_changed = false;
 bool fullscreen = false;
+
+bool vsync = true;
 
 
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
@@ -104,27 +106,6 @@ void dump_gl_info() {
     glGetIntegerv(GL_MINOR_VERSION, &minor); 
     printf("  GL_MAJOR_VERSION              %d\n", major);
     printf("  GL_MINOR_VERSION              %d\n", minor);
-}
-
-void init_imgui(GLFWwindow *window) {
-    char glsl_version_string[13];
-    assert(snprintf(glsl_version_string, sizeof(glsl_version_string)/sizeof(char), "#version %d%d0", GL_MAJOR, GL_MINOR) == 12);
-
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version_string);
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = nullptr;
-
-    ImGui::StyleColorsDark();
-}
-
-void shutdown_imgui() {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
 }
 
 s32 main(s32 argc, char **argv) {
@@ -180,7 +161,7 @@ s32 main(s32 argc, char **argv) {
     srand((unsigned) time(&t));
 
 
-    init_imgui(window);
+    imgui_init(window);
     ImGuiIO& io = ImGui::GetIO();
 
 
@@ -250,9 +231,7 @@ s32 main(s32 argc, char **argv) {
         if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
 
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        imgui_begin_frame();
 
 
         auto view = glm::translate(
@@ -308,8 +287,7 @@ s32 main(s32 argc, char **argv) {
         }
     
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        imgui_end_frame();
     
         glfwSwapBuffers(window);
 
@@ -323,7 +301,7 @@ s32 main(s32 argc, char **argv) {
 
     tfree();
 
-    shutdown_imgui();
+    imgui_shutdown();
 
     glfwTerminate();
 
