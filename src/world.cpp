@@ -76,7 +76,8 @@ struct World {
     GLuint u_proj;
     GLuint u_view;
 
-    void init(u32 seed = 0) {
+    void init(u32 seed = 1) {
+        assert(seed);
         this->seed = seed;
         noise.reseed(seed);
 
