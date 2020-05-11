@@ -4,3 +4,26 @@
      - Can be appended to, cleared, iterated
      - Can be uploaded to GPU just by using a pointer to the buffer and the count
        - This struct doesn't handle the GL calls though; abstract this / handle it elsewhere
+ - Combine `batch` and `chunk` shaders?
+   - Maybe not; I'm not sure if this is a good idea or not
+     - Maybe it will be in the short term but we'll have to change it later on anyway?
+     - Maybe we can just use a single shader and just pass it the data it needs to handle the cases instead of using multiple shaders?
+       - Definitely not once we start doing less-than-trivial things
+         - Lighting
+         - OpenGL in ImGui
+   - So, yeah uhm, maybe don't combine them? I don't even know.
+ - Framebuffer abstraction
+   - "Just a wrapper" for OpenGL framebuffers
+     - Ability to create and destroy them
+     - Ability to bind and unbind them
+     - Ability to configure what buffers/textures are attached to the FBO
+       - i.e.  attach a texture to `GL_COLOR_ATTACHMENT0`
+ - Vertex Array Object abstraction
+   - Ability to attach VBOs, IBOs, etc.
+     - Probably using their own abstractions
+       - Which themselves use the Buffer_Builder
+   - Ability to specify vertex format
+     - Just an array of sizes and types, essentially 
+   - Ability to "set" the data as well as "update" it
+     - "set" and "update" mean `glBufferData` or `glBufferSubData`
+       - Also need to be able to specify `GL_STATIC_DRAW` vs `GL_DYNAMIC_DRAW`
