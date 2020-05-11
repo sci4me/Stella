@@ -1,0 +1,6 @@
+ - Buffer_Builder abstraction
+   - i.e. template<typename T, u32 N> struct Buffer_Builder { T buffer[N]; u32 count; }
+     - Like "StringBuilder" but for a static buffer of `N` `T`s.
+     - Can be appended to, cleared, iterated
+     - Can be uploaded to GPU just by using a pointer to the buffer and the count
+       - This struct doesn't handle the GL calls though; abstract this / handle it elsewhere

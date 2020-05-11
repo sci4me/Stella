@@ -142,7 +142,7 @@ struct World {
         c->tiles[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)][layer] = type;
     }
 
-    u32 render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height) {
+    u32 render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
         f32 x = pos.x * scale;
         f32 y = pos.y * scale;
 
@@ -159,13 +159,7 @@ struct World {
         s32 vp_max_cx = (s32) ceil((f32)vp_max_x / (f32)Chunk::SIZE);
         s32 vp_max_cy = (s32) ceil((f32)vp_max_y / (f32)Chunk::SIZE);
 
-        glm::mat4 view = glm::translate(
-            glm::scale(
-                glm::mat4(1.0f),
-                glm::vec3(scale, scale, 1.0f)
-            ),
-            glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) - pos.y, 0.0f)
-        );
+        // TODO: instead of taking `view` as a parameter, we could technically just get it from Batch_Renderer?
         glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, glm::value_ptr(view));
 
         for(s32 layer = 0; layer < Chunk::LAYERS; layer++) {

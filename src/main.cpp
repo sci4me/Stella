@@ -221,24 +221,21 @@ s32 main(s32 argc, char **argv) {
         ImGui::NewFrame();
 
 
-        r->set_view(
-            glm::translate(
-                glm::scale(
-                    glm::mat4(1.0f),
-                    glm::vec3(scale, scale, 1.0f)
-                ),
-                glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) - pos.y, 0.0f)
-            )
+        auto view = glm::translate(
+            glm::scale(
+                glm::mat4(1.0f),
+                glm::vec3(scale, scale, 1.0f)
+            ),
+            glm::vec3((window_width / 2 / scale) - pos.x, (window_height / 2 / scale) - pos.y, 0.0f)
         );
 
-
-        r->begin();
+        r->begin(view);
         {
             // NOTE: We render the world from within the Batch_Renderer frame since
             // we are currently using the Batch_Renderer for any tiles that
             // aren't on layer 0.
             //              - sci4me, 5/9/20
-            chunk_draw_calls = world.render_around(r, pos, scale, window_width, window_height);
+            chunk_draw_calls = world.render_around(r, pos, scale, window_width, window_height, view);
         
             r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         }
