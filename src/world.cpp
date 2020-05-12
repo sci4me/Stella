@@ -1,28 +1,4 @@
-#define TILE_SIZE 32.0f
-
-enum TileType : u8 {
-    TILE_NONE,
-    TILE_STONE,
-    TILE_GRASS,
-    TILE_COAL_ORE,
-
-    N_TILE_TYPES
-};
-
-// TODO: Convert this to a texture atlas once
-//       we figure out how to fix the artifacts...
-Texture tile_textures[N_TILE_TYPES];
-
-void load_tile_textures() {
-    constexpr bool MIPS = true;
-
-    tile_textures[TILE_STONE]       = load_texture_from_file("res/textures/stone.png", MIPS);
-    tile_textures[TILE_GRASS]       = load_texture_from_file("res/textures/grass.png", MIPS);
-    tile_textures[TILE_COAL_ORE]    = load_texture_from_file("res/textures/coal_ore.png", MIPS); 
-}
-
 struct Chunk {
-    // TODO: abstract this stuff somehow
     #pragma pack(push, 1)
     struct Vertex {
         glm::vec2 pos;
@@ -39,11 +15,16 @@ struct Chunk {
     static const u32 MAX_TEXTURE_SLOTS = 16; // TODO
 
     struct World *world;
+    
     s32 x;
     s32 y;
-    TileType tiles[SIZE][SIZE][LAYERS];
 
-    // TODO: abstract this stuff somehow
+    Tile_Type layer0[SIZE][SIZE];
+    struct {
+        glm::ivec2 key;
+        Tile *value;
+    } *layer1;
+
     Vertex_Array vao;
     Vertex_Buffer vbo;
     Index_Buffer ibo;
@@ -81,7 +62,6 @@ struct World {
         noise.reseed(seed);
 
         chunk_shader = load_shader_program("chunk", VERTEX_SHADER | FRAGMENT_SHADER);
-
         u_textures = glGetUniformLocation(chunk_shader, "u_textures");
         u_proj = glGetUniformLocation(chunk_shader, "u_proj");
         u_view = glGetUniformLocation(chunk_shader, "u_view");
@@ -130,15 +110,15 @@ struct World {
         return get_chunk(cx, cy);
     }
 
-    TileType get_tile(s32 x, s32 y, s32 layer) {
+    Tile_Type get_tile(s32 x, s32 y) {
         Chunk *c = get_chunk_containing(x, y);
-        return c->tiles[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)][layer];
+        return c->layer0[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)];
     }
 
-    void set_tile(s32 x, s32 y, s32 layer, TileType type) {
+    void set_tile(s32 x, s32 y, Tile_Type type) {
         assert(type != N_TILE_TYPES);
         Chunk *c = get_chunk_containing(x, y);
-        c->tiles[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)][layer] = type;
+        c->layer0[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)] = type;
     }
 
     u32 render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
@@ -161,38 +141,35 @@ struct World {
         // TODO: instead of taking `view` as a parameter, we could technically just get it from Batch_Renderer?
         glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, glm::value_ptr(view));
 
-        for(s32 layer = 0; layer < Chunk::LAYERS; layer++) {
-            if(layer == 0) {
-                glUseProgram(chunk_shader);
-                for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
-                    for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
-                        Chunk *c = get_chunk(i, j);
-                        c->draw();
-                    }
-                }
-                glUseProgram(0);
-            } else {
-                for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
-                    for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
-                        Chunk *c = get_chunk(i, j);
 
-                        for(s32 k = 0; k < Chunk::SIZE; k++) {
-                            for(s32 l = 0; l < Chunk::SIZE; l++) {
-                                s32 m = (i * Chunk::SIZE) + k;
-                                s32 n = (j * Chunk::SIZE) + l;
+        glUseProgram(chunk_shader);
+        for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
+            for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
+                Chunk *c = get_chunk(i, j);
+                c->draw();
+            }
+        }
+        glUseProgram(0);
 
-                                if(m < vp_min_x || n < vp_min_y || m > vp_max_x || n > vp_max_y) continue;
 
-                                auto type = c->tiles[k][l][layer];
-                                if(type != TILE_NONE) {
-                                    r->push_textured_quad(m * TILE_SIZE, n * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32)type]);
-                                }
-                            }
-                        }
-                    }
+        for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
+            for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
+                Chunk *c = get_chunk(i, j);
+
+                for(u32 k = 0; k < hmlen(c->layer1); k++) {
+                    auto p = c->layer1[k].key;
+                    auto tile = c->layer1[k].value;
+
+                    s32 l = (i * Chunk::SIZE) + p.x;
+                    s32 m = (j * Chunk::SIZE) + p.y;
+
+                    if(l < vp_min_x || m < vp_min_y || l > vp_max_x || m > vp_max_y) continue;
+
+                    r->push_textured_quad(l * TILE_SIZE, m * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) tile->type]);
                 }
             }
         }
+
 
         return (vp_max_cx - vp_min_cx) * (vp_max_cy - vp_min_cy);
     }
@@ -232,8 +209,8 @@ void Chunk::generate() {
                 ((f32) ((y * SIZE) + j)) / stone_frequency
             );
 
-            if(m < stone_threshold) tiles[i][j][0] = TILE_STONE;
-            else                    tiles[i][j][0] = TILE_GRASS;
+            if(m < stone_threshold) layer0[i][j] = TILE_STONE;
+            else                    layer0[i][j] = TILE_GRASS;
         }
     }
 
@@ -247,7 +224,14 @@ void Chunk::generate() {
                 ((f32) ((y * SIZE) + j)) / coal_frequency
             );
 
-            if(m < coal_threshold) tiles[i][j][1] = TILE_COAL_ORE;
+            if(m < coal_threshold) {
+                auto tile = (Tile_Ore*) malloc(sizeof(Tile_Ore));
+                tile->type = TILE_COAL_ORE;
+                tile->count = 1; // TODO
+
+                glm::ivec2 key = {i, j};
+                hmput(layer1, key, tile);
+            }
         }
     }
 }
@@ -272,7 +256,7 @@ void Chunk::render() {
 
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
-            auto tile = tiles[i][j][0];
+            auto tile = layer0[i][j];
 
             auto texture = tile_textures[tile].id;
             s32 tex_index = 0;

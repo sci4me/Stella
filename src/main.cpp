@@ -42,6 +42,7 @@
 #include "buffer_objects.cpp"
 #include "texture_atlas.cpp"
 #include "batch_renderer.cpp"
+#include "tile.cpp"
 #include "world.cpp"
 
 #ifdef GL_DEBUG
