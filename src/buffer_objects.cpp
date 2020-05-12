@@ -36,10 +36,10 @@ struct Vertex_Element {
             case GL_FLOAT:
             case GL_INT:
                 return count * 4;
-            default:
-                assert(0);
-                break;
         }
+        
+        assert(0);
+        return 0;
     }
 };
 

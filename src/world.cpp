@@ -24,6 +24,10 @@ struct Chunk {
         glm::ivec2 key;
         Tile *value;
     } *layer1;
+    struct {
+        glm::ivec2 key;
+        Tile *value;
+    } *layer2;
 
     Vertex_Array vao;
     Vertex_Buffer vbo;
@@ -185,6 +189,11 @@ void Chunk::free() {
     vao.free();
     vbo.free();
     ibo.free();
+
+    for(u32 i = 0; i < hmlen(layer1); i++) ::free(layer1[i].value);
+    for(u32 i = 0; i < hmlen(layer2); i++) ::free(layer2[i].value);
+    hmfree(layer1);
+    hmfree(layer2);
 }
 
 void Chunk::generate() {
@@ -225,14 +234,15 @@ void Chunk::generate() {
     }
 }
 
+Static_Array<Chunk::Vertex, Chunk::MAX_VERTICES> chunk_vertex_buffer;
+Static_Array<u32, Chunk::MAX_INDICES> chunk_index_buffer;
+
+// NOTE: This method is _not_ reentrant (or thread safe)!
 void Chunk::render() {
     texture_count = 0;
 
-    // TODO don't use the heap for these buffers?
-    auto vertices = (Static_Array<Vertex, MAX_VERTICES>*) malloc(sizeof(Static_Array<Vertex, MAX_VERTICES>));
-    vertices->clear();
-    auto indices = (Static_Array<u32, MAX_INDICES>*) malloc(sizeof(Static_Array<u32, MAX_INDICES>));
-    indices->clear();
+    chunk_vertex_buffer.clear();
+    chunk_index_buffer.clear();
 
     rnd_pcg_t l0rot = make_rng_for_chunk();
 
@@ -247,6 +257,7 @@ void Chunk::render() {
         for(s32 j = 0; j < SIZE; j++) {
             auto tile = layer0[i][j];
 
+            // TODO: Slot_Allocator<T> abstraction?
             auto texture = tile_textures[tile].id;
             s32 tex_index = 0;
             bool texture_found = false;
@@ -272,28 +283,25 @@ void Chunk::render() {
 
             auto rot = rnd_pcg_range(&l0rot, 0, 3);
 
-            u32 tl = vertices->push({ {k, l}, uvs[rot][0], tex_index });
-            u32 tr = vertices->push({ {k + TILE_SIZE, l}, uvs[rot][1], tex_index });
-            u32 br = vertices->push({ {k + TILE_SIZE, l + TILE_SIZE}, uvs[rot][2], tex_index });
-            u32 bl = vertices->push({ {k, l + TILE_SIZE}, uvs[rot][3], tex_index });
+            u32 tl = chunk_vertex_buffer.push({ {k, l}, uvs[rot][0], tex_index });
+            u32 tr = chunk_vertex_buffer.push({ {k + TILE_SIZE, l}, uvs[rot][1], tex_index });
+            u32 br = chunk_vertex_buffer.push({ {k + TILE_SIZE, l + TILE_SIZE}, uvs[rot][2], tex_index });
+            u32 bl = chunk_vertex_buffer.push({ {k, l + TILE_SIZE}, uvs[rot][3], tex_index });
 
-            indices->push(tl);
-            indices->push(tr);
-            indices->push(br);
-            indices->push(br);
-            indices->push(bl);
-            indices->push(tl);
+            chunk_index_buffer.push(tl);
+            chunk_index_buffer.push(tr);
+            chunk_index_buffer.push(br);
+            chunk_index_buffer.push(br);
+            chunk_index_buffer.push(bl);
+            chunk_index_buffer.push(tl);
         }
     }
 
-    assert(vertices->count == MAX_VERTICES);
-    assert(indices->count == MAX_INDICES);
+    assert(chunk_vertex_buffer.count == MAX_VERTICES);
+    assert(chunk_index_buffer.count == MAX_INDICES);
 
-    vbo.set_data(&vertices->data, MAX_VERTICES * sizeof(Vertex));
-    ibo.set_data(&indices->data, MAX_INDICES * sizeof(u32));
-
-    ::free(vertices);
-    ::free(indices);
+    vbo.set_data(&chunk_vertex_buffer.data, MAX_VERTICES * sizeof(Vertex));
+    ibo.set_data(&chunk_index_buffer.data, MAX_INDICES * sizeof(u32));
 }
 
 void Chunk::draw() {
