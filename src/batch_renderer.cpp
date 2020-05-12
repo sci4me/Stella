@@ -29,9 +29,9 @@ private:
     GLuint white_texture;
     u32 texture_count;
 
-    GLuint vao;
-    GLuint vbo;
-    GLuint ibo;
+    Vertex_Array vao;
+    Vertex_Buffer vbo;
+    Index_Buffer ibo;
 
     Static_Array<Vertex, MAX_VERTICES> vertices;
     Static_Array<u32, MAX_INDICES> indices;
@@ -45,10 +45,12 @@ public:
         u_proj = glGetUniformLocation(shader, "u_proj");
         u_view = glGetUniformLocation(shader, "u_view");
 
+
         s32 samplers[MAX_TEXTURE_SLOTS];
         for(s32 i = 0; i < MAX_TEXTURE_SLOTS; i++) 
             samplers[i] = i;
         glProgramUniform1iv(shader, u_textures, MAX_TEXTURE_SLOTS, samplers);
+
 
         glCreateTextures(GL_TEXTURE_2D, 1, &white_texture);
         glTextureStorage2D(white_texture, 1, GL_RGBA8, 1, 1);
@@ -59,38 +61,26 @@ public:
         glTextureParameteri(white_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(white_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-        glGenBuffers(1, &ibo);
 
-        glBindVertexArray(vao);
+        vbo.init(sizeof(vertices.data), GL_DYNAMIC_DRAW);
+        ibo.init(sizeof(indices.data), GL_DYNAMIC_DRAW);
         
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, MAX_VERTICES * sizeof(Vertex), 0, GL_DYNAMIC_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, color));
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, uv));
-        glVertexAttribIPointer(3, 1, GL_INT, sizeof(Vertex), (void*) offsetof(Vertex, tex));
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES * sizeof(u32), 0, GL_DYNAMIC_DRAW);
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        vao.init();
+        vao.add_vertex_buffer(vbo, {
+            { GL_FLOAT, 2 },
+            { GL_FLOAT, 4 },
+            { GL_FLOAT, 2 },
+            { GL_INT, 1 }
+        });
+        vao.set_index_buffer(ibo);
     }
 
     void free() {
         glDeleteProgram(shader);
         glDeleteTextures(1, &white_texture);
-        glDeleteVertexArrays(1, &vao);
-        glDeleteBuffers(1, &vbo);
-        glDeleteBuffers(1, &ibo);
+        vao.free();
+        vbo.free();
+        ibo.free();
     }
 
     void set_projection(glm::mat4 proj) {
@@ -106,16 +96,11 @@ public:
         per_frame_stats.indices += indices.count;
         per_frame_stats.draw_calls++;
 
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.count * sizeof(Vertex), &vertices.data);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.count * sizeof(u32), &indices.data);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        vbo.set_data(&vertices.data, vertices.count * sizeof(Vertex));
+        ibo.set_data(&indices.data, indices.count * sizeof(u32));
 
         glUseProgram(shader);
-        glBindVertexArray(vao);
+        vao.bind();
 
         for(u32 i = 0; i < texture_count; i++)
             glBindTextureUnit(i, textures[i]);
@@ -125,7 +110,7 @@ public:
         for(u32 i = 0; i < texture_count; i++)
             glBindTextureUnit(i, 0);
 
-        glBindVertexArray(0);
+        vao.unbind();
         glUseProgram(0);
 
         begin();

@@ -1,12 +1,8 @@
- - Vertex Array Object abstraction
-   - Ability to attach VBOs, IBOs, etc.
-     - Probably using their own abstractions
-       - Which themselves use the Buffer_Builder
-   - Ability to specify vertex format
-     - Just an array of sizes and types, essentially 
-   - Ability to "set" the data as well as "update" it
-     - "set" and "update" mean `glBufferData` or `glBufferSubData`
-       - Also need to be able to specify `GL_STATIC_DRAW` vs `GL_DYNAMIC_DRAW`
+ - Organization
+   - Probably only want one level of subdirectory in `src`
+ - Shader Abstraction
+   - Bind/Unbind
+   - Ability to handle uniforms
  - Framebuffer abstraction
    - "Just a wrapper" for OpenGL framebuffers
      - Ability to create and destroy them

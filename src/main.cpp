@@ -39,6 +39,7 @@
 #include "static_array.cpp"
 #include "shader.cpp"
 #include "texture.cpp"
+#include "buffer_objects.cpp"
 #include "texture_atlas.cpp"
 #include "batch_renderer.cpp"
 #include "world.cpp"
@@ -180,7 +181,8 @@ s32 main(s32 argc, char **argv) {
     load_tile_textures();
 
 
-    glm::vec2 pos = {0, 0};
+    // glm::vec2 pos = {0, 0};
+    glm::vec2 pos = {4400, -100};
 
     World world;
     world.init();

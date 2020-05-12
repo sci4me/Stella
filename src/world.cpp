@@ -44,9 +44,9 @@ struct Chunk {
     TileType tiles[SIZE][SIZE][LAYERS];
 
     // TODO: abstract this stuff somehow
-    GLuint vao;
-    GLuint vbo;
-    GLuint ibo;
+    Vertex_Array vao;
+    Vertex_Buffer vbo;
+    Index_Buffer ibo;
     u32 textures[MAX_TEXTURE_SLOTS];
     u32 texture_count;
 
@@ -202,35 +202,23 @@ void Chunk::init(World *world, s32 x, s32 y) {
     this->world = world;
     this->x = x;
     this->y = y;
+    
+    vbo.init(MAX_VERTICES * sizeof(Vertex), GL_STATIC_DRAW);
+    ibo.init(MAX_INDICES * sizeof(u32), GL_STATIC_DRAW);
 
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ibo);
-
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, MAX_VERTICES*sizeof(Vertex), 0, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, uv));
-    glVertexAttribIPointer(2, 1, GL_INT, sizeof(Vertex), (void*) offsetof(Vertex, tex));
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_INDICES*sizeof(u32), 0, GL_STATIC_DRAW);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    vao.init();
+    vao.add_vertex_buffer(vbo, {
+        { GL_FLOAT, 2 },
+        { GL_FLOAT, 2 },
+        { GL_INT, 1 }
+    });
+    vao.set_index_buffer(ibo);
 }
 
 void Chunk::free() {
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ibo);
+    vao.free();
+    vbo.free();
+    ibo.free();
 }
 
 void Chunk::generate() {
@@ -328,20 +316,15 @@ void Chunk::render() {
     assert(vertices->count == MAX_VERTICES);
     assert(indices->count == MAX_INDICES);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_VERTICES * sizeof(Vertex), &vertices->data);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, MAX_INDICES * sizeof(u32), &indices->data);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    vbo.set_data(&vertices->data, MAX_VERTICES * sizeof(Vertex));
+    ibo.set_data(&indices->data, MAX_INDICES * sizeof(u32));
 
     ::free(vertices);
     ::free(indices);
 }
 
 void Chunk::draw() {
-    glBindVertexArray(vao);
+    vao.bind();
 
     for(u32 i = 0; i < texture_count; i++)
         glBindTextureUnit(i, textures[i]);
@@ -351,7 +334,7 @@ void Chunk::draw() {
     for(u32 i = 0; i < texture_count; i++)
         glBindTextureUnit(i, 0);
 
-    glBindVertexArray(0);
+    vao.unbind();
 }
 
 rnd_pcg_t Chunk::make_rng_for_chunk() {
