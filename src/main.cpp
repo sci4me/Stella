@@ -36,6 +36,7 @@
 #include "imgui_support.cpp"
 
 #include "util.cpp"
+#include "static_array.cpp"
 #include "shader.cpp"
 #include "texture.cpp"
 #include "texture_atlas.cpp"

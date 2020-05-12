@@ -28,7 +28,6 @@ struct Chunk {
         glm::vec2 pos;
         glm::vec2 uv;
         s32 tex;
-        f32 uv_rotation;
     };
     #pragma pack(pop)
 
@@ -269,10 +268,10 @@ void Chunk::render() {
     texture_count = 0;
 
     // TODO don't use the heap for these buffers?
-    Vertex *vertices = (Vertex*) calloc(MAX_VERTICES, sizeof(Vertex));
-    u32 *indices = (u32*) calloc(MAX_INDICES, sizeof(u32));
-    u32 vertex_count = 0;
-    u32 index_count = 0;
+    auto vertices = (Static_Array<Vertex, MAX_VERTICES>*) malloc(sizeof(Static_Array<Vertex, MAX_VERTICES>));
+    vertices->clear();
+    auto indices = (Static_Array<u32, MAX_INDICES>*) malloc(sizeof(Static_Array<u32, MAX_INDICES>));
+    indices->clear();
 
     rnd_pcg_t l0rot = make_rng_for_chunk();
 
@@ -312,29 +311,29 @@ void Chunk::render() {
 
             auto rot = rnd_pcg_range(&l0rot, 0, 3);
 
-            u32 tl = vertex_count++; vertices[tl] = { {k, l}, uvs[rot][0], tex_index };
-            u32 tr = vertex_count++; vertices[tr] = { {k + TILE_SIZE, l}, uvs[rot][1], tex_index };
-            u32 br = vertex_count++; vertices[br] = { {k + TILE_SIZE, l + TILE_SIZE}, uvs[rot][2], tex_index };
-            u32 bl = vertex_count++; vertices[bl] = { {k, l + TILE_SIZE}, uvs[rot][3], tex_index };
+            u32 tl = vertices->push({ {k, l}, uvs[rot][0], tex_index });
+            u32 tr = vertices->push({ {k + TILE_SIZE, l}, uvs[rot][1], tex_index });
+            u32 br = vertices->push({ {k + TILE_SIZE, l + TILE_SIZE}, uvs[rot][2], tex_index });
+            u32 bl = vertices->push({ {k, l + TILE_SIZE}, uvs[rot][3], tex_index });
 
-            indices[index_count++] = tl;
-            indices[index_count++] = tr;
-            indices[index_count++] = br;
-            indices[index_count++] = br;
-            indices[index_count++] = bl;
-            indices[index_count++] = tl;
+            indices->push(tl);
+            indices->push(tr);
+            indices->push(br);
+            indices->push(br);
+            indices->push(bl);
+            indices->push(tl);
         }
     }
 
-    assert(vertex_count == MAX_VERTICES);
-    assert(index_count == MAX_INDICES);
+    assert(vertices->count == MAX_VERTICES);
+    assert(indices->count == MAX_INDICES);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_VERTICES * sizeof(Vertex), vertices);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_VERTICES * sizeof(Vertex), &vertices->data);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, MAX_INDICES * sizeof(u32), indices);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, MAX_INDICES * sizeof(u32), &indices->data);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     ::free(vertices);

@@ -33,10 +33,8 @@ private:
     GLuint vbo;
     GLuint ibo;
 
-    Vertex vertices[MAX_VERTICES];
-    u32 vertex_count;
-    u32 indices[MAX_INDICES];
-    u32 index_count;
+    Static_Array<Vertex, MAX_VERTICES> vertices;
+    Static_Array<u32, MAX_INDICES> indices;
 
     Per_Frame_Stats per_frame_stats;
 public:
@@ -100,20 +98,20 @@ public:
     }
 
     void flush() {
-        if(vertex_count == 0) return;
+        if(vertices.count == 0) return;
 
-        assert(index_count % 3 == 0 && index_count > 0);
+        assert(indices.count % 3 == 0 && indices.count > 0);
 
-        per_frame_stats.vertices += vertex_count;
-        per_frame_stats.indices += index_count;
+        per_frame_stats.vertices += vertices.count;
+        per_frame_stats.indices += indices.count;
         per_frame_stats.draw_calls++;
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_count * sizeof(Vertex), vertices);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.count * sizeof(Vertex), &vertices.data);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, index_count * sizeof(u32), indices);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.count * sizeof(u32), &indices.data);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         glUseProgram(shader);
@@ -122,7 +120,7 @@ public:
         for(u32 i = 0; i < texture_count; i++)
             glBindTextureUnit(i, textures[i]);
 
-        glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices.count, GL_UNSIGNED_INT, 0);
 
         for(u32 i = 0; i < texture_count; i++)
             glBindTextureUnit(i, 0);
@@ -130,14 +128,13 @@ public:
         glBindVertexArray(0);
         glUseProgram(0);
 
-        // Reset vertex_count, index_count, texture_count
         begin();
     }
 
     void ensure_available(u32 v, u32 i) {
         assert(v < MAX_VERTICES);
         assert(i < MAX_INDICES);
-        if(vertex_count + v > MAX_VERTICES || index_count + i > MAX_INDICES) flush();
+        if(vertices.count + v > MAX_VERTICES || indices.count + i > MAX_INDICES) flush();
     }
 
     void begin(glm::mat4 view_matrix) {
@@ -146,13 +143,13 @@ public:
     }
 
     void begin() {
-        vertex_count = 0;
-        index_count = 0;
+        vertices.clear();
+        indices.clear();
         texture_count = 0;
     }
 
     void end() {
-        if(vertex_count > 0) flush();
+        if(vertices.count > 0) flush();
     }
 
     Per_Frame_Stats end_frame() {
@@ -184,17 +181,17 @@ public:
             }
         }
 
-        u32 tl = vertex_count++; vertices[tl] = { {x,     y    }, color, uvs[0], tex_index };
-        u32 tr = vertex_count++; vertices[tr] = { {x + w, y    }, color, uvs[1], tex_index };
-        u32 br = vertex_count++; vertices[br] = { {x + w, y + h}, color, uvs[2], tex_index };
-        u32 bl = vertex_count++; vertices[bl] = { {x,     y + h}, color, uvs[3], tex_index };
+        u32 tl = vertices.push({ {x,     y    }, color, uvs[0], tex_index });
+        u32 tr = vertices.push({ {x + w, y    }, color, uvs[1], tex_index });
+        u32 br = vertices.push({ {x + w, y + h}, color, uvs[2], tex_index });
+        u32 bl = vertices.push({ {x,     y + h}, color, uvs[3], tex_index });
 
-        indices[index_count++] = tl;
-        indices[index_count++] = tr;
-        indices[index_count++] = br;
-        indices[index_count++] = br;
-        indices[index_count++] = bl;
-        indices[index_count++] = tl;
+        indices.push(tl);
+        indices.push(tr);
+        indices.push(br);
+        indices.push(br);
+        indices.push(bl);
+        indices.push(tl);
 
         per_frame_stats.quads++;
     }
