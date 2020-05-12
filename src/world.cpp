@@ -110,17 +110,6 @@ struct World {
         return get_chunk(cx, cy);
     }
 
-    Tile_Type get_tile(s32 x, s32 y) {
-        Chunk *c = get_chunk_containing(x, y);
-        return c->layer0[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)];
-    }
-
-    void set_tile(s32 x, s32 y, Tile_Type type) {
-        assert(type != N_TILE_TYPES);
-        Chunk *c = get_chunk_containing(x, y);
-        c->layer0[x & (Chunk::SIZE-1)][y & (Chunk::SIZE-1)] = type;
-    }
-
     u32 render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
         f32 x = pos.x * scale;
         f32 y = pos.y * scale;
