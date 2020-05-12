@@ -3,11 +3,8 @@ struct GL_Buffer {
     GLuint id;
 
     void init(u64 size, GLenum usage) {
-        glGenBuffers(1, &id);
-
-        bind();
-        glBufferData(type, size, nullptr, usage);
-        unbind();
+        glCreateBuffers(1, &id);
+        glNamedBufferData(id, size, nullptr, usage);
     }
 
     void free() {
@@ -23,9 +20,7 @@ struct GL_Buffer {
     }
 
     void set_data(void *data, u32 size) {
-        bind();
-        glBufferSubData(type, 0, size, data);
-        unbind();
+        glNamedBufferSubData(id, 0, size, data);
     }
 };
 
@@ -50,9 +45,11 @@ struct Vertex_Element {
 
 struct Vertex_Array {
     GLuint id;
+    GLuint binding_index;
 
     void init() {
-        glGenVertexArrays(1, &id);
+        glCreateVertexArrays(1, &id);
+        binding_index = 0;
     }
 
     void free() {
@@ -68,25 +65,25 @@ struct Vertex_Array {
     }
 
     void add_vertex_buffer(Vertex_Buffer& vbo, std::initializer_list<Vertex_Element> format) {
-        bind();
-        vbo.bind();
-
-        s64 size = 0;
+        s64 stride = 0;
         for(auto& e: format) {
-            size += e.size();
+            stride += e.size();
         }
+
+        glVertexArrayVertexBuffer(id, binding_index, vbo.id, 0, stride);
 
         s32 i = 0;
         s64 offset = 0;
         for(auto& e: format) {
-            glEnableVertexAttribArray(i);
+            glEnableVertexArrayAttrib(id, i);
+            glVertexArrayAttribBinding(id, i, binding_index);
 
             switch(e.type) {
                 case GL_FLOAT:
-                    glVertexAttribPointer(i, e.count, e.type, GL_FALSE, size, (void*) offset);
+                    glVertexArrayAttribFormat(id, i, e.count, e.type, GL_FALSE, offset);
                     break;
                 case GL_INT:
-                    glVertexAttribIPointer(i, e.count, e.type, size, (void*) offset);
+                    glVertexArrayAttribIFormat(id, i, e.count, e.type, offset);
                     break;
                 default:
                     assert(0);
@@ -96,14 +93,10 @@ struct Vertex_Array {
             i++;
         }
 
-        unbind();
-        vbo.unbind();
+        binding_index++;
     }
 
     void set_index_buffer(Index_Buffer& ibo) {
-        bind();
-        ibo.bind();
-        unbind();
-        ibo.unbind();
+        glVertexArrayElementBuffer(id, ibo.id);
     }
 };
