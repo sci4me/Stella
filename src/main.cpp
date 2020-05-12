@@ -123,6 +123,7 @@ struct Player {
         glfwGetCursorPos(window, &mx, &my);
 
         tile_hovered = false;
+        is_mining = false;
         if(mx >= 0 && my >= 0 && mx < window_width && my < window_height) {
             glm::vec2 mouse_world_pos = {
                 pos.x + ((mx - (window_width / 2)) / scale),
@@ -151,13 +152,29 @@ struct Player {
                     if(is_mining) handle_mining();
                 }
             }
-        } 
+        }
+        if(!is_mining) mining_progress = 0.0f;
     }
 
     void draw(Batch_Renderer *r) {
         if(tile_hovered) {
-            // TODO: `is_mining`
-            r->push_solid_quad(hovered_tile_x * TILE_SIZE, hovered_tile_y * TILE_SIZE, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 1.0f, 0.2f)); 
+            if(is_mining) {
+                r->push_solid_quad(
+                    hovered_tile_x * TILE_SIZE, 
+                    hovered_tile_y * TILE_SIZE, 
+                    clampf(mining_progress, 0.0f, 1.0f) * TILE_SIZE,
+                    TILE_SIZE,
+                    glm::vec4(1.0f, 0.0f, 0.0f, 0.5f)
+                );
+            } else {
+                r->push_solid_quad(
+                    hovered_tile_x * TILE_SIZE, 
+                    hovered_tile_y * TILE_SIZE, 
+                    TILE_SIZE, 
+                    TILE_SIZE, 
+                    glm::vec4(1.0f, 1.0f, 1.0f, 0.2f)
+                ); 
+            }
         }
 
         r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -165,6 +182,15 @@ struct Player {
 
 private:
     void handle_mining() {
+        // TODO: Base this on mining speed and
+        // make sure to handle time correctly.
+        mining_progress += 0.015f;
+        if(mining_progress >= 1.0f) {
+            mining_progress = 0.0f;
+        } else {
+            return;
+        }
+
         Chunk *chunk = world->get_chunk_containing(hovered_tile_x, hovered_tile_y);
 
         glm::ivec2 key = {
@@ -182,7 +208,6 @@ private:
         
         Tile *tile = layer[index].value;
 
-        // TODO
         switch(tile->type) {
             case TILE_COAL_ORE: {
                 Tile_Ore *ore = (Tile_Ore*) tile;
@@ -190,8 +215,8 @@ private:
                     hmdel(layer, key);
 
                     // TODO: we mined the ore, we ought to get that ore
-                    // in our inventory. Or drop it into the world as an entity
-                    // if our inventory is full.
+                    // in our inventory. Or drop it into the world as
+                    // an entity if our inventory is full.
                 } else {
                     ore->count--;
                 }
