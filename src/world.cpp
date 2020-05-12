@@ -196,6 +196,8 @@ void Chunk::free() {
 }
 
 void Chunk::generate() {
+    // TODO
+
     constexpr f32 stone_frequency = 70.0f;
     constexpr f32 stone_threshold = 0.4f;
 

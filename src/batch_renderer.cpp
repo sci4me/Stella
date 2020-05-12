@@ -55,7 +55,7 @@ public:
         glTextureStorage2D(white_texture, 1, GL_RGBA8, 1, 1);
         u32 white = 0xFFFFFFFF;
         glTextureSubImage2D(white_texture, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &white);
-        glTextureParameteri(white_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(white_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTextureParameteri(white_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTextureParameteri(white_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(white_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -151,10 +151,11 @@ public:
         else                     tex_index = textures.alloc(white_texture);
         assert(tex_index != -1); // TODO
 
-        u32 tl = vertices.push({ {x,     y    }, color, uvs[0], tex_index });
-        u32 tr = vertices.push({ {x + w, y    }, color, uvs[1], tex_index });
-        u32 br = vertices.push({ {x + w, y + h}, color, uvs[2], tex_index });
-        u32 bl = vertices.push({ {x,     y + h}, color, uvs[3], tex_index });
+        auto apm_color = alpha_premultiply(color);
+        u32 tl = vertices.push({ {x,     y    }, apm_color, uvs[0], tex_index });
+        u32 tr = vertices.push({ {x + w, y    }, apm_color, uvs[1], tex_index });
+        u32 br = vertices.push({ {x + w, y + h}, apm_color, uvs[2], tex_index });
+        u32 bl = vertices.push({ {x,     y + h}, apm_color, uvs[3], tex_index });
 
         indices.push(tl);
         indices.push(tr);

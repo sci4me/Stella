@@ -36,6 +36,7 @@
 #include "imgui_support.cpp"
 
 #include "util.cpp"
+#include "math.cpp"
 #include "static_array.cpp"
 #include "slot_allocator.cpp"
 #include "shader.cpp"
@@ -95,22 +96,6 @@ void window_size_callback(GLFWwindow* window, s32 width, s32 height) {
     window_resized = true;
 }
 
-void dump_gl_info() {
-    // TODO: some kind of logging!!!
-
-    printf("OpenGL Info:\n");
-    printf("  GL_VENDOR                     %s\n", glGetString(GL_VENDOR));
-    printf("  GL_RENDERER                   %s\n", glGetString(GL_RENDERER));
-    printf("  GL_VERSION                    %s\n", glGetString(GL_VERSION));
-    printf("  GL_SHADING_LANGUAGE_VERSION   %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-
-    GLint major, minor; 
-    glGetIntegerv(GL_MAJOR_VERSION, &major); 
-    glGetIntegerv(GL_MINOR_VERSION, &minor); 
-    printf("  GL_MAJOR_VERSION              %d\n", major);
-    printf("  GL_MINOR_VERSION              %d\n", minor);
-}
 
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
@@ -255,6 +240,36 @@ s32 main(s32 argc, char **argv) {
             //              - sci4me, 5/9/20
             chunk_draw_calls = world.render_around(r, pos, scale, window_width, window_height, view);
         
+            {
+                f64 mx, my;
+                glfwGetCursorPos(window, &mx, &my);
+
+                if(mx >= 0 && my >= 0 && mx < window_width && my < window_height) {
+                    glm::vec2 mouse_world_pos = {
+                        pos.x + ((mx - (window_width / 2)) / scale),
+                        pos.y + ((my - (window_height / 2)) / scale)
+                    };
+                    if(glm::distance(mouse_world_pos, pos) < 10 * TILE_SIZE) {
+                        s32 k = floor(mouse_world_pos.x / TILE_SIZE);
+                        s32 l = floor(mouse_world_pos.y / TILE_SIZE);
+                        
+                        Chunk *chunk = world.get_chunk_containing(k, l);
+
+                        glm::ivec2 key = {
+                            k & (Chunk::SIZE - 1),
+                            l & (Chunk::SIZE - 1)
+                        };
+                        
+                        auto l1i = hmgeti(chunk->layer1, key);
+                        auto l2i = hmgeti(chunk->layer2, key);
+
+                        if(l1i != -1 || l2i != -1) {
+                            r->push_solid_quad(k * TILE_SIZE, l * TILE_SIZE, TILE_SIZE, TILE_SIZE, glm::vec4(1.0f, 1.0f, 1.0f, 0.2f)); 
+                        }
+                    }
+                } 
+            }
+
             r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         }
         auto per_frame_stats = r->end_frame();

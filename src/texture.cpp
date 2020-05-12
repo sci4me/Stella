@@ -38,47 +38,6 @@ struct Texture {
     }
 };
 
-inline f32 square(f32 x) { return x * x; } 
-
-inline glm::vec4 rgba255_to_rgba1(u32 c) {
-    u8 r = c & 0xFF;
-    u8 g = (c >> 8) & 0xFF;
-    u8 b = (c >> 16) & 0xFF;
-    u8 a = (c >> 24) & 0xFF;
-    return {
-        (f32)r / 255.0f,
-        (f32)g / 255.0f,
-        (f32)b / 255.0f,
-        (f32)a / 255.0f
-    };
-}
-
-inline u32 rgba1_to_rgba255(glm::vec4 c) {
-    u8 r = (u8) roundf(c.x * 255.0f);
-    u8 g = (u8) roundf(c.y * 255.0f);
-    u8 b = (u8) roundf(c.z * 255.0f);
-    u8 a = (u8) roundf(c.w * 255.0f);
-    return a << 24 | b << 16 | g << 8 | r;
-}
-
-inline glm::vec4 rgba1_to_linear(glm::vec4 c) {
-    return {
-        square(c.x),
-        square(c.y),
-        square(c.z),
-        c.w
-    };
-}
-
-inline glm::vec4 linear_to_rgba1(glm::vec4 c) {
-    return {
-        sqrtf(c.x),
-        sqrtf(c.y),
-        sqrtf(c.z),
-        c.w
-    };
-}
-
 void downsample_2x_in_place(u8 *image, u32 size) {
     u32 result_size = size >> 1;
 
@@ -104,16 +63,16 @@ void downsample_2x_in_place(u8 *image, u32 size) {
     }
 }
 
-void alpha_premultiply(u32 *image, u32 w, u32 h) {
+void alpha_premultiply_in_place(u32 *image, u32 w, u32 h) {
+    // NOTE: We could definitely do this with SIMD.
+    // NOT necessary. AT ALL. Not even a little bit.
+    // Hell, eventually this would really just be something
+    // we do at build time anyway, so, yeah. But. Yknow.
+    // Maybe if I'm bored sometime.
+
     u32 *pixel = image;
-    for(u32 y = 0; y < h; y++) {
-        for(u32 x = 0; x < w; x++) {
-            auto p = rgba1_to_linear(rgba255_to_rgba1(*pixel));
-            p.x *= p.w;
-            p.y *= p.w;
-            p.z *= p.w;
-            *pixel++ = rgba1_to_rgba255(linear_to_rgba1(p));
-        }
+    for(u32 i = 0; i < w * h; i++) {
+        *pixel++ = rgba1_to_rgba255(alpha_premultiply(rgba255_to_rgba1(*pixel)));
     }
 }
 
@@ -126,7 +85,7 @@ Texture load_texture_from_file(const char *path, bool generate_mipmaps = false) 
         exit(1);
     }
 
-    alpha_premultiply((u32*)image, w, h);
+    alpha_premultiply_in_place((u32*)image, w, h);
 
     Texture result;
 
