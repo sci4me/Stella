@@ -7,6 +7,11 @@ struct Chunk {
     };
     #pragma pack(pop)
 
+    struct Tile_Map {
+        glm::ivec2 key;
+        Tile *value;
+    };
+
     static const s32 SIZE = 64; // must be a power of 2!
     static const s32 LAYERS = 3;
 
@@ -20,14 +25,8 @@ struct Chunk {
     s32 y;
 
     Tile_Type layer0[SIZE][SIZE];
-    struct {
-        glm::ivec2 key;
-        Tile *value;
-    } *layer1;
-    struct {
-        glm::ivec2 key;
-        Tile *value;
-    } *layer2;
+    Tile_Map *layer1;
+    Tile_Map *layer2;
 
     Vertex_Array vao;
     Vertex_Buffer vbo;
@@ -113,7 +112,7 @@ struct World {
         return get_chunk(cx, cy);
     }
 
-    u32 render_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
+    u32 draw_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
         f32 x = pos.x * scale;
         f32 y = pos.y * scale;
 
@@ -157,7 +156,7 @@ struct World {
 
                     if(l < vp_min_x || m < vp_min_y || l > vp_max_x || m > vp_max_y) continue;
 
-                    r->push_textured_quad(l * TILE_SIZE, m * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) tile->type]);
+                    tile->draw(r);
                 }
             }
         }
@@ -224,9 +223,13 @@ void Chunk::generate() {
             );
 
             if(m < coal_threshold) {
-                auto tile = (Tile_Ore*) malloc(sizeof(Tile_Ore));
+                auto tile_mem = malloc(sizeof(Tile_Ore));
+                auto tile = new(tile_mem) Tile_Ore;
                 tile->type = TILE_COAL_ORE;
-                tile->count = 1; // TODO
+                tile->x = x * SIZE + i;
+                tile->y = y * SIZE + j;
+                tile->count = 100; // TODO
+                tile->initial_count = tile->count;
 
                 glm::ivec2 key = {i, j};
                 hmput(layer1, key, tile);
