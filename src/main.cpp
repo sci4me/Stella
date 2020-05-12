@@ -37,6 +37,7 @@
 
 #include "util.cpp"
 #include "static_array.cpp"
+#include "slot_allocator.cpp"
 #include "shader.cpp"
 #include "texture.cpp"
 #include "buffer_objects.cpp"

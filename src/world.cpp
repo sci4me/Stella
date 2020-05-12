@@ -32,8 +32,7 @@ struct Chunk {
     Vertex_Array vao;
     Vertex_Buffer vbo;
     Index_Buffer ibo;
-    u32 textures[MAX_TEXTURE_SLOTS];
-    u32 texture_count;
+    Slot_Allocator<GLuint, MAX_TEXTURE_SLOTS> textures;
 
     void init(struct World *world, s32 x, s32 y);
     void free();
@@ -239,10 +238,10 @@ Static_Array<u32, Chunk::MAX_INDICES> chunk_index_buffer;
 
 // NOTE: This method is _not_ reentrant (or thread safe)!
 void Chunk::render() {
-    texture_count = 0;
-
     chunk_vertex_buffer.clear();
     chunk_index_buffer.clear();
+    
+    textures.clear();
 
     rnd_pcg_t l0rot = make_rng_for_chunk();
 
@@ -256,27 +255,10 @@ void Chunk::render() {
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
             auto tile = layer0[i][j];
-
-            // TODO: Slot_Allocator<T> abstraction?
             auto texture = tile_textures[tile].id;
-            s32 tex_index = 0;
-            bool texture_found = false;
-            for(u32 t = 0; t < texture_count; t++) {
-                if(textures[t] == texture) {
-                    tex_index = t;
-                    texture_found = true;
-                    break;
-                }
-            }
-            if(!texture_found) {
-                if(texture_count < MAX_TEXTURE_SLOTS) {
-                    textures[texture_count] = texture;
-                    tex_index = texture_count;
-                    texture_count++;
-                } else {
-                    assert(0); // TODO
-                }
-            }
+
+            s32 tex_index = textures.alloc(texture);
+            assert(tex_index != -1); // TODO
 
             f32 k = ((x * SIZE) + i) * TILE_SIZE;
             f32 l = ((y * SIZE) + j) * TILE_SIZE;
@@ -307,12 +289,12 @@ void Chunk::render() {
 void Chunk::draw() {
     vao.bind();
 
-    for(u32 i = 0; i < texture_count; i++)
-        glBindTextureUnit(i, textures[i]);
+    for(u32 i = 0; i < textures.count; i++)
+        glBindTextureUnit(i, textures.slots[i]);
 
     glDrawElements(GL_TRIANGLES, MAX_INDICES, GL_UNSIGNED_INT, 0);
 
-    for(u32 i = 0; i < texture_count; i++)
+    for(u32 i = 0; i < textures.count; i++)
         glBindTextureUnit(i, 0);
 
     vao.unbind();

@@ -25,9 +25,8 @@ private:
     GLint u_proj;
     GLint u_view;
 
-    GLuint textures[MAX_TEXTURE_SLOTS];
     GLuint white_texture;
-    u32 texture_count;
+    Slot_Allocator<GLuint, MAX_TEXTURE_SLOTS - 1> textures;
 
     Vertex_Array vao;
     Vertex_Buffer vbo;
@@ -102,12 +101,12 @@ public:
         glUseProgram(shader);
         vao.bind();
 
-        for(u32 i = 0; i < texture_count; i++)
-            glBindTextureUnit(i, textures[i]);
+        for(u32 i = 0; i < textures.count; i++)
+           glBindTextureUnit(i, textures.slots[i]);
 
         glDrawElements(GL_TRIANGLES, indices.count, GL_UNSIGNED_INT, 0);
 
-        for(u32 i = 0; i < texture_count; i++)
+        for(u32 i = 0; i < textures.count; i++)
             glBindTextureUnit(i, 0);
 
         vao.unbind();
@@ -130,7 +129,7 @@ public:
     void begin() {
         vertices.clear();
         indices.clear();
-        texture_count = 0;
+        textures.clear();
     }
 
     void end() {
@@ -147,24 +146,10 @@ public:
     void push_quad(f32 x, f32 y, f32 w, f32 h, glm::vec4 color, glm::vec2 uvs[4], GLuint texture) {
         ensure_available(4, 6);
 
-        s32 tex_index = 0;
-        if(texture) {
-            for(u32 i = 1; i < texture_count; i++) {
-                if(textures[i] == texture) {
-                    tex_index = i;
-                    break;
-                }
-            }
-            if(!tex_index) {
-                if(texture_count < MAX_TEXTURE_SLOTS) {
-                    textures[texture_count] = texture;
-                    tex_index = texture_count;
-                    texture_count++;
-                } else {
-                    assert(0); // TODO
-                }
-            }
-        }
+        s32 tex_index;
+        if(glIsTexture(texture)) tex_index = textures.alloc(texture);
+        else                     tex_index = textures.alloc(white_texture);
+        assert(tex_index != -1); // TODO
 
         u32 tl = vertices.push({ {x,     y    }, color, uvs[0], tex_index });
         u32 tr = vertices.push({ {x + w, y    }, color, uvs[1], tex_index });
