@@ -1,5 +1,7 @@
 namespace ui {
+    u32 held_item_index;
     Item_Stack *held_item_stack;
+    Item_Container *held_item_container;
 
     void held_item(f32 size = 32.0f) {
         if(!held_item_stack) return;
@@ -29,8 +31,7 @@ namespace ui {
         );
     }
 
-    template<u32 width, u32 height>
-    void slot(Item_Container<width, height> *container, u32 index, f32 size = 32.0f) {
+    void slot(Item_Container *container, u32 index, f32 size = 32.0f) {
         ImGui::PushID(index);
 
         // NOTE: OH NO! A REFERENCE! WHAT EVER WILL SCI4ME DO?!?!!!?!$?!%!
@@ -47,7 +48,9 @@ namespace ui {
                 if(held_item_stack) {
                     assert(0);
                 } else {
+                    held_item_index = index;
                     held_item_stack = &slot;
+                    held_item_container = container;
                 }
             }
 
@@ -62,8 +65,18 @@ namespace ui {
             if(ImGui::Button("", {size + style.FramePadding.x*2, size + style.FramePadding.y*2})) {
                 if(held_item_stack == &slot) {
                     held_item_stack = nullptr;
+                    held_item_container = nullptr;
                 } else {
-                    assert(0);
+                    if(held_item_container == container) {
+                        held_item_stack = nullptr;
+                        held_item_container = nullptr;
+                    } else {
+                        container->insert(*held_item_stack);
+                        held_item_container->remove(held_item_index);
+
+                        held_item_stack = nullptr;
+                        held_item_container = nullptr;
+                    }
                 }
             }
         }
@@ -71,8 +84,9 @@ namespace ui {
         ImGui::PopID();
     }
 
-    template<u32 width, u32 height>
-    void inventory(const char *name, Item_Container<width, height> *container, f32 slot_size = 32.0f) {
+    void inventory(const char *name, Item_Container *container, u32 width, u32 height, f32 slot_size = 32.0f) {
+        assert(width * height == container->size);
+
         if(ImGui::Begin(name, 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             for(u32 j = 0; j < height; j++) {
                 for(u32 i = 0; i < width; i++) {

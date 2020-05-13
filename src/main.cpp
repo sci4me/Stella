@@ -303,7 +303,8 @@ s32 main(s32 argc, char **argv) {
     }
 
     world.free();
-
+    player.free();
+    
     r->free();
     free(r);
 

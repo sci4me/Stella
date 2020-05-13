@@ -11,13 +11,20 @@ struct Player {
     bool is_mining = false;
     f32 mining_progress;
 
-    Item_Container<4, 4> inventory;
+    Item_Container inventory;
+    Item_Container backpack; // TODO REMOVEME TESTING
 
     void init(GLFWwindow *window, World *world) {
         this->window = window;
         this->world = world;
 
-        inventory.init();
+        inventory.init(16);
+        backpack.init(3); // TODO REMOVEME TESTING
+    }
+
+    void free() {
+        inventory.free();
+        backpack.free(); // TODO REMOVEME TESTING
     }
 
     void update() {
@@ -91,7 +98,8 @@ struct Player {
     }
 
     void show_inventory() {
-        ui::inventory("Inventory", &inventory);
+        ui::inventory("Inventory", &inventory, 4, 4);
+        ui::inventory("Backpack", &backpack, 3, 1); // TODO REMOVEME TESTING
     }
 
 private:
