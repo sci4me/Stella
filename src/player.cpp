@@ -112,7 +112,7 @@ struct Player {
                 }
             }
         }
-        
+
         if(!is_mining) mining_progress = 0.0f;
     }
 
@@ -157,46 +157,8 @@ struct Player {
             }
         }
 
-        if(active_ui_tile) {
-            switch(active_ui_tile->type) {
-                case TILE_CHEST: {
-                    Tile_Chest *c = (Tile_Chest*) active_ui_tile;
-                    
-                    // TODO: This code should NOT be here! I reallllly need to like, make hpps and uh
-                    // forward declare my shit, yo.
-
-                    // NOTE: Currently we only have one GUI open at a time,
-                    // so we don't have to push any extra ID info.
-                    bool open = true;
-                    if(ImGui::Begin("Chest", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
-                        // NOTE TODO: hardcoded bs code for days
-                        ui::container(&c->container, 5, 5);
-
-                        ImGui::Separator();
-
-                        ui::container(&inventory, 4, 4);
-                        
-                        ui::held_item();
-                    }
-                    ImGui::End();
-
-                    if(!open) active_ui_tile = nullptr;
-                    break;
-                }
-                default: {
-                    assert(0);
-                }
-            }
-        }
-
-        if(show_inventory) {
-            if(ImGui::Begin("Inventory", &show_inventory, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
-                // NOTE TODO: hardcoded bs code for days
-                ui::container(&inventory, 4, 4);
-                ui::held_item();
-            }
-            ImGui::End();
-        }
+        ui::tile_ui(&inventory, &active_ui_tile);
+        ui::player_inventory(&inventory, &show_inventory);
 
         r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
@@ -243,12 +205,12 @@ private:
             case TILE_COAL_ORE: {
                 Tile_Ore *ore = (Tile_Ore*) tile;
                 
-                // TODO: we mined the ore, we ought to get that ore
-                // in our inventory. Or drop it into the world as
-                // an entity if our inventory is full.
-
-                // TODO REMOVEME TESTING
-                inventory.insert({ ITEM_COAL_ORE, 1 }); // NOTE: shouldn't ignore return value!
+                // NOTE TODO: If the result is >0 we need to
+                // either spawn the item in the world, or,
+                // probably just don't actually perform 
+                // the mining operation.
+                //              - sci4me, 5/13/20
+                assert(!inventory.insert({ ITEM_COAL_ORE, 1 }));
 
                 if(ore->count == 1) {
                     hmdel(layer, key);
@@ -262,12 +224,20 @@ private:
             case TILE_CHEST: {
                 Tile_Chest *chest = (Tile_Chest*) tile;
 
+                // NOTE: Doing this here feels so wrong lol.
+                // Almost makes me wonder if we don't want to have
+                // some sort of handle system for referencing tiles
+                // so that we can handle when they're destroyed
+                // a little bit better... .... maybe.....
                 if(active_ui_tile == chest) active_ui_tile = nullptr;
 
                 for(u32 i = 0; i < chest->container.size; i++) {
                     if(!chest->container.slots[i].count) continue;
 
                     u32 rem = inventory.insert(chest->container.slots[i]);
+
+                    // NOTE TODO: If the result is >0 we have to
+                    // spawn the item in the world.
                     assert(!rem);
                 }
 

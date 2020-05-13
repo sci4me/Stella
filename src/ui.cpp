@@ -91,4 +91,47 @@ namespace ui {
         }
         ImGui::PopID();
     }
+
+    void tile_ui(Item_Container *player_inventory, Tile **tile_ref) {
+        Tile *tile = *tile_ref;
+        if(tile) {
+            switch(tile->type) {
+                case TILE_CHEST: {
+                    Tile_Chest *c = (Tile_Chest*) tile;
+                    
+                    // NOTE: Currently we only have one GUI open at a time,
+                    // so we don't have to push any extra ID info.
+                    bool open = true;
+                    if(ImGui::Begin("Chest", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
+                        // NOTE TODO: hardcoded bs code for days
+                        ui::container(&c->container, 5, 5);
+
+                        ImGui::Separator();
+
+                        ui::container(player_inventory, 4, 4);
+                        
+                        ui::held_item();
+                    }
+                    ImGui::End();
+
+                    if(!open) *tile_ref = nullptr;
+                    break;
+                }
+                default: {
+                    assert(0);
+                }
+            }
+        }
+    }
+
+    void player_inventory(Item_Container *inventory, bool *open) {
+        if(!*open) return;
+        
+        if(ImGui::Begin("Inventory", open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
+            // NOTE TODO: hardcoded bs code for days
+            ui::container(inventory, 4, 4);
+            ui::held_item();
+        }
+        ImGui::End();
+    }
 }
