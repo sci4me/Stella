@@ -41,8 +41,6 @@ namespace ui {
         auto font_size = ImGui::GetFontSize();
         auto drawlist = ImGui::GetForegroundDrawList();
 
-        // TODO: simplify this entire thing!!! We've got a bunch of duplicated code... etc.
-
         bool clicked;
         if(slot.count && !(held_item_container == container && held_item_index == index)) {
             clicked = ImGui::ImageButton((ImTextureID) tile_textures[TILE_COAL_ORE].id, {size, size});
