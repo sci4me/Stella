@@ -41,11 +41,20 @@ namespace ui {
         auto font_size = ImGui::GetFontSize();
         auto drawlist = ImGui::GetForegroundDrawList();
 
+        // TODO: simplify this entire thing!!! We've got a bunch of duplicated code... etc.
+
         if(slot.count && !(held_item_container == container && held_item_index == index)) {
             // TODO: don't use TILE_COAL_ORE texture lol
             if(ImGui::ImageButton((ImTextureID)tile_textures[TILE_COAL_ORE].id, {size, size})) {
                 if(held_item_container) {
-                    assert(0);
+                    if(held_item_container == container) {
+                        held_item_container = nullptr;
+                    } else {
+                        container->insert(held_item_container->slots[held_item_index]);
+                        held_item_container->remove(held_item_index);
+
+                        held_item_container = nullptr;
+                    }
                 } else {
                     held_item_container = container;
                     held_item_index = index;
@@ -60,14 +69,20 @@ namespace ui {
 
             drawlist->AddText(font, font_size, {tpos.x-tsize.x, tpos.y-tsize.y}, 0xFFFFFFFF, buf);
         } else {
+            // TODO: Investigate whether this call to ImGui::Button requires us to push an ID or not...
             if(ImGui::Button("", {size + style.FramePadding.x*2, size + style.FramePadding.y*2})) {
-                if(held_item_container == container) {
-                    held_item_container = nullptr;
-                } else {
-                    container->insert(held_item_container->slots[held_item_index]);
-                    held_item_container->remove(held_item_index);
+                if(held_item_container) {
+                    if(held_item_container == container) {
+                        held_item_container = nullptr;
+                    } else {
+                        container->insert(held_item_container->slots[held_item_index]);
+                        held_item_container->remove(held_item_index);
 
-                    held_item_container = nullptr;
+                        held_item_container = nullptr;
+                    }
+                } else {
+                    // NOTE: The user clicked an empty slot while
+                    // not holding any item; no-op.
                 }
             }
         }
@@ -75,6 +90,11 @@ namespace ui {
         ImGui::PopID();
     }
 
+    // NOTE: Maybe the right thing to do is just remove this function entirely?
+    // If not that, eventually, we'll want to change it and possibly abstract it
+    // to support >1 Item_Container, for example if the player opens a chest;
+    // they need to have access to _their_ inventory as well as that of the chest.
+    //              - sci4me, 5/13/20
     void inventory(const char *name, Item_Container *container, u32 width, u32 height, f32 slot_size = 32.0f) {
         assert(width * height == container->size);
 
