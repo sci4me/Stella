@@ -22,17 +22,17 @@ Texture coal_textures[N_COAL_TEXTURES];
 void load_tile_textures() {
     constexpr bool MIPS = true;
 
-    tile_textures[TILE_STONE]       = load_texture_from_file("res/textures/stone.png", MIPS);
-    tile_textures[TILE_GRASS]       = load_texture_from_file("res/textures/grass.png", MIPS);
-    tile_textures[TILE_COAL_ORE]    = load_texture_from_file("res/textures/coal_ore_100.png", MIPS);
+    tile_textures[TILE_STONE]       = load_texture_from_file("res/textures/tile/stone.png", MIPS);
+    tile_textures[TILE_GRASS]       = load_texture_from_file("res/textures/tile/grass.png", MIPS);
+    tile_textures[TILE_COAL_ORE]    = load_texture_from_file("res/textures/tile/coal_ore_100.png", MIPS);
 
     coal_textures[6]                = tile_textures[TILE_COAL_ORE];
-    coal_textures[5]                = load_texture_from_file("res/textures/coal_ore_90.png", MIPS);
-    coal_textures[4]                = load_texture_from_file("res/textures/coal_ore_70.png", MIPS);
-    coal_textures[3]                = load_texture_from_file("res/textures/coal_ore_50.png", MIPS);
-    coal_textures[2]                = load_texture_from_file("res/textures/coal_ore_30.png", MIPS);
-    coal_textures[1]                = load_texture_from_file("res/textures/coal_ore_20.png", MIPS);
-    coal_textures[0]                = load_texture_from_file("res/textures/coal_ore_10.png", MIPS);
+    coal_textures[5]                = load_texture_from_file("res/textures/tile/coal_ore_90.png", MIPS);
+    coal_textures[4]                = load_texture_from_file("res/textures/tile/coal_ore_70.png", MIPS);
+    coal_textures[3]                = load_texture_from_file("res/textures/tile/coal_ore_50.png", MIPS);
+    coal_textures[2]                = load_texture_from_file("res/textures/tile/coal_ore_30.png", MIPS);
+    coal_textures[1]                = load_texture_from_file("res/textures/tile/coal_ore_20.png", MIPS);
+    coal_textures[0]                = load_texture_from_file("res/textures/tile/coal_ore_10.png", MIPS);
 }
 
 

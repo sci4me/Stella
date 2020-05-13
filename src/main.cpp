@@ -77,6 +77,13 @@ bool fullscreen = false;
 bool vsync = true;
 
 
+// TODO: Move this up with the rest of the includes!
+// We probably want to create a struct to hold things
+// like `window_width`, etc. before doing so...
+//              - sci4me, 5/12/20
+#include "player.cpp"
+
+
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
     scale = clampf(scale + y * 0.05f, 0.25f, 5.0f);
 }
@@ -95,141 +102,6 @@ void window_size_callback(GLFWwindow* window, s32 width, s32 height) {
     window_height = height;
     window_resized = true;
 }
-
-
-struct Player {
-    GLFWwindow *window;
-
-    World *world;
-    glm::vec2 pos;
-
-    bool tile_hovered = false;
-    s32 hovered_tile_x;
-    s32 hovered_tile_y;
-
-    bool is_mining = false;
-    f32 mining_progress;
-
-    void update() {
-        glm::vec2 dir = {0, 0};
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
-        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
-        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
-        if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
-
-
-        f64 mx, my;
-        glfwGetCursorPos(window, &mx, &my);
-
-        tile_hovered = false;
-        is_mining = false;
-        if(mx >= 0 && my >= 0 && mx < window_width && my < window_height) {
-            glm::vec2 mouse_world_pos = {
-                pos.x + ((mx - (window_width / 2)) / scale),
-                pos.y + ((my - (window_height / 2)) / scale)
-            };
-
-            // NOTE: `10 * TILE_SIZE` is the max distance the player can "reach".
-            if(glm::distance(mouse_world_pos, pos) < 10 * TILE_SIZE) {
-                hovered_tile_x = floor(mouse_world_pos.x / TILE_SIZE);
-                hovered_tile_y = floor(mouse_world_pos.y / TILE_SIZE);
-                
-                Chunk *chunk = world->get_chunk_containing(hovered_tile_x, hovered_tile_y);
-
-                glm::ivec2 key = {
-                    hovered_tile_x & (Chunk::SIZE - 1),
-                    hovered_tile_y & (Chunk::SIZE - 1)
-                };
-                
-                auto l1i = hmgeti(chunk->layer1, key);
-                auto l2i = hmgeti(chunk->layer2, key);
-
-                if(l1i != -1 || l2i != -1) {
-                    tile_hovered = true;
-
-                    is_mining = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
-                    if(is_mining) handle_mining();
-                }
-            }
-        }
-        if(!is_mining) mining_progress = 0.0f;
-    }
-
-    void draw(Batch_Renderer *r) {
-        if(tile_hovered) {
-            if(is_mining) {
-                r->push_solid_quad(
-                    hovered_tile_x * TILE_SIZE, 
-                    hovered_tile_y * TILE_SIZE, 
-                    clampf(mining_progress, 0.0f, 1.0f) * TILE_SIZE,
-                    TILE_SIZE,
-                    glm::vec4(1.0f, 0.0f, 0.0f, 0.5f)
-                );
-            } else {
-                r->push_solid_quad(
-                    hovered_tile_x * TILE_SIZE, 
-                    hovered_tile_y * TILE_SIZE, 
-                    TILE_SIZE, 
-                    TILE_SIZE, 
-                    glm::vec4(1.0f, 1.0f, 1.0f, 0.2f)
-                ); 
-            }
-        }
-
-        r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    }
-
-private:
-    void handle_mining() {
-        // TODO: Base this on mining speed and
-        // make sure to handle time correctly.
-        mining_progress += 0.015f;
-        if(mining_progress >= 1.0f) {
-            mining_progress = 0.0f;
-        } else {
-            return;
-        }
-
-        Chunk *chunk = world->get_chunk_containing(hovered_tile_x, hovered_tile_y);
-
-        glm::ivec2 key = {
-            hovered_tile_x & (Chunk::SIZE - 1),
-            hovered_tile_y & (Chunk::SIZE - 1)
-        };
-
-        auto layer = chunk->layer2;
-        auto index = hmgeti(layer, key);
-        if(index == -1) {
-            layer = chunk->layer1;
-            index = hmgeti(layer, key);
-        }
-        assert(index != -1);
-        
-        Tile *tile = layer[index].value;
-
-        switch(tile->type) {
-            case TILE_COAL_ORE: {
-                Tile_Ore *ore = (Tile_Ore*) tile;
-                if(ore->count == 1) {
-                    hmdel(layer, key);
-
-                    // TODO: we mined the ore, we ought to get that ore
-                    // in our inventory. Or drop it into the world as
-                    // an entity if our inventory is full.
-                } else {
-                    ore->count--;
-                }
-                break;
-            }
-            default: {
-                assert(0);
-                break;
-            }
-        }
-    }
-};
-
 
 s32 main(s32 argc, char **argv) {
     if (!glfwInit()) {
@@ -312,6 +184,9 @@ s32 main(s32 argc, char **argv) {
     player.pos = {4400, -100};
 
 
+    Texture slot_texture = load_texture_from_file("res/textures/gui/slot.png");
+
+
     u32 chunk_draw_calls = 0;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -356,46 +231,111 @@ s32 main(s32 argc, char **argv) {
         imgui_begin_frame();
 
 
-        auto view = glm::translate(
-            glm::scale(
-                glm::mat4(1.0f),
-                glm::vec3(scale, scale, 1.0f)
-            ),
-            glm::vec3((window_width / 2 / scale) - player.pos.x, (window_height / 2 / scale) - player.pos.y, 0.0f)
-        );
-
-        r->begin(view);
         {
-            // NOTE: We render the world from within the Batch_Renderer frame since
-            // we are currently using the Batch_Renderer for any tiles that
-            // aren't on layer 0.
-            //              - sci4me, 5/9/20
-            chunk_draw_calls = world.draw_around(r, player.pos, scale, window_width, window_height, view);
+            auto view = glm::translate(
+                glm::scale(
+                    glm::mat4(1.0f),
+                    glm::vec3(scale, scale, 1.0f)
+                ),
+                glm::vec3((window_width / 2 / scale) - player.pos.x, (window_height / 2 / scale) - player.pos.y, 0.0f)
+            );
 
-            player.draw(r);  
+            r->begin(view);
+            {
+                // NOTE: We render the world from within the Batch_Renderer frame since
+                // we are currently using the Batch_Renderer for any tiles that
+                // aren't on layer 0.
+                //              - sci4me, 5/9/20
+                chunk_draw_calls = world.draw_around(r, player.pos, scale, window_width, window_height, view);
+
+                player.draw(r);
+            }
+            r->end(); // NOTE: calling `end` instead of `end_frame`; we call `end_frame` later.
         }
-        auto per_frame_stats = r->end_frame();
+
+
+        Batch_Renderer::Per_Frame_Stats per_frame_stats;
+        {
+            // TODO: This UI scaling scheme _mostly_ solves our problem.
+            // However, there appear to be edge cases that cause undesirable
+            // artifacts. If you make the window smaller, you can get to sizes
+            // which cause the GUI textures to appear to be drawn incorrectly.
+            // Sorry I can't think of a more specific way to explain the artifacts
+            // right now but I'm not a writer :P
+            // It may be something relating to the fact that we're using floating
+            // point numbers to handle this scaling stuff. Or something. I don't know.
+            // But eventually we'll definitely need to figure it out and fix it!!!
+            //              - sci4me, 5/12/20
+
+            // TODO: Remove `orig_proj` by doing the appropriate transformation
+            // using the view matrix instead of just changing the projection matrix.
+            auto orig_proj = glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
+
+
+            // TODO: don't do this stuff per-frame
+            f32 aspect = (f32)window_width / (f32)window_height;
+            
+            f32 v_width = 600.0f;
+            f32 v_height = 600.0f; 
+            if(aspect > 1) {
+                v_width *= aspect;
+            } else {
+                v_height /= aspect;
+            }
+
+            auto proj = glm::ortho(0.0f, v_width, v_height, 0.0f, 0.0f, 10000.0f);
+            r->set_projection(proj);
+
+
+            auto view = glm::mat4(1.0f);
+            r->begin(view);
+            {
+                s32 w2 = 18 * 2;
+                s32 aw2 = w2 * 9;
+                for(u32 i = 0; i < 9; i++) {
+                    r->push_textured_quad(
+                        (v_width / 2.0f) - (aw2 / 2.0f) + i * w2,
+                        v_height - w2 - 4,
+                        w2,
+                        w2,
+                        &slot_texture
+                    );
+                }
+
+
+                // TODO render UI
+            }
+            per_frame_stats = r->end_frame();
+
+
+            r->set_projection(orig_proj);
+        }
 
 
         if(show_debug_window) {
             if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
                 ImGui::Dummy(ImVec2(100, 0));
 
-                ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
-                ImGui::Text("FPS: %.1f", io.Framerate);
+                if(ImGui::CollapsingHeader("Misc.")) {
+                    ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
+                    ImGui::Text("FPS: %.1f", io.Framerate);
+                }
+
+                if(ImGui::CollapsingHeader("Player")) {
+                    ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
+                }
+
+                if(ImGui::CollapsingHeader("World")) {
+                    ImGui::Text("Scale: %0.3f", scale);
+                    ImGui::Text("Total Chunks: %d", hmlen(world.chunks));
+                    ImGui::Text("Chunk Draw Calls: %d", chunk_draw_calls);
+                }
 
                 if(ImGui::CollapsingHeader("Batch Renderer")) {
                     ImGui::Text("Quads: %u", per_frame_stats.quads);
                     ImGui::Text("Vertices: %u", per_frame_stats.vertices);
                     ImGui::Text("Indices: %u", per_frame_stats.indices);
                     ImGui::Text("Draw Calls: %u", per_frame_stats.draw_calls);
-                }
-
-                if(ImGui::CollapsingHeader("World")) {
-                    ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
-                    ImGui::Text("Scale: %0.3f", scale);
-                    ImGui::Text("Total Chunks: %d", hmlen(world.chunks));
-                    ImGui::Text("Chunk Draw Calls: %d", chunk_draw_calls);
                 }
 
                 if(ImGui::CollapsingHeader("Settings")) {
