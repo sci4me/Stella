@@ -234,91 +234,25 @@ s32 main(s32 argc, char **argv) {
         imgui_begin_frame();
 
 
+        auto view = glm::translate(
+            glm::scale(
+                glm::mat4(1.0f),
+                glm::vec3(scale, scale, 1.0f)
+            ),
+            glm::vec3((window_width / 2 / scale) - player.pos.x, (window_height / 2 / scale) - player.pos.y, 0.0f)
+        );
+
+        r->begin(view);
         {
-            auto view = glm::translate(
-                glm::scale(
-                    glm::mat4(1.0f),
-                    glm::vec3(scale, scale, 1.0f)
-                ),
-                glm::vec3((window_width / 2 / scale) - player.pos.x, (window_height / 2 / scale) - player.pos.y, 0.0f)
-            );
+            // NOTE: We render the world from within the Batch_Renderer frame since
+            // we are currently using the Batch_Renderer for any tiles that
+            // aren't on layer 0.
+            //              - sci4me, 5/9/20
+            chunk_draw_calls = world.draw_around(r, player.pos, scale, window_width, window_height, view);
 
-            r->begin(view);
-            {
-                // NOTE: We render the world from within the Batch_Renderer frame since
-                // we are currently using the Batch_Renderer for any tiles that
-                // aren't on layer 0.
-                //              - sci4me, 5/9/20
-                chunk_draw_calls = world.draw_around(r, player.pos, scale, window_width, window_height, view);
-
-                player.draw(r);
-            }
-            r->end(); // NOTE: calling `end` instead of `end_frame`; we call `end_frame` later.
+            player.draw(r);
         }
-
-
-        Batch_Renderer::Per_Frame_Stats per_frame_stats;
-        {
-            // TODO: This UI scaling scheme _mostly_ solves our problem.
-            // However, there appear to be edge cases that cause undesirable
-            // artifacts. If you make the window smaller, you can get to sizes
-            // which cause the GUI textures to appear to be drawn incorrectly.
-            // Sorry I can't think of a more specific way to explain the artifacts
-            // right now but I'm not a writer :P
-            // It may be something relating to the fact that we're using floating
-            // point numbers to handle this scaling stuff. Or something. I don't know.
-            // But eventually we'll definitely need to figure it out and fix it!!!
-            //              - sci4me, 5/12/20
-
-
-            // TODO: don't do this stuff per-frame
-            f32 aspect = (f32)window_width / (f32)window_height;
-            
-            f32 v_width = 600.0f;
-            f32 v_height = 600.0f; 
-            if(aspect > 1) {
-                v_width *= aspect;
-            } else {
-                v_height /= aspect;
-            }
-
-            // TODO: Using the inverse projection matrix is a bit of a hack.
-            // We transform points from "GUI space" to clip space and then
-            // from clip space into screen space (0-window_width, 0-window_height).
-            // We then wastefully undo this last transform by going from screen
-            // space back to clip space in our shader.
-            //
-            // Instead, we should just do the algebra and figure out what matrix
-            // we need to create in order to go from "GUI space" directly to
-            // screen space.
-            //
-            // Alternatively, we could just change the projection matrix [to the
-            // "GUI view" matrix] and use an identity matrix as our view matrix.
-            // Maybe this is a better way? *shrugs*
-            //
-            //                  - sci4me, 5/12/20
-            auto gui_view = glm::ortho(0.0f, v_width, v_height, 0.0f, 0.0f, 10000.0f);
-            auto view = glm::inverse(projection_matrix) * gui_view;
-
-            r->begin(view);
-            {
-                s32 w2 = 18 * 2;
-                s32 aw2 = w2 * 9;
-                for(u32 i = 0; i < 9; i++) {
-                    r->push_textured_quad(
-                        (v_width / 2.0f) - (aw2 / 2.0f) + i * w2,
-                        v_height - w2 - 4,
-                        w2,
-                        w2,
-                        &slot_texture
-                    );
-                }
-
-
-                // TODO render UI
-            }
-            per_frame_stats = r->end_frame();
-        }
+        auto per_frame_stats = r->end_frame();
 
 
         if(show_debug_window) {
