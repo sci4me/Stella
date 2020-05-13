@@ -46,6 +46,8 @@
 #include "batch_renderer.cpp"
 #include "tile.cpp"
 #include "world.cpp"
+#include "item.cpp"
+#include "ui.cpp"
 
 #ifdef GL_DEBUG
 void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
@@ -69,7 +71,7 @@ bool window_resized = true;
 
 f32 scale = 1.0f;
 
-bool show_debug_window = true;
+bool show_debug_window = false;
 
 bool fullscreen_changed = false;
 bool fullscreen = false;
@@ -182,12 +184,8 @@ s32 main(s32 argc, char **argv) {
 
 
     Player player;
-    player.window = window;
-    player.world = &world;
+    player.init(window, &world);
     player.pos = {4400, -100};
-
-
-    Texture slot_texture = load_texture_from_file("res/textures/gui/slot.png");
 
 
     u32 chunk_draw_calls = 0;
@@ -253,6 +251,9 @@ s32 main(s32 argc, char **argv) {
             player.draw(r);
         }
         auto per_frame_stats = r->end_frame();
+
+
+        player.show_inventory();
 
 
         if(show_debug_window) {

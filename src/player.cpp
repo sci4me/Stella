@@ -11,6 +11,23 @@ struct Player {
     bool is_mining = false;
     f32 mining_progress;
 
+    Item_Container<16> inventory;
+    UI_Inventory<4, 4> inventory_ui;
+
+    void init(GLFWwindow *window, World *world) {
+        this->window = window;
+        this->world = world;
+
+        inventory.init();
+        inventory_ui.init("Inventory", &inventory);
+
+        // TODO REMOVEME TESTING
+        inventory.slots[0] = {
+            ITEM_COAL_ORE,
+            42
+        };
+    }
+
     void update() {
         glm::vec2 dir = {0, 0};
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
@@ -79,6 +96,10 @@ struct Player {
         }
 
         r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    }
+
+    void show_inventory() {
+        inventory_ui.show();
     }
 
 private:
