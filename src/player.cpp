@@ -14,6 +14,9 @@ struct Player {
     Item_Container inventory;
     Item_Container backpack; // TODO REMOVEME TESTING
 
+    bool placing_chest = false; // TODO REMOVEME TESTING
+    bool placement_valid;
+
     void init(GLFWwindow *window, World *world) {
         this->window = window;
         this->world = world;
@@ -34,6 +37,9 @@ struct Player {
         if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
         if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
+
+
+        placing_chest = glfwGetKey(window, GLFW_KEY_C); // TODO REMOVEME TESTING
 
 
         f64 mx, my;
@@ -59,14 +65,32 @@ struct Player {
                     hovered_tile_y & (Chunk::SIZE - 1)
                 };
                 
-                auto l1i = hmgeti(chunk->layer1, key);
-                auto l2i = hmgeti(chunk->layer2, key);
+                if(placing_chest) {
+                    auto wtf = hmgeti(chunk->layer2, key);
+                    if(wtf != -1) {
+                        placement_valid = false;
+                    } else {
+                        placement_valid = true;
 
-                if(l1i != -1 || l2i != -1) {
-                    tile_hovered = true;
+                        if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                            auto tile_mem = malloc(sizeof(Tile_Chest));
+                            auto tile = new(tile_mem) Tile_Chest;
+                            tile->type = TILE_CHEST;
+                            tile->x = hovered_tile_x;
+                            tile->y = hovered_tile_y;
+                            hmput(chunk->layer2, key, tile);
+                        }
+                    }
+                } else {
+                    auto l1i = hmgeti(chunk->layer1, key);
+                    auto l2i = hmgeti(chunk->layer2, key);
 
-                    is_mining = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
-                    if(is_mining) handle_mining();
+                    if(l1i != -1 || l2i != -1) {
+                        tile_hovered = true;
+
+                        is_mining = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+                        if(is_mining) handle_mining();
+                    }
                 }
             }
         }
@@ -74,6 +98,26 @@ struct Player {
     }
 
     void draw(Batch_Renderer *r) {
+        if(placing_chest) {
+            r->push_textured_quad(
+                hovered_tile_x * TILE_SIZE, 
+                hovered_tile_y * TILE_SIZE, 
+                TILE_SIZE,
+                TILE_SIZE,
+                tile_textures[TILE_CHEST].id
+            );
+
+            if(!placement_valid) {
+                r->push_solid_quad(
+                    hovered_tile_x * TILE_SIZE, 
+                    hovered_tile_y * TILE_SIZE, 
+                    TILE_SIZE,
+                    TILE_SIZE,
+                    glm::vec4(1.0f, 0.0f, 0.0f, 0.65f)
+                );
+            }
+        }
+
         if(tile_hovered) {
             if(is_mining) {
                 r->push_solid_quad(

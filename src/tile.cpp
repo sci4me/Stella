@@ -5,7 +5,10 @@ enum Tile_Type : u8 {
     TILE_NONE,
     TILE_STONE,
     TILE_GRASS,
+
     TILE_COAL_ORE,
+
+    TILE_CHEST,
 
     N_TILE_TYPES
 };
@@ -25,6 +28,7 @@ void load_tile_textures() {
     tile_textures[TILE_STONE]       = load_texture_from_file("res/textures/tile/stone.png", MIPS);
     tile_textures[TILE_GRASS]       = load_texture_from_file("res/textures/tile/grass.png", MIPS);
     tile_textures[TILE_COAL_ORE]    = load_texture_from_file("res/textures/tile/coal_ore_100.png", MIPS);
+    tile_textures[TILE_CHEST]       = load_texture_from_file("res/textures/tile/chest.png", MIPS);
 
     coal_textures[6]                = tile_textures[TILE_COAL_ORE];
     coal_textures[5]                = load_texture_from_file("res/textures/tile/coal_ore_90.png", MIPS);
@@ -73,4 +77,8 @@ struct Tile_Ore : public Tile {
 
         r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, texture);
     }
-};  
+};
+
+struct Tile_Chest : public Tile {
+    // TODO
+};
