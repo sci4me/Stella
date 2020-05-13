@@ -57,9 +57,6 @@ struct Item_Container {
 
         u32 slot = 0;
         for(u32 i = 0; i < hmlen(stacks); i++) {
-            // NOTE: I think `Item_Container::insert` can actually _just work_ for
-            // Item_Stacks that have a count > MAX_ITEM_SLOT_SIZE...
-
             u32 remaining = stacks[i].value;
             do {
                 u32 n = min(remaining, MAX_ITEM_SLOT_SIZE);
