@@ -43,24 +43,10 @@ namespace ui {
 
         // TODO: simplify this entire thing!!! We've got a bunch of duplicated code... etc.
 
+        bool clicked;
         if(slot.count && !(held_item_container == container && held_item_index == index)) {
-            // TODO: don't use TILE_COAL_ORE texture lol
-            if(ImGui::ImageButton((ImTextureID)tile_textures[TILE_COAL_ORE].id, {size, size})) {
-                if(held_item_container) {
-                    if(held_item_container == container) {
-                        held_item_container = nullptr;
-                    } else {
-                        container->insert(held_item_container->slots[held_item_index]);
-                        held_item_container->remove(held_item_index);
-
-                        held_item_container = nullptr;
-                    }
-                } else {
-                    held_item_container = container;
-                    held_item_index = index;
-                }
-            }
-
+            clicked = ImGui::ImageButton((ImTextureID) tile_textures[TILE_COAL_ORE].id, {size, size});
+            
             char buf[8];
             snprintf(buf, 8, "%d", slot.count);
 
@@ -69,21 +55,22 @@ namespace ui {
 
             drawlist->AddText(font, font_size, {tpos.x-tsize.x, tpos.y-tsize.y}, 0xFFFFFFFF, buf);
         } else {
-            // TODO: Investigate whether this call to ImGui::Button requires us to push an ID or not...
-            if(ImGui::Button("", {size + style.FramePadding.x*2, size + style.FramePadding.y*2})) {
-                if(held_item_container) {
-                    if(held_item_container == container) {
-                        held_item_container = nullptr;
-                    } else {
-                        container->insert(held_item_container->slots[held_item_index]);
-                        held_item_container->remove(held_item_index);
+            clicked = ImGui::Button("", {size + style.FramePadding.x*2, size + style.FramePadding.y*2});
+        }
 
-                        held_item_container = nullptr;
-                    }
+        if(clicked) {
+            if(held_item_container != nullptr) {
+                if(held_item_container == container) {
+                    held_item_container = nullptr;
                 } else {
-                    // NOTE: The user clicked an empty slot while
-                    // not holding any item; no-op.
+                    container->insert(held_item_container->slots[held_item_index]);
+                    held_item_container->remove(held_item_index);
+
+                    held_item_container = nullptr;
                 }
+            } else if(slot.count) {
+                held_item_container = container;
+                held_item_index = index;
             }
         }
 
