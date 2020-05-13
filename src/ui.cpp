@@ -1,10 +1,9 @@
 namespace ui {
-    u32 held_item_index;
-    Item_Stack *held_item_stack;
     Item_Container *held_item_container;
+    u32 held_item_index;
 
     void held_item(f32 size = 32.0f) {
-        if(!held_item_stack) return;
+        if(!held_item_container) return;
 
         f32 half_size = size / 2.0f;
         auto p = ImGui::GetMousePos();
@@ -19,7 +18,7 @@ namespace ui {
         );
 
         char buf[8];
-        snprintf(buf, 8, "%d", held_item_stack->count);
+        snprintf(buf, 8, "%d", held_item_container->slots[held_item_index].count);
 
         auto tsize = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, buf);
         drawlist->AddText(
@@ -42,15 +41,14 @@ namespace ui {
         auto font_size = ImGui::GetFontSize();
         auto drawlist = ImGui::GetForegroundDrawList();
 
-        if(slot.count && held_item_stack != &slot) {
+        if(slot.count && !(held_item_container == container && held_item_index == index)) {
             // TODO: don't use TILE_COAL_ORE texture lol
             if(ImGui::ImageButton((ImTextureID)tile_textures[TILE_COAL_ORE].id, {size, size})) {
-                if(held_item_stack) {
+                if(held_item_container) {
                     assert(0);
                 } else {
-                    held_item_index = index;
-                    held_item_stack = &slot;
                     held_item_container = container;
+                    held_item_index = index;
                 }
             }
 
@@ -63,20 +61,13 @@ namespace ui {
             drawlist->AddText(font, font_size, {tpos.x-tsize.x, tpos.y-tsize.y}, 0xFFFFFFFF, buf);
         } else {
             if(ImGui::Button("", {size + style.FramePadding.x*2, size + style.FramePadding.y*2})) {
-                if(held_item_stack == &slot) {
-                    held_item_stack = nullptr;
+                if(held_item_container == container) {
                     held_item_container = nullptr;
                 } else {
-                    if(held_item_container == container) {
-                        held_item_stack = nullptr;
-                        held_item_container = nullptr;
-                    } else {
-                        container->insert(*held_item_stack);
-                        held_item_container->remove(held_item_index);
+                    container->insert(held_item_container->slots[held_item_index]);
+                    held_item_container->remove(held_item_index);
 
-                        held_item_stack = nullptr;
-                        held_item_container = nullptr;
-                    }
+                    held_item_container = nullptr;
                 }
             }
         }
