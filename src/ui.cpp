@@ -43,7 +43,7 @@ namespace ui {
 
         bool clicked;
         if(slot.count && !(held_item_container == container && held_item_index == index)) {
-            clicked = ImGui::ImageButton((ImTextureID) tile_textures[TILE_COAL_ORE].id, {size, size});
+            clicked = ImGui::ImageButton((ImTextureID) item_textures[slot.type].id, {size, size});
             
             char buf[8];
             snprintf(buf, 8, "%d", slot.count);
@@ -53,6 +53,7 @@ namespace ui {
 
             drawlist->AddText(font, font_size, {tpos.x-tsize.x, tpos.y-tsize.y}, 0xFFFFFFFF, buf);
         } else {
+            // TODO: Investigate whether we need to push an ID for this call to `ImGui::Button`...
             clicked = ImGui::Button("", {size + style.FramePadding.x*2, size + style.FramePadding.y*2});
         }
 
