@@ -20,12 +20,6 @@ struct Player {
 
         inventory.init();
         inventory_ui.init("Inventory", &inventory);
-
-        // TODO REMOVEME TESTING
-        inventory.slots[0] = {
-            ITEM_COAL_ORE,
-            42
-        };
     }
 
     void update() {
@@ -106,7 +100,7 @@ private:
     void handle_mining() {
         // TODO: Base this on mining speed and
         // make sure to handle time correctly.
-        mining_progress += 0.015f;
+        mining_progress += fast_mining ? 0.1f : 0.015f;
         if(mining_progress >= 1.0f) {
             mining_progress = 0.0f;
         } else {
@@ -133,12 +127,16 @@ private:
         switch(tile->type) {
             case TILE_COAL_ORE: {
                 Tile_Ore *ore = (Tile_Ore*) tile;
+                
+                // TODO: we mined the ore, we ought to get that ore
+                // in our inventory. Or drop it into the world as
+                // an entity if our inventory is full.
+
+                // TODO REMOVEME TESTING
+                inventory.insert({ ITEM_COAL_ORE, 1 }); // NOTE: shouldn't ignore return value!
+
                 if(ore->count == 1) {
                     hmdel(layer, key);
-
-                    // TODO: we mined the ore, we ought to get that ore
-                    // in our inventory. Or drop it into the world as
-                    // an entity if our inventory is full.
                 } else {
                     ore->count--;
                 }

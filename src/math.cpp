@@ -1,3 +1,6 @@
+#define min(a, b) ((a)<(b)?(a):(b))
+#define max(a, b) ((a)>(b)?(a):(b))
+
 inline f32 square(f32 x) { return x * x; } 
 
 inline glm::vec4 rgba255_to_rgba1(u32 c) {

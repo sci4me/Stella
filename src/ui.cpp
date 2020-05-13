@@ -2,6 +2,9 @@ struct UI {
     virtual void show() = 0;
 };
 
+// TODO: Change this to UI_Item_Container.
+// Also, probably actually just uh, remove the struct entirely.
+// Change this to just a function.
 template<u32 width, u32 height>
 struct UI_Inventory : public UI {
     const char *name;
@@ -13,7 +16,7 @@ struct UI_Inventory : public UI {
     }
 
     virtual void show() {
-        if(ImGui::Begin(name, 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
+        if(ImGui::Begin(name, 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             auto style = ImGui::GetStyle();
             auto drawlist = ImGui::GetForegroundDrawList();
             auto font = ImGui::GetFont();

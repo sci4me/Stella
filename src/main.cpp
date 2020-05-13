@@ -77,6 +77,7 @@ bool fullscreen_changed = false;
 bool fullscreen = false;
 
 bool vsync = true;
+bool fast_mining = false;
 
 
 // TODO: Move this up with the rest of the includes!
@@ -287,6 +288,7 @@ s32 main(s32 argc, char **argv) {
                         if(vsync) glfwSwapInterval(1);
                         else      glfwSwapInterval(0);
                     }
+                    ImGui::Checkbox("Fast Mining", &fast_mining);
                 }
             }
             ImGui::End();
