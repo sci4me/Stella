@@ -45,6 +45,9 @@ struct Tile {
     s32 x;
     s32 y;
 
+    virtual void init() {}
+    virtual void free() {}
+
     virtual void draw(Batch_Renderer *r) {
         r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) type]);
     }
@@ -80,5 +83,13 @@ struct Tile_Ore : public Tile {
 };
 
 struct Tile_Chest : public Tile {
-    // TODO
+    Item_Container container;
+
+    virtual void init() override {
+        container.init(25);
+    }
+
+    virtual void free() override {
+        container.free();
+    }
 };

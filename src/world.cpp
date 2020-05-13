@@ -209,8 +209,14 @@ void Chunk::free() {
     vbo.free();
     ibo.free();
 
-    for(u32 i = 0; i < hmlen(layer1); i++) ::free(layer1[i].value);
-    for(u32 i = 0; i < hmlen(layer2); i++) ::free(layer2[i].value);
+    for(u32 i = 0; i < hmlen(layer1); i++) {
+        layer1[i].value->free();
+        ::free(layer1[i].value);
+    }
+    for(u32 i = 0; i < hmlen(layer2); i++) {
+        layer2[i].value->free();
+        ::free(layer2[i].value);
+    }
     hmfree(layer1);
     hmfree(layer2);
 }
@@ -246,6 +252,7 @@ void Chunk::generate() {
             if(m < coal_threshold) {
                 auto tile_mem = malloc(sizeof(Tile_Ore));
                 auto tile = new(tile_mem) Tile_Ore;
+                tile->init();
                 tile->type = TILE_COAL_ORE;
                 tile->x = x * SIZE + i;
                 tile->y = y * SIZE + j;

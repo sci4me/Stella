@@ -12,7 +12,8 @@ struct Player {
     f32 mining_progress;
 
     Item_Container inventory;
-    Item_Container backpack; // TODO REMOVEME TESTING
+
+    Tile *active_ui_tile = nullptr;
 
     bool placing_chest = false; // TODO REMOVEME TESTING
     bool placement_valid;
@@ -22,12 +23,10 @@ struct Player {
         this->world = world;
 
         inventory.init(16);
-        backpack.init(3); // TODO REMOVEME TESTING
     }
 
     void free() {
         inventory.free();
-        backpack.free(); // TODO REMOVEME TESTING
     }
 
     void update() {
@@ -75,6 +74,7 @@ struct Player {
                         if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
                             auto tile_mem = malloc(sizeof(Tile_Chest));
                             auto tile = new(tile_mem) Tile_Chest;
+                            tile->init();
                             tile->type = TILE_CHEST;
                             tile->x = hovered_tile_x;
                             tile->y = hovered_tile_y;
@@ -88,8 +88,19 @@ struct Player {
                     if(l1i != -1 || l2i != -1) {
                         tile_hovered = true;
 
-                        is_mining = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
-                        if(is_mining) handle_mining();
+                        if(l2i != -1 && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                            // NOTE TODO: This shit is fkin hardcoded asf yo. But I don't want to go through
+                            // the pain of making all these fkin hpp files and .. goddamn.. uh.. forward declaring
+                            // my ass. So fuck it, for now it's this way, future me will suffer through fixing it.
+                            // #PrankYourFutureSelf2k20 #YEET
+                            //              - sci4me, 5/13/20
+                            auto tile = chunk->layer2[l2i].value;
+                            if(tile->type == TILE_CHEST)    active_ui_tile = tile;
+                            else                            assert(0);
+                        } else {
+                            is_mining = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+                            if(is_mining) handle_mining();    
+                        }
                     }
                 }
             }
@@ -138,12 +149,37 @@ struct Player {
             }
         }
 
-        r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    }
+        if(active_ui_tile) {
+            switch(active_ui_tile->type) {
+                case TILE_CHEST: {
+                    Tile_Chest *c = (Tile_Chest*) active_ui_tile;
+                    
+                    // TODO: This code should NOT be here! I reallllly need to like, make hpps and uh
+                    // forward declare my shit, yo.
 
-    void show_inventory() {
-        ui::inventory("Inventory", &inventory, 4, 4);
-        ui::inventory("Backpack", &backpack, 3, 1); // TODO REMOVEME TESTING
+                    // NOTE: Currently we only have one GUI open at a time,
+                    // so we don't have to push any extra ID info.
+                    ImGui::Begin("Chest", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                    {
+                        // NOTE TODO: hardcoded bs code for days
+                        ui::container(&c->container, 5, 5);
+
+                        ImGui::Separator();
+
+                        ui::container(&inventory, 4, 4);
+                        
+                        ui::held_item();
+                    }
+                    ImGui::End();
+                    break;
+                }
+                default: {
+                    assert(0);
+                }
+            }
+        }
+
+        r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
 
 private:

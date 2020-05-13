@@ -44,9 +44,9 @@
 #include "buffer_objects.cpp"
 #include "texture_atlas.cpp"
 #include "batch_renderer.cpp"
+#include "item.cpp"
 #include "tile.cpp"
 #include "world.cpp"
-#include "item.cpp"
 #include "ui.cpp"
 
 #ifdef GL_DEBUG
@@ -175,8 +175,10 @@ s32 main(s32 argc, char **argv) {
 
 
     load_tile_textures();
-    load_item_textures();
-
+    
+    // TODO: HACK; this should be temporary!!
+    // load_item_textures();
+    item_textures[ITEM_COAL_ORE] = tile_textures[TILE_COAL_ORE];
 
     glm::mat4 projection_matrix;
 
@@ -253,9 +255,6 @@ s32 main(s32 argc, char **argv) {
             player.draw(r);
         }
         auto per_frame_stats = r->end_frame();
-
-
-        player.show_inventory();
 
 
         if(show_debug_window) {

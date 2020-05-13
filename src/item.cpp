@@ -9,10 +9,6 @@ enum Item_Type {
 
 Texture item_textures[N_ITEM_TYPES];
 
-void load_item_textures() {
-    item_textures[ITEM_COAL_ORE] = tile_textures[TILE_COAL_ORE];
-}
-
 
 struct Item_Stack {
     Item_Type type;

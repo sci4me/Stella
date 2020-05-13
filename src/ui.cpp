@@ -11,6 +11,7 @@ namespace ui {
         auto font_size = ImGui::GetFontSize();
         auto drawlist = ImGui::GetForegroundDrawList();
         
+        // TODO: don't just use TILE_COAL_ORE's texture lol
         drawlist->AddImage(
             (ImTextureID) tile_textures[TILE_COAL_ORE].id,
             { p.x - half_size, p.y - half_size },
@@ -76,26 +77,18 @@ namespace ui {
         ImGui::PopID();
     }
 
-    // NOTE: Maybe the right thing to do is just remove this function entirely?
-    // If not that, eventually, we'll want to change it and possibly abstract it
-    // to support >1 Item_Container, for example if the player opens a chest;
-    // they need to have access to _their_ inventory as well as that of the chest.
-    //              - sci4me, 5/13/20
-    void inventory(const char *name, Item_Container *container, u32 width, u32 height, f32 slot_size = 32.0f) {
+    void container(Item_Container *container, u32 width, u32 height, f32 slot_size = 32.0f) {
         assert(width * height == container->size);
 
-        if(ImGui::Begin(name, 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
-            for(u32 j = 0; j < height; j++) {
-                for(u32 i = 0; i < width; i++) {
-                    u32 k = i + j * width;
+        ImGui::PushID(container); // NOTE: not sure if we _need_ this or not.. but.. ehh yeah.
+        for(u32 j = 0; j < height; j++) {
+            for(u32 i = 0; i < width; i++) {
+                u32 k = i + j * width;
 
-                    slot(container, k, slot_size);
-                    if(i < width - 1) ImGui::SameLine();
-                }
+                slot(container, k, slot_size);
+                if(i < width - 1) ImGui::SameLine();
             }
-
-            held_item(slot_size);
         }
-        ImGui::End();
+        ImGui::PopID();
     }
 }
