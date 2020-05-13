@@ -186,7 +186,7 @@ private:
     void handle_mining() {
         // TODO: Base this on mining speed and
         // make sure to handle time correctly.
-        mining_progress += fast_mining ? 0.1f : 0.015f;
+        mining_progress += fast_mining ? 0.2f : 0.015f;
         if(mining_progress >= 1.0f) {
             mining_progress = 0.0f;
         } else {

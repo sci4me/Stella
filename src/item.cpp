@@ -46,7 +46,14 @@ struct Item_Container {
 
         for(u32 i = 0; i < size; i++) {
             if(!slots[i].count) continue;
-            hmput(stacks, slots[i].type, slots[i].count);
+            
+            auto key = slots[i].type;
+            u32 idx = hmgeti(stacks, key);
+            if(idx == -1) {
+                hmput(stacks, key, slots[i].count);
+            } else {
+                stacks[idx].value += slots[i].count;
+            }
         }
 
         memset(slots, 0, size * sizeof(Item_Stack));
@@ -98,7 +105,7 @@ struct Item_Container {
                     slots[i].count = n;
                     remaining -= n;
 
-                    if(!n) break;
+                    if(!remaining) break;
                 }
             }
 
