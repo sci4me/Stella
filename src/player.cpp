@@ -11,15 +11,13 @@ struct Player {
     bool is_mining = false;
     f32 mining_progress;
 
-    Item_Container<16> inventory;
-    UI_Inventory<4, 4> inventory_ui;
+    Item_Container<4, 4> inventory;
 
     void init(GLFWwindow *window, World *world) {
         this->window = window;
         this->world = world;
 
         inventory.init();
-        inventory_ui.init("Inventory", &inventory);
     }
 
     void update() {
@@ -93,7 +91,7 @@ struct Player {
     }
 
     void show_inventory() {
-        inventory_ui.show();
+        ui::inventory("Inventory", &inventory);
     }
 
 private:
