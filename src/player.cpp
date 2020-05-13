@@ -32,20 +32,23 @@ struct Player {
     }
 
     void update() {
-        glm::vec2 dir = {0, 0};
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
-        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
-        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
-        if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
-
-        if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
-
-
-        placing_chest = glfwGetKey(window, GLFW_KEY_C); // TODO REMOVEME TESTING
-
-
         ImGuiIO& io = ImGui::GetIO();
+
+
+        if(!io.WantCaptureKeyboard) {
+            glm::vec2 dir = {0, 0};
+            if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
+            if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
+            if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
+            if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
+            if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
+    
+            if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
+
+            placing_chest = glfwGetKey(window, GLFW_KEY_C); // TODO REMOVEME TESTING
+        }
+
+
         if(!io.WantCaptureMouse) {
             f64 mx, my;
             glfwGetCursorPos(window, &mx, &my);
@@ -70,6 +73,7 @@ struct Player {
                         hovered_tile_y & (Chunk::SIZE - 1)
                     };
                     
+                    // NOTE TODO: Rip most of this out and such.
                     if(placing_chest) {
                         auto wtf = hmgeti(chunk->layer2, key);
                         if(wtf != -1) {
