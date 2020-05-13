@@ -160,10 +160,6 @@ s32 main(s32 argc, char **argv) {
     ImGuiIO& io = ImGui::GetIO();
 
 
-    Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
-    r->init();
-
-
     glClearColor(0, 0, 0, 0);
 
     glEnable(GL_BLEND);
@@ -171,7 +167,14 @@ s32 main(s32 argc, char **argv) {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 
+    Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
+    r->init();
+
+
     load_tile_textures();
+
+
+    glm::mat4 projection_matrix;
 
 
     World world;
@@ -197,10 +200,10 @@ s32 main(s32 argc, char **argv) {
 
             glViewport(0, 0, window_width, window_height);
             
-            auto proj = glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
+            projection_matrix = glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
 
-            r->set_projection(proj);
-            world.set_projection(proj);
+            r->set_projection(projection_matrix);
+            world.set_projection(projection_matrix);
         }
 
         if(fullscreen_changed) {
@@ -267,10 +270,6 @@ s32 main(s32 argc, char **argv) {
             // But eventually we'll definitely need to figure it out and fix it!!!
             //              - sci4me, 5/12/20
 
-            // TODO: Remove `orig_proj` by doing the appropriate transformation
-            // using the view matrix instead of just changing the projection matrix.
-            auto orig_proj = glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
-
 
             // TODO: don't do this stuff per-frame
             f32 aspect = (f32)window_width / (f32)window_height;
@@ -283,11 +282,24 @@ s32 main(s32 argc, char **argv) {
                 v_height /= aspect;
             }
 
-            auto proj = glm::ortho(0.0f, v_width, v_height, 0.0f, 0.0f, 10000.0f);
-            r->set_projection(proj);
+            // TODO: Using the inverse projection matrix is a bit of a hack.
+            // We transform points from "GUI space" to clip space and then
+            // from clip space into screen space (0-window_width, 0-window_height).
+            // We then wastefully undo this last transform by going from screen
+            // space back to clip space in our shader.
+            //
+            // Instead, we should just do the algebra and figure out what matrix
+            // we need to create in order to go from "GUI space" directly to
+            // screen space.
+            //
+            // Alternatively, we could just change the projection matrix [to the
+            // "GUI view" matrix] and use an identity matrix as our view matrix.
+            // Maybe this is a better way? *shrugs*
+            //
+            //                  - sci4me, 5/12/20
+            auto gui_view = glm::ortho(0.0f, v_width, v_height, 0.0f, 0.0f, 10000.0f);
+            auto view = glm::inverse(projection_matrix) * gui_view;
 
-
-            auto view = glm::mat4(1.0f);
             r->begin(view);
             {
                 s32 w2 = 18 * 2;
@@ -306,15 +318,12 @@ s32 main(s32 argc, char **argv) {
                 // TODO render UI
             }
             per_frame_stats = r->end_frame();
-
-
-            r->set_projection(orig_proj);
         }
 
 
         if(show_debug_window) {
             if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
-                ImGui::Dummy(ImVec2(100, 0));
+                ImGui::Dummy(ImVec2(130, 0));
 
                 if(ImGui::CollapsingHeader("Misc.")) {
                     ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
