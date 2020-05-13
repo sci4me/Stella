@@ -61,6 +61,8 @@ struct Item_Container {
                     if(!n) return 0;
                 }
             }
+
+            // TODO: (maybe) sort the inventory
         }
 
         return remaining;
