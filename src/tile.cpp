@@ -28,10 +28,18 @@ void load_tile_textures() {
 }
 
 
+typedef u8 Tile_Flags;
+enum Tile_Flags_ : u8 {
+    TILE_FLAG_NONE                          = 0,
+    TILE_FLAG_WANTS_DYNAMIC_UPDATES         = 1
+};
+
+
 struct Tile {
     Tile_Type type;
     s32 x;
     s32 y;
+    Tile_Flags flags;
 
     virtual void init() {}
     virtual void free() {}
@@ -39,6 +47,8 @@ struct Tile {
     virtual void draw(Batch_Renderer *r) {
         r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) type]);
     }
+
+    virtual void update() {}
 };
 
 
@@ -104,6 +114,7 @@ struct Tile_Furnace : public Tile {
 
     virtual void init() override {
         Tile::init();
+        flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
 
         input.init(1);
         fuel.init(1);
@@ -112,9 +123,13 @@ struct Tile_Furnace : public Tile {
 
     virtual void free() {
         Tile::free();
-        
+
         input.free();
         fuel.free();
         output.free();
+    }
+
+    virtual void update() override {
+        // TODO
     }
 };

@@ -1,8 +1,23 @@
+Features:
  - Entities
    - Item Entities
    - Other Entities? (eventually, TM)
- - Organization
-   - Probably only want one level of subdirectory in `src`
+ - Main Menu
+   - Ability to create new worlds, load saved worlds, edit settings, and quit
+ - Save Games
+   - This ties into chunk management pretty significantly
+     - In a real-world scenario, whenever we want to _get_ a chunk
+       We first need to check if that chunk already exists, possibly in a cache, or on disk
+       If not, only then do we generate it.
+     - Whenever we want to unload a chunk, say because the player walked away from it,
+       we need to serialize it to disk somehow. Or possibly a chunk cache, before disk.
+ - Audio
+   - Obviously we'll probably want to implement the basics:
+     - Ability to play music; streaming audio
+     - Ability to play short sound effects
+ - Particle Systems
+
+Code/Dev Features:
  - Shader Abstraction
    - Bind/Unbind
    - Ability to handle uniforms
@@ -17,6 +32,21 @@
    - Console Logging
    - File Logging
    - printf style API
+
+Code Quality:
+ - Change from "init" and "free" to constructors and destructors
+   - I didn't want to have to do it, but... fucking... C++ yo.
+     - The problem with init and free is that you can't change
+       the parameter types when you're overriding it in a
+       child struct. So. F.
+   - Not 100% convinced about this yet, so we'll push it off
+     - But probably, we want to do this?... ..er.. yeah.
+ - Organization
+   - Probably only want one level of subdirectory in `src`
+   - Namespaces! structs! etc.
+ - Maybe use references more? And const references? er....
+   - Definitely need to do some research/learning, etc. to know for sure...
+     - But maybe.. maybe it's a good idea in some/many places. Dunno.    
  - Combine `batch` and `chunk` shaders?
    - Maybe not; I'm not sure if this is a good idea or not
      - Maybe it will be in the short term but we'll have to change it later on anyway?
@@ -25,14 +55,5 @@
          - Lighting
          - OpenGL in ImGui
    - So, yeah uhm, maybe don't combine them? I don't even know.
- - Main Menu
-   - Ability to create new worlds, load saved worlds, edit settings, and quit
- - Save Games
-   - This ties into chunk management pretty significantly
-     - In a real-world scenario, whenever we want to _get_ a chunk
-       We first need to check if that chunk already exists, possibly in a cache, or on disk
-       If not, only then do we generate it.
-     - Whenever we want to unload a chunk, say because the player walked away from it,
-       we need to serialize it to disk somehow. Or possibly a chunk cache, before disk.
- - Audio
- - Particle Systems
+   - Although... if I eventually want the ability to tint chunk tiles anyway,
+     then the shaders become equivalent, so, yes.

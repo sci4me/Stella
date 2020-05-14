@@ -383,7 +383,11 @@ void Chunk::draw() {
 }
 
 void Chunk::update() {
-    // TODO
+    // NOTE: layer1 (and layer0, obviously) tiles don't get dynamic updates
+    for(u32 i = 0; i < hmlen(layer2); i++) {
+        auto tile = layer2[i].value;
+        if(tile->flags & TILE_FLAG_WANTS_DYNAMIC_UPDATES) tile->update();
+    }
 }
 
 rnd_pcg_t Chunk::make_rng_for_chunk() {
