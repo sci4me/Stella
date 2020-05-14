@@ -263,6 +263,8 @@ void Chunk::generate() {
     constexpr f32 coal_threshold = 0.25f;
     constexpr f32 iron_frequency = 80.0f;
     constexpr f32 iron_threshold = 0.20f;
+    constexpr f32 gold_frequency = 50.0f;
+    constexpr f32 gold_threshold = 0.2f;
 
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
@@ -299,6 +301,29 @@ void Chunk::generate() {
                     auto tile_mem = malloc(sizeof(Tile_Ore));
                     auto tile = new(tile_mem) Tile_Ore;
                     tile->type = TILE_IRON_ORE;
+                    tile->x = x * SIZE + i;
+                    tile->y = y * SIZE + j;
+                    tile->count = 100; // TODO
+                    tile->initial_count = tile->count;
+                    tile->init();
+
+                    glm::ivec2 key = {i, j};
+                    hmput(layer1, key, tile);
+                    
+                    continue;
+                }
+            }
+
+            {
+                f32 m = world->noise.noise2D_0_1(
+                    ((f32) ((x * SIZE) + i)) / gold_frequency, 
+                    ((f32) ((y * SIZE) + j)) / gold_frequency
+                );
+
+                if(m < gold_threshold) {
+                    auto tile_mem = malloc(sizeof(Tile_Ore));
+                    auto tile = new(tile_mem) Tile_Ore;
+                    tile->type = TILE_GOLD_ORE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;
                     tile->count = 100; // TODO

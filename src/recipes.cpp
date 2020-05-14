@@ -4,5 +4,6 @@ struct Smelting_Recipe {
 };
 
 const Smelting_Recipe smelting_recipes[] = {
-    { ITEM_IRON_ORE, ITEM_IRON_INGOT }
+    { ITEM_IRON_ORE, ITEM_IRON_INGOT },
+    { ITEM_GOLD_ORE, ITEM_GOLD_INGOT }
 };

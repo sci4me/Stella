@@ -3,8 +3,10 @@ constexpr u32 MAX_ITEM_SLOT_SIZE = 64;
 enum Item_Type : u8 {
     ITEM_COAL_ORE,
     ITEM_IRON_ORE,
+    ITEM_GOLD_ORE,
 
     ITEM_IRON_INGOT,
+    ITEM_GOLD_INGOT,
 
     ITEM_CHEST,
 
@@ -17,7 +19,9 @@ Texture item_textures[N_ITEM_TYPES];
 void load_item_textures() {
     item_textures[ITEM_COAL_ORE] = assets::textures::coal_ore[6];
     item_textures[ITEM_IRON_ORE] = assets::textures::iron_ore[6];
+    item_textures[ITEM_GOLD_ORE] = assets::textures::gold_ore[6];
     item_textures[ITEM_IRON_INGOT] = assets::textures::iron_ingot;
+    item_textures[ITEM_GOLD_INGOT] = assets::textures::gold_ingot;
     item_textures[ITEM_CHEST]    = assets::textures::chest;
 }
 
