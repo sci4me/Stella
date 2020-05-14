@@ -228,8 +228,9 @@ private:
         Tile *tile = layer[index].value;
 
         switch(tile->type) {
-            case TILE_COAL_ORE: 
-            case TILE_IRON_ORE: 
+            case TILE_COBBLESTONE:
+            case TILE_COAL_ORE:
+            case TILE_IRON_ORE:
             case TILE_GOLD_ORE: {
                 Tile_Ore *ore = (Tile_Ore*) tile;
                 
@@ -241,9 +242,10 @@ private:
 
                 Item_Type ore_item;
                 switch(tile->type) {
-                    case TILE_COAL_ORE: ore_item = ITEM_COAL_ORE; break;
-                    case TILE_IRON_ORE: ore_item = ITEM_IRON_ORE; break;
-                    case TILE_GOLD_ORE: ore_item = ITEM_GOLD_ORE; break;
+                    case TILE_COBBLESTONE:  ore_item = ITEM_COBBLESTONE; break;
+                    case TILE_COAL_ORE:     ore_item = ITEM_COAL_ORE; break;
+                    case TILE_IRON_ORE:     ore_item = ITEM_IRON_ORE; break;
+                    case TILE_GOLD_ORE:     ore_item = ITEM_GOLD_ORE; break;
                     default: assert(0);
                 }
 

@@ -6,6 +6,7 @@ enum Tile_Type : u8 {
     TILE_STONE,
     TILE_GRASS,
 
+    TILE_COBBLESTONE,
     TILE_COAL_ORE,
     TILE_IRON_ORE,
     TILE_GOLD_ORE,
@@ -22,6 +23,7 @@ Texture tile_textures[N_TILE_TYPES];
 void load_tile_textures() {
     tile_textures[TILE_STONE] = assets::textures::stone;
     tile_textures[TILE_GRASS] = assets::textures::grass;
+    tile_textures[TILE_COBBLESTONE] = assets::textures::cobblestone[array_length(assets::textures::coal_ore) - 1];
     tile_textures[TILE_COAL_ORE] = assets::textures::coal_ore[array_length(assets::textures::coal_ore) - 1];
     tile_textures[TILE_IRON_ORE] = assets::textures::iron_ore[array_length(assets::textures::iron_ore) - 1];
     tile_textures[TILE_GOLD_ORE] = assets::textures::gold_ore[array_length(assets::textures::gold_ore) - 1];
@@ -63,10 +65,11 @@ struct Tile_Ore : public Tile {
         Tile::init();
 
         switch(type) {
-            case TILE_COAL_ORE: textures = assets::textures::coal_ore; break;
-            case TILE_IRON_ORE: textures = assets::textures::iron_ore; break;
-            case TILE_GOLD_ORE: textures = assets::textures::gold_ore; break;
-            default: assert(0); break;
+            case TILE_COBBLESTONE:  textures = assets::textures::cobblestone; break;
+            case TILE_COAL_ORE:     textures = assets::textures::coal_ore; break;
+            case TILE_IRON_ORE:     textures = assets::textures::iron_ore; break;
+            case TILE_GOLD_ORE:     textures = assets::textures::gold_ore; break;
+            default:                assert(0); break;
         }
     }
 

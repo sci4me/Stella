@@ -259,6 +259,8 @@ void Chunk::generate() {
         }
     }
 
+    constexpr f32 cobblestone_frequency = 150.0f;
+    constexpr f32 cobblestone_threshold = 0.20f;
     constexpr f32 coal_frequency = 100.0f;
     constexpr f32 coal_threshold = 0.25f;
     constexpr f32 iron_frequency = 80.0f;
@@ -268,6 +270,29 @@ void Chunk::generate() {
 
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
+            {
+                f32 m = world->noise.noise2D_0_1(
+                    ((f32) ((x * SIZE) + i)) / cobblestone_frequency, 
+                    ((f32) ((y * SIZE) + j)) / cobblestone_frequency
+                );
+
+                if(m < coal_threshold) {
+                    auto tile_mem = malloc(sizeof(Tile_Ore));
+                    auto tile = new(tile_mem) Tile_Ore;
+                    tile->type = TILE_COBBLESTONE;
+                    tile->x = x * SIZE + i;
+                    tile->y = y * SIZE + j;
+                    tile->count = 100; // TODO
+                    tile->initial_count = tile->count;
+                    tile->init();
+
+                    glm::ivec2 key = {i, j};
+                    hmput(layer1, key, tile);
+                    
+                    continue;
+                }
+            }
+
             {
                 f32 m = world->noise.noise2D_0_1(
                     ((f32) ((x * SIZE) + i)) / coal_frequency, 
