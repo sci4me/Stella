@@ -60,30 +60,30 @@ namespace ui {
             clicked = ImGui::Button("", { SLOT_SIZE + style.FramePadding.x * 2, SLOT_SIZE + style.FramePadding.y * 2 });
         }
 
+        ImGui::PopID();
+
         if(clicked) {
             if(held_item_container != nullptr) {
-                if((container->flags & ITEM_CONTAINER_FLAG_NO_INSERT) == 0) {
-                    if(held_item_container == container) {
-                        held_item_container = nullptr;
+                if(!container->accepts_item_type(held_item_container->slots[held_item_index].type)) return;
+
+                if(held_item_container == container) {
+                    held_item_container = nullptr;
+                } else {
+                    u32 remaining = container->insert(held_item_container->slots[held_item_index]);
+                    if(remaining) {
+                        held_item_container->slots[held_item_index].count = remaining;
                     } else {
-                        u32 remaining = container->insert(held_item_container->slots[held_item_index]);
-                        if(remaining) {
-                            held_item_container->slots[held_item_index].count = remaining;
-                        } else {
-                            held_item_container->remove(held_item_index);
-                            held_item_container = nullptr;
-                        }
+                        held_item_container->remove(held_item_index);
+                        held_item_container = nullptr;
                     }
                 }
             } else if(slot.count) {
-                if((container->flags & ITEM_CONTAINER_FLAG_NO_EXTRACT) == 0) {
-                    held_item_container = container;
-                    held_item_index = index;
-                }
+                if(container->flags & ITEM_CONTAINER_FLAG_NO_EXTRACT) return;
+
+                held_item_container = container;
+                held_item_index = index;
             }
         }
-
-        ImGui::PopID();
     }
 
     void container(Item_Container *container, u32 width, u32 height) {

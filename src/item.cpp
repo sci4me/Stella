@@ -1,6 +1,6 @@
 constexpr u32 MAX_ITEM_SLOT_SIZE = 64;
 
-enum Item_Type {
+enum Item_Type : u8 {
     ITEM_COAL_ORE,
     ITEM_IRON_ORE,
 
@@ -27,13 +27,17 @@ struct Item_Stack {
 
 typedef u8 Item_Container_Flags;
 enum Item_Container_Flags_ : Item_Container_Flags {
-    ITEM_CONTAINER_FLAG_NONE            = 0,
-    ITEM_CONTAINER_FLAG_NO_INSERT       = 1,
-    ITEM_CONTAINER_FLAG_NO_EXTRACT      = 2
+    ITEM_CONTAINER_FLAG_NONE                    = 0,
+    ITEM_CONTAINER_FLAG_NO_INSERT               = 1,
+    ITEM_CONTAINER_FLAG_NO_EXTRACT              = 2,
+    ITEM_CONTAINER_FLAG_FILTER_INSERTIONS       = 4
 };
 
 struct Item_Container {
     Item_Container_Flags flags;
+
+    // NOTE: 4 words * 64 bits per word = 256 bits
+    Static_Bitset<4> insertion_filter;
 
     // NOTE: If Item_Stack ever needs to hold much more
     // data than it "currently" does (type and count)
@@ -44,7 +48,7 @@ struct Item_Container {
 
     void init(u32 size, Item_Container_Flags flags = ITEM_CONTAINER_FLAG_NONE) {
         this->flags = flags;
-        
+
         assert(size > 0);
         this->size = size;
 
@@ -56,6 +60,8 @@ struct Item_Container {
     }
 
     void sort() {
+        if(size == 1) return;
+
         // TODO: This implementation _can't_ be the most efficient/ideal one.....
         // It's kinda just the naive hacky version... I suspect.
 
@@ -93,7 +99,15 @@ struct Item_Container {
         hmfree(stacks);
     }
 
+    bool accepts_item_type(Item_Type type) {
+        if(flags & ITEM_CONTAINER_FLAG_NO_INSERT) return false;
+        if(flags & ITEM_CONTAINER_FLAG_FILTER_INSERTIONS) return insertion_filter.get(type);
+        return true;
+    }
+
     u32 insert(Item_Stack stack) {
+        if(!accepts_item_type(stack.type)) return stack.count;
+
         u32 remaining = stack.count;
 
         // First try to insert into slots that 

@@ -116,8 +116,12 @@ struct Tile_Furnace : public Tile {
         Tile::init();
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
 
-        input.init(1);
-        fuel.init(1);
+        input.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);
+        input.insertion_filter.set(ITEM_IRON_ORE);
+
+        fuel.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);
+        fuel.insertion_filter.set(ITEM_COAL_ORE);
+        
         output.init(1, ITEM_CONTAINER_FLAG_NO_INSERT);
     }
 

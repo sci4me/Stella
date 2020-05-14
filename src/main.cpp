@@ -38,6 +38,7 @@
 #include "util.cpp"
 #include "math.cpp"
 #include "static_array.cpp"
+#include "static_bitset.cpp"
 #include "slot_allocator.cpp"
 #include "shader.cpp"
 #include "texture.cpp"

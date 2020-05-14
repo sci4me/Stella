@@ -34,6 +34,9 @@ Code/Dev Features:
    - printf style API
 
 Code Quality:
+ - Tests
+   - It's starting to get to the point where we have easily
+     testable things that probably _should_ be tested.
  - Change from "init" and "free" to constructors and destructors
    - I didn't want to have to do it, but... fucking... C++ yo.
      - The problem with init and free is that you can't change
