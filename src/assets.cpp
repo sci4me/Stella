@@ -5,6 +5,7 @@ namespace assets {
         Texture coal_ore[7]; // TODO: Don't hardcode this 7
         Texture iron_ore[7]; // TODO: Don't hardcode this 7
         Texture chest;
+        Texture furnace;
     }
 
     void load() {
@@ -27,5 +28,6 @@ namespace assets {
         textures::iron_ore[5]     = load_texture_from_file("res/textures/tile/iron_ore_5.png", MIPS);
         textures::iron_ore[6]     = load_texture_from_file("res/textures/tile/iron_ore_6.png", MIPS);
         textures::chest           = load_texture_from_file("res/textures/tile/chest.png", MIPS);
+        textures::furnace         = load_texture_from_file("res/textures/tile/furnace.png", MIPS);
     }
 }

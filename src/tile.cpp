@@ -10,6 +10,7 @@ enum Tile_Type : u8 {
     TILE_IRON_ORE,
 
     TILE_CHEST,
+    TILE_FURNACE,
 
     N_TILE_TYPES
 };
@@ -23,6 +24,7 @@ void load_tile_textures() {
     tile_textures[TILE_COAL_ORE] = assets::textures::coal_ore[6];
     tile_textures[TILE_IRON_ORE] = assets::textures::iron_ore[6];
     tile_textures[TILE_CHEST] = assets::textures::chest;
+    tile_textures[TILE_FURNACE] = assets::textures::furnace;
 }
 
 
@@ -89,6 +91,30 @@ struct Tile_Chest : public Tile {
     }
 
     virtual void free() override {
+        Tile::free();
+
         container.free();
+    }
+};
+
+struct Tile_Furnace : public Tile {
+    Item_Container input;
+    Item_Container fuel;
+    Item_Container output;
+
+    virtual void init() override {
+        Tile::init();
+
+        input.init(1);
+        fuel.init(1);
+        output.init(1);
+    }
+
+    virtual void free() {
+        Tile::free();
+        
+        input.free();
+        fuel.free();
+        output.free();
     }
 };

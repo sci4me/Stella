@@ -37,6 +37,7 @@ struct Chunk {
     void free();
 
     void generate();
+    void update();
     void render();
     void draw();
 
@@ -110,6 +111,25 @@ struct World {
         s32 cx = (s32)floor(x / (f32)Chunk::SIZE);
         s32 cy = (s32)floor(y / (f32)Chunk::SIZE);
         return get_chunk(cx, cy);
+    }
+
+    void update() {
+        // TODO: So many things. So many.
+        // First of all, well, yeah. Many things. Lots of things.
+        // Every things.
+        //
+        // We should be keeping track of which chunks are "active"
+        // somehow. This will tie in with the chunk loading/unloading
+        // stuff deeply (probably). And of course we'll have "forced" chunks
+        // which are _always_ active since they contain user-placed
+        // tiles which must always be updated.
+        // etc. etc. etc.
+        //
+        //                  - sci4me, 5/13/20
+
+        for(u32 i = 0; i < hmlen(chunks); i++) {
+            chunks[i].value->update();
+        }
     }
 
     u32 draw_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
@@ -360,6 +380,10 @@ void Chunk::draw() {
         glBindTextureUnit(i, 0);
 
     vao.unbind();
+}
+
+void Chunk::update() {
+    // TODO
 }
 
 rnd_pcg_t Chunk::make_rng_for_chunk() {

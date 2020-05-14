@@ -17,7 +17,7 @@ struct Player {
 
     bool show_inventory = false;
 
-    bool placing_chest = false; // TODO REMOVEME TESTING
+    Tile_Type placing_tile = TILE_NONE; // TODO
     bool placement_valid;
 
     void init(GLFWwindow *window, World *world) {
@@ -45,7 +45,9 @@ struct Player {
     
             if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
 
-            placing_chest = glfwGetKey(window, GLFW_KEY_C); // TODO REMOVEME TESTING
+            if(glfwGetKey(window, GLFW_KEY_C)) placing_tile = TILE_CHEST;
+            else if(glfwGetKey(window, GLFW_KEY_F)) placing_tile = TILE_FURNACE;
+            else placing_tile = TILE_NONE;
         }
 
 
@@ -74,7 +76,7 @@ struct Player {
                     };
                     
                     // NOTE TODO: Rip most of this out and such.
-                    if(placing_chest) {
+                    if(placing_tile != TILE_NONE) {
                         auto wtf = hmgeti(chunk->layer2, key);
                         if(wtf != -1) {
                             placement_valid = false;
@@ -82,13 +84,25 @@ struct Player {
                             placement_valid = true;
 
                             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-                                auto tile_mem = malloc(sizeof(Tile_Chest));
-                                auto tile = new(tile_mem) Tile_Chest;
-                                tile->init();
-                                tile->type = TILE_CHEST;
-                                tile->x = hovered_tile_x;
-                                tile->y = hovered_tile_y;
-                                hmput(chunk->layer2, key, tile);
+                                if(placing_tile == TILE_CHEST) {
+                                    auto tile_mem = malloc(sizeof(Tile_Chest));
+                                    auto tile = new(tile_mem) Tile_Chest;
+                                    tile->init();
+                                    tile->type = TILE_CHEST;
+                                    tile->x = hovered_tile_x;
+                                    tile->y = hovered_tile_y;
+                                    hmput(chunk->layer2, key, tile);
+                                } else if(placing_tile == TILE_FURNACE) {
+                                    auto tile_mem = malloc(sizeof(Tile_Furnace));
+                                    auto tile = new(tile_mem) Tile_Furnace;
+                                    tile->init();
+                                    tile->type = TILE_FURNACE;
+                                    tile->x = hovered_tile_x;
+                                    tile->y = hovered_tile_y;
+                                    hmput(chunk->layer2, key, tile);
+                                } else {
+                                    assert(0);
+                                }
                             }
                         }
                     } else {
@@ -105,8 +119,15 @@ struct Player {
                                 // #PrankYourFutureSelf2k20 #YEET
                                 //              - sci4me, 5/13/20
                                 auto tile = chunk->layer2[l2i].value;
-                                if(tile->type == TILE_CHEST)    open_tile_ui(tile);
-                                else                            assert(0);
+                                switch(tile->type) {
+                                    case TILE_CHEST:
+                                    case TILE_FURNACE:
+                                        open_tile_ui(tile);
+                                        break;
+                                    default:
+                                        assert(0);
+                                        break;
+                                }
                             } else {
                                 is_mining = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
                                 if(is_mining) handle_mining();    
@@ -121,13 +142,13 @@ struct Player {
     }
 
     void draw(Batch_Renderer *r) {
-        if(placing_chest) {
+        if(placing_tile != TILE_NONE) {
             r->push_textured_quad(
                 hovered_tile_x * TILE_SIZE, 
                 hovered_tile_y * TILE_SIZE, 
                 TILE_SIZE,
                 TILE_SIZE,
-                tile_textures[TILE_CHEST].id
+                tile_textures[placing_tile].id
             );
 
             if(!placement_valid) {
@@ -260,6 +281,10 @@ private:
                 hmdel(layer, key);
                 chest->free();
                 ::free(chest);
+                break;
+            }
+            case TILE_FURNACE: {
+                assert(0);
                 break;
             }
             default: {

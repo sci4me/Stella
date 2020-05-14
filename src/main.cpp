@@ -230,6 +230,22 @@ s32 main(s32 argc, char **argv) {
         glClear(GL_COLOR_BUFFER_BIT);
 
 
+        // TODO: We don't want to just update, render, and loop;
+        // we don't want to have to rely on V-SYNC to give us a fixed
+        // update rate. Instead, we should keep track of time and
+        // call update as needed. Or something. TM.
+        //
+        // Also, sooner-than-later, we're going to need to have a more
+        // formal way of tracking time anyway since we need to have
+        // "ticks" for our update functions for things like machines...
+        // So, yeah, do this. Soon. Or something. Maybe. I guess. ???
+        // (Oh yeah, uh, the thing that made me think to say this was that
+        // uh, we need to be able to actually keep track of in-game time;
+        // i.e. how many ticks are in a "day", what is the current tick 
+        // since world creation, what day is it, is it day/night, etc.)
+        //
+        //              - sci4me, 5/13/20
+        world.update();
         player.update();
 
 
