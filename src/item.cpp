@@ -2,6 +2,9 @@ constexpr u32 MAX_ITEM_SLOT_SIZE = 64;
 
 enum Item_Type {
     ITEM_COAL_ORE,
+    ITEM_IRON_ORE,
+    
+    ITEM_CHEST,
 
     N_ITEM_TYPES
 };

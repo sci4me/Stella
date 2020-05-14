@@ -241,26 +241,55 @@ void Chunk::generate() {
 
     constexpr f32 coal_frequency = 100.0f;
     constexpr f32 coal_threshold = 0.25f;
+    constexpr f32 iron_frequency = 80.0f;
+    constexpr f32 iron_threshold = 0.20f;
 
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
-            f32 m = world->noise.noise2D_0_1(
-                ((f32) ((x * SIZE) + i)) / coal_frequency, 
-                ((f32) ((y * SIZE) + j)) / coal_frequency
-            );
+            {
+                f32 m = world->noise.noise2D_0_1(
+                    ((f32) ((x * SIZE) + i)) / coal_frequency, 
+                    ((f32) ((y * SIZE) + j)) / coal_frequency
+                );
 
-            if(m < coal_threshold) {
-                auto tile_mem = malloc(sizeof(Tile_Ore));
-                auto tile = new(tile_mem) Tile_Ore;
-                tile->init();
-                tile->type = TILE_COAL_ORE;
-                tile->x = x * SIZE + i;
-                tile->y = y * SIZE + j;
-                tile->count = 100; // TODO
-                tile->initial_count = tile->count;
+                if(m < coal_threshold) {
+                    auto tile_mem = malloc(sizeof(Tile_Ore));
+                    auto tile = new(tile_mem) Tile_Ore;
+                    tile->type = TILE_COAL_ORE;
+                    tile->x = x * SIZE + i;
+                    tile->y = y * SIZE + j;
+                    tile->count = 100; // TODO
+                    tile->initial_count = tile->count;
+                    tile->init();
 
-                glm::ivec2 key = {i, j};
-                hmput(layer1, key, tile);
+                    glm::ivec2 key = {i, j};
+                    hmput(layer1, key, tile);
+                    
+                    continue;
+                }
+            }
+
+            {
+                f32 m = world->noise.noise2D_0_1(
+                    ((f32) ((x * SIZE) + i)) / iron_frequency, 
+                    ((f32) ((y * SIZE) + j)) / iron_frequency
+                );
+
+                if(m < iron_threshold) {
+                    auto tile_mem = malloc(sizeof(Tile_Ore));
+                    auto tile = new(tile_mem) Tile_Ore;
+                    tile->type = TILE_IRON_ORE;
+                    tile->x = x * SIZE + i;
+                    tile->y = y * SIZE + j;
+                    tile->count = 100; // TODO
+                    tile->initial_count = tile->count;
+                    tile->init();
+
+                    glm::ivec2 key = {i, j};
+                    hmput(layer1, key, tile);
+                    
+                    continue;
+                }
             }
         }
     }

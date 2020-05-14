@@ -88,7 +88,7 @@ bool fast_mining = false;
 
 
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
-    scale = clampf(scale + y * 0.05f, 0.25f, 5.0f);
+    scale = clampf(scale + y * 0.05f, 0.1f, 5.0f);
 }
 
 void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mods) {
@@ -179,6 +179,8 @@ s32 main(s32 argc, char **argv) {
     // TODO: HACK; this should be temporary!!
     // load_item_textures();
     item_textures[ITEM_COAL_ORE] = tile_textures[TILE_COAL_ORE];
+    item_textures[ITEM_IRON_ORE] = tile_textures[TILE_IRON_ORE];
+    item_textures[ITEM_CHEST]    = tile_textures[TILE_CHEST];
 
     glm::mat4 projection_matrix;
 

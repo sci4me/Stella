@@ -206,7 +206,8 @@ private:
         Tile *tile = layer[index].value;
 
         switch(tile->type) {
-            case TILE_COAL_ORE: {
+            case TILE_COAL_ORE: 
+            case TILE_IRON_ORE: {
                 Tile_Ore *ore = (Tile_Ore*) tile;
                 
                 // NOTE TODO: If the result is >0 we need to
@@ -214,7 +215,15 @@ private:
                 // probably just don't actually perform 
                 // the mining operation.
                 //              - sci4me, 5/13/20
-                assert(!inventory.insert({ ITEM_COAL_ORE, 1 }));
+
+                Item_Type ore_item;
+                switch(tile->type) {
+                    case TILE_COAL_ORE: ore_item = ITEM_COAL_ORE; break;
+                    case TILE_IRON_ORE: ore_item = ITEM_IRON_ORE; break;
+                    default: assert(0);
+                }
+
+                assert(!inventory.insert({ ore_item, 1 }));
 
                 if(ore->count == 1) {
                     hmdel(layer, key);
@@ -244,6 +253,9 @@ private:
                     // spawn the item in the world.
                     assert(!rem);
                 }
+
+                // TODO: remove the assert, handle the result.
+                assert(!inventory.insert({ ITEM_CHEST, 1 }));
 
                 hmdel(layer, key);
                 chest->free();

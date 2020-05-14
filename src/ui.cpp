@@ -11,9 +11,8 @@ namespace ui {
         auto font_size = ImGui::GetFontSize();
         auto drawlist = ImGui::GetForegroundDrawList();
         
-        // TODO: don't just use TILE_COAL_ORE's texture lol
         drawlist->AddImage(
-            (ImTextureID) tile_textures[TILE_COAL_ORE].id,
+            (ImTextureID) item_textures[held_item_container->slots[held_item_index].type].id,
             { p.x - half_size, p.y - half_size },
             { p.x + half_size, p.y + half_size }
         );
@@ -32,6 +31,7 @@ namespace ui {
     }
 
     void slot(Item_Container *container, u32 index, f32 size = 32.0f) {
+        // TODO: Should we just push the container as well as the index?
         ImGui::PushID(index);
 
         // NOTE: OH NO! A REFERENCE! WHAT EVER WILL SCI4ME DO?!?!!!?!$?!%!
