@@ -15,42 +15,14 @@ enum Tile_Type : u8 {
 };
 
 
-// TODO: Convert this to a texture atlas once
-//       we figure out how to fix the artifacts...
 Texture tile_textures[N_TILE_TYPES];
 
-// TODO all of the texture / asset handling is ad-hoc and crap lol
-
-// TODO: array_length macro? i.e. #define array_length(a) (sizeof(a)/sizeof(typeof(a[0])))
-constexpr u32 N_COAL_TEXTURES = 7;
-Texture coal_textures[N_COAL_TEXTURES];
-constexpr u32 N_IRON_TEXTURES = 7;
-Texture iron_textures[N_IRON_TEXTURES];
-
 void load_tile_textures() {
-    constexpr bool MIPS = true;
-
-    tile_textures[TILE_STONE]       = load_texture_from_file("res/textures/tile/stone.png", MIPS);
-    tile_textures[TILE_GRASS]       = load_texture_from_file("res/textures/tile/grass.png", MIPS);
-    tile_textures[TILE_COAL_ORE]    = load_texture_from_file("res/textures/tile/coal_ore_100.png", MIPS);
-    tile_textures[TILE_IRON_ORE]    = load_texture_from_file("res/textures/tile/iron_ore_100.png", MIPS);
-    tile_textures[TILE_CHEST]       = load_texture_from_file("res/textures/tile/chest.png", MIPS);
-
-    coal_textures[6]                = tile_textures[TILE_COAL_ORE];
-    coal_textures[5]                = load_texture_from_file("res/textures/tile/coal_ore_90.png", MIPS);
-    coal_textures[4]                = load_texture_from_file("res/textures/tile/coal_ore_70.png", MIPS);
-    coal_textures[3]                = load_texture_from_file("res/textures/tile/coal_ore_50.png", MIPS);
-    coal_textures[2]                = load_texture_from_file("res/textures/tile/coal_ore_30.png", MIPS);
-    coal_textures[1]                = load_texture_from_file("res/textures/tile/coal_ore_20.png", MIPS);
-    coal_textures[0]                = load_texture_from_file("res/textures/tile/coal_ore_10.png", MIPS);
-
-    iron_textures[6]                = tile_textures[TILE_IRON_ORE];
-    iron_textures[5]                = load_texture_from_file("res/textures/tile/iron_ore_90.png", MIPS);
-    iron_textures[4]                = load_texture_from_file("res/textures/tile/iron_ore_70.png", MIPS);
-    iron_textures[3]                = load_texture_from_file("res/textures/tile/iron_ore_50.png", MIPS);
-    iron_textures[2]                = load_texture_from_file("res/textures/tile/iron_ore_30.png", MIPS);
-    iron_textures[1]                = load_texture_from_file("res/textures/tile/iron_ore_20.png", MIPS);
-    iron_textures[0]                = load_texture_from_file("res/textures/tile/iron_ore_10.png", MIPS);
+    tile_textures[TILE_STONE] = assets::textures::stone;
+    tile_textures[TILE_GRASS] = assets::textures::grass;
+    tile_textures[TILE_COAL_ORE] = assets::textures::coal_ore[6];
+    tile_textures[TILE_IRON_ORE] = assets::textures::iron_ore[6];
+    tile_textures[TILE_CHEST] = assets::textures::chest;
 }
 
 
@@ -77,8 +49,8 @@ struct Tile_Ore : public Tile {
         Tile::init();
 
         switch(type) {
-            case TILE_COAL_ORE: textures = coal_textures; break;
-            case TILE_IRON_ORE: textures = iron_textures; break;
+            case TILE_COAL_ORE: textures = assets::textures::coal_ore; break;
+            case TILE_IRON_ORE: textures = assets::textures::iron_ore; break;
             default: assert(0); break;
         }
     }
@@ -112,7 +84,7 @@ struct Tile_Chest : public Tile {
 
     virtual void init() override {
         Tile::init();
-        
+
         container.init(25);
     }
 

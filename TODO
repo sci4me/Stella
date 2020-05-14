@@ -28,5 +28,11 @@
  - Main Menu
    - Ability to create new worlds, load saved worlds, edit settings, and quit
  - Save Games
+   - This ties into chunk management pretty significantly
+     - In a real-world scenario, whenever we want to _get_ a chunk
+       We first need to check if that chunk already exists, possibly in a cache, or on disk
+       If not, only then do we generate it.
+     - Whenever we want to unload a chunk, say because the player walked away from it,
+       we need to serialize it to disk somehow. Or possibly a chunk cache, before disk.
  - Audio
  - Particle Systems

@@ -44,6 +44,7 @@
 #include "buffer_objects.cpp"
 #include "texture_atlas.cpp"
 #include "batch_renderer.cpp"
+#include "assets.cpp"
 #include "item.cpp"
 #include "tile.cpp"
 #include "world.cpp"
@@ -174,13 +175,10 @@ s32 main(s32 argc, char **argv) {
     r->init();
 
 
+    assets::load();
     load_tile_textures();
-    
-    // TODO: HACK; this should be temporary!!
-    // load_item_textures();
-    item_textures[ITEM_COAL_ORE] = tile_textures[TILE_COAL_ORE];
-    item_textures[ITEM_IRON_ORE] = tile_textures[TILE_IRON_ORE];
-    item_textures[ITEM_CHEST]    = tile_textures[TILE_CHEST];
+    load_item_textures();
+
 
     glm::mat4 projection_matrix;
 
