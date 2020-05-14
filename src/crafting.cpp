@@ -53,6 +53,8 @@ namespace crafting {
         Recipe *actively_crafting = nullptr;
         u32 time_left;
 
+        bool crafting_paused = false;
+
         void init(Item_Container *inventory) {
             this->inventory = inventory;
         }
@@ -88,6 +90,8 @@ namespace crafting {
         }
 
         void update() {
+            if(crafting_paused) return;
+
             if(actively_crafting) {
                 if(time_left) {
                     time_left--;
@@ -112,7 +116,42 @@ namespace crafting {
         }
 
         void draw() {
+            ImGui::Begin("Crafting Queue", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
                 
+            ImGui::Text("Queue Count: %d", arrlen(queue) + (actively_crafting ? 1 : 0));
+            ImGui::Checkbox("Pause", &crafting_paused);
+
+            ImGui::Separator();
+
+            f32 crafting_progress = 0.0f;
+            if(actively_crafting) {
+                crafting_progress = (f32)(actively_crafting->time - time_left) / (f32)actively_crafting->time;
+            }
+            ImGui::ProgressBar(crafting_progress, {100, 14});
+
+
+            // TODO: This is pretty crappy lol...
+            ImGui::BeginChild("Queue", { 100, 100 });
+
+            if(actively_crafting) {
+                // TODO: Change 32 to SLOT_SIZE
+                if(ImGui::ImageButton((ImTextureID) item_textures[actively_crafting->output.type].id, { 32, 32 })) {
+                    // TODO: cancel the request
+                    assert(0);
+                }
+            }
+
+            for(u32 i = 0; i < arrlen(queue); i++) {
+                if(ImGui::ImageButton((ImTextureID) item_textures[queue[i]->output.type].id, { 32, 32 })) {
+                    // TODO: cancel the request
+                    assert(0);
+                }   
+            }
+
+            ImGui::EndChild();
+
+
+            ImGui::End();
         }
     };
 }

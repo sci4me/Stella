@@ -188,6 +188,7 @@ struct Item_Container {
         }
 
         assert(!remaining);
+        sort();
 
         return true;
     }

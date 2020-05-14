@@ -18,6 +18,10 @@ struct Player {
 
     bool show_inventory = false;
 
+    // TODO: maybe change this to be an overlay that we always
+    // display whenever arrlen(queue) > 0?
+    bool show_crafting_queue = false;
+
     Tile_Type placing_tile = TILE_NONE; // TODO
     bool placement_valid;
 
@@ -49,6 +53,16 @@ struct Player {
             if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
     
             if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
+
+            static bool last_c_key = false;
+            if(glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
+                if(!last_c_key) {
+                    last_c_key = true;
+                    show_crafting_queue = !show_crafting_queue;                    
+                }
+            } else {
+                last_c_key = false;
+            }
 
             if(glfwGetKey(window, GLFW_KEY_C)) placing_tile = TILE_CHEST;
             else placing_tile = TILE_NONE;
@@ -189,6 +203,8 @@ struct Player {
 
         ui::tile_ui(&inventory, &active_ui_tile);
         ui::player_inventory(&crafting_queue, &show_inventory);
+
+        if(show_crafting_queue) crafting_queue.draw();
 
         r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     }

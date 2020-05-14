@@ -92,7 +92,10 @@ bool fast_mining = false;
 
 
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
-    scale = clampf(scale + y * 0.05f, 0.1f, 5.0f);
+    ImGuiIO& io = ImGui::GetIO();
+    if(!io.WantCaptureMouse) {
+        scale = clampf(scale + y * 0.05f, 0.1f, 5.0f);
+    }
 }
 
 void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mods) {

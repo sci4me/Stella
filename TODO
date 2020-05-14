@@ -54,6 +54,8 @@ Code/Dev Features:
    - printf style API
 
 Quality:
+ - Key/Mouse Event Dispatch / Handling
+   - Instead of having to like, hackily debounce keys with a static bool...
  - Shift clicking in inventories!
  - Ability to select part of a stack vs only the entire thing
  - Click outside of ImGui window to close it? Maybe?
@@ -88,3 +90,10 @@ Quality:
    - So, yeah uhm, maybe don't combine them? I don't even know.
    - Although... if I eventually want the ability to tint chunk tiles anyway,
      then the shaders become equivalent, so, yes.
+
+Random:
+ - Investigate whether you can use a templated function without template parameters
+   - In this case, in order to create a _different_ static variable for every callsite
+     - To allow us to create a `debounce` function which is just the standard hacky
+       static bool last state thingy.
+       - Actually it's really an edge detector, not `debounce`.
