@@ -117,8 +117,7 @@ struct Tile_Furnace : public Tile {
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
 
         input.init(1);
-        fuel.init(1, ITEM_CONTAINER_FLAG_NO_EXTRACT);
-        fuel.insert({ITEM_CHEST, 1});
+        fuel.init(1);
         output.init(1, ITEM_CONTAINER_FLAG_NO_INSERT);
     }
 
