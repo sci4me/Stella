@@ -62,17 +62,24 @@ namespace ui {
 
         if(clicked) {
             if(held_item_container != nullptr) {
-                if(held_item_container == container) {
-                    held_item_container = nullptr;
-                } else {
-                    container->insert(held_item_container->slots[held_item_index]);
-                    held_item_container->remove(held_item_index);
-
-                    held_item_container = nullptr;
+                if((container->flags & ITEM_CONTAINER_FLAG_NO_INSERT) == 0) {
+                    if(held_item_container == container) {
+                        held_item_container = nullptr;
+                    } else {
+                        u32 remaining = container->insert(held_item_container->slots[held_item_index]);
+                        if(remaining) {
+                            held_item_container->slots[held_item_index].count = remaining;
+                        } else {
+                            held_item_container->remove(held_item_index);
+                            held_item_container = nullptr;
+                        }
+                    }
                 }
             } else if(slot.count) {
-                held_item_container = container;
-                held_item_index = index;
+                if((container->flags & ITEM_CONTAINER_FLAG_NO_EXTRACT) == 0) {
+                    held_item_container = container;
+                    held_item_index = index;
+                }
             }
         }
 

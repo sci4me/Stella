@@ -25,7 +25,16 @@ struct Item_Stack {
 };
 
 
+typedef u8 Item_Container_Flags;
+enum Item_Container_Flags_ : Item_Container_Flags {
+    ITEM_CONTAINER_FLAG_NONE            = 0,
+    ITEM_CONTAINER_FLAG_NO_INSERT       = 1,
+    ITEM_CONTAINER_FLAG_NO_EXTRACT      = 2
+};
+
 struct Item_Container {
+    Item_Container_Flags flags;
+
     // NOTE: If Item_Stack ever needs to hold much more
     // data than it "currently" does (type and count)
     // then, we'll probably want to change these to pointers?
@@ -33,7 +42,9 @@ struct Item_Container {
     Item_Stack *slots;
     u32 size;
 
-    void init(u32 size) {
+    void init(u32 size, Item_Container_Flags flags = ITEM_CONTAINER_FLAG_NONE) {
+        this->flags = flags;
+        
         assert(size > 0);
         this->size = size;
 

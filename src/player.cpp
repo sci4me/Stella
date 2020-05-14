@@ -84,25 +84,26 @@ struct Player {
                             placement_valid = true;
 
                             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                                Tile *tile;
+
                                 if(placing_tile == TILE_CHEST) {
                                     auto tile_mem = malloc(sizeof(Tile_Chest));
-                                    auto tile = new(tile_mem) Tile_Chest;
-                                    tile->init();
-                                    tile->type = TILE_CHEST;
-                                    tile->x = hovered_tile_x;
-                                    tile->y = hovered_tile_y;
-                                    hmput(chunk->layer2, key, tile);
+                                    Tile_Chest *chest = new(tile_mem) Tile_Chest;
+                                    chest->type = TILE_CHEST;
+                                    tile = chest;
                                 } else if(placing_tile == TILE_FURNACE) {
                                     auto tile_mem = malloc(sizeof(Tile_Furnace));
-                                    auto tile = new(tile_mem) Tile_Furnace;
-                                    tile->init();
-                                    tile->type = TILE_FURNACE;
-                                    tile->x = hovered_tile_x;
-                                    tile->y = hovered_tile_y;
-                                    hmput(chunk->layer2, key, tile);
+                                    Tile_Furnace *furnace = new(tile_mem) Tile_Furnace;
+                                    furnace->type = TILE_FURNACE;
+                                    tile = furnace;
                                 } else {
                                     assert(0);
                                 }
+
+                                tile->x = hovered_tile_x;
+                                tile->y = hovered_tile_y;
+                                tile->init();
+                                hmput(chunk->layer2, key, tile);
                             }
                         }
                     } else {
