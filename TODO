@@ -18,6 +18,8 @@ Features:
  - Particle Systems
 
 Code/Dev Features:
+ - Internal
+   - #define internal static
  - HOT CODE RELOAD!!!!!
    - Definitely non-trivial to implement!
      - We have a ton of state.. sorta.
@@ -57,6 +59,7 @@ Quality:
  - Click outside of ImGui window to close it? Maybe?
    - For in-game UIs? Or, some of them?
      - Inventory, Chest, Furnace, etc.?
+   - Also, pressing E opens the inventory, shouldn't it close it too?
  - Instead of using N textures for ores that are diminishing,
    just render them differently by using different UVs!
  - Tests

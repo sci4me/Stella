@@ -173,11 +173,34 @@ struct Item_Container {
         sort();
     }
 
+    bool remove(Item_Stack s) {
+        if(!contains(s)) return false;
+
+        u32 remaining = s.count;
+        for(u32 i = 0; i < size; i++) {
+            if(slots[i].type == s.type) {
+                u32 n = min(slots[i].count, remaining);
+                slots[i].count -= n;
+                remaining -= n;
+
+                if(!remaining) break;
+            }
+        }
+
+        assert(!remaining);
+
+        return true;
+    }
+
     u32 count_type(Item_Type type) {
         u32 count = 0;
         for(u32 i = 0; i < size; i++) {
             if(slots[i].type == type) count += slots[i].count;
         }
         return count;
+    }
+
+    bool contains(Item_Stack s) {
+        return count_type(s.type) >= s.count;
     }
 };

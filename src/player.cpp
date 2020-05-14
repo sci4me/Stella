@@ -12,6 +12,7 @@ struct Player {
     f32 mining_progress;
 
     Item_Container inventory;
+    crafting::Queue crafting_queue;
 
     Tile *active_ui_tile = nullptr;
 
@@ -25,13 +26,17 @@ struct Player {
         this->world = world;
 
         inventory.init(16);
+        crafting_queue.init(&inventory);
     }
 
     void free() {
         inventory.free();
+        crafting_queue.deinit();
     }
 
     void update() {
+        crafting_queue.update();
+
         ImGuiIO& io = ImGui::GetIO();
 
 
@@ -183,7 +188,7 @@ struct Player {
         }
 
         ui::tile_ui(&inventory, &active_ui_tile);
-        ui::player_inventory(&inventory, &show_inventory);
+        ui::player_inventory(&crafting_queue, &show_inventory);
 
         r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     }

@@ -174,12 +174,15 @@ namespace ui {
         }
     }
 
-    void player_inventory(Item_Container *inventory, bool *open) {
+    // NOTE: We just pass the crafting::Queue since it contains the
+    // Item_Container for the player inventory, and we need the Queue anyway.
+    void player_inventory(crafting::Queue *crafting_queue, bool *open) {
         if(!*open) return;
-        
+
         if(ImGui::Begin("Inventory", open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             // NOTE TODO: hardcoded bs code for days
-            
+
+            auto inventory = crafting_queue->inventory;            
             container(inventory, 4, 4);
 
             ImGui::Separator();
@@ -187,9 +190,9 @@ namespace ui {
             for(u32 i = 0; i < arrlen(crafting::recipes); i++) {
                 auto r = crafting::recipes[i];
                 
-                if(ImGui::ImageButton((ImTextureID) item_textures[r->output].id, { SLOT_SIZE, SLOT_SIZE })) {
-                    // TODO
-                    assert(0);
+                if(ImGui::ImageButton((ImTextureID) item_textures[r->output.type].id, { SLOT_SIZE, SLOT_SIZE })) {
+                    // TODO: Handle result?
+                    crafting_queue->request(r);
                 }
 
                 if(ImGui::IsItemHovered()) {
