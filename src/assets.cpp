@@ -6,6 +6,10 @@ namespace assets {
         Texture iron_ore[7]; // TODO: Don't hardcode this 7
         Texture chest;
         Texture furnace;
+
+        // NOTE TODO: Do we want to separate textures for tiles, items, etc.
+        // into their own namespaces? Dunno. Maybe.
+        Texture iron_ingot;
     }
 
     void load() {
@@ -29,5 +33,8 @@ namespace assets {
         textures::iron_ore[6]     = load_texture_from_file("res/textures/tile/iron_ore_6.png", MIPS);
         textures::chest           = load_texture_from_file("res/textures/tile/chest.png", MIPS);
         textures::furnace         = load_texture_from_file("res/textures/tile/furnace.png", MIPS);
+
+        // TODO: Do we actually want MIPs for items? i.e. for item entities?
+        textures::iron_ingot      = load_texture_from_file("res/textures/item/iron_ingot.png", false);
     }
 }

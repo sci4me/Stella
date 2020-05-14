@@ -52,6 +52,11 @@ Code/Dev Features:
    - printf style API
 
 Quality:
+ - Shift clicking in inventories!
+ - Ability to select part of a stack vs only the entire thing
+ - Click outside of ImGui window to close it? Maybe?
+   - For in-game UIs? Or, some of them?
+     - Inventory, Chest, Furnace, etc.?
  - Instead of using N textures for ores that are diminishing,
    just render them differently by using different UVs!
  - Tests

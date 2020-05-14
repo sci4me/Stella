@@ -107,10 +107,22 @@ struct Tile_Chest : public Tile {
     }
 };
 
+
+// NOTE TODO: Eventually we won't want these to 
+// be hardcoded into the furnace!
+constexpr u32 COAL_FUEL_POINTS          = 800;
+constexpr u32 FUEL_POINTS_PER_SMELT     = 100;
+
 struct Tile_Furnace : public Tile {
     Item_Container input;
     Item_Container fuel;
     Item_Container output;
+
+    u32 fuel_points = 0;
+    bool is_smelting = false;
+    Item_Type smelting_input_type;
+    Item_Type smelting_output_type;
+    u32 smelting_progress = 0;
 
     virtual void init() override {
         Tile::init();
@@ -134,6 +146,45 @@ struct Tile_Furnace : public Tile {
     }
 
     virtual void update() override {
-        // TODO
+        if(input.slots[0].count && !is_smelting) {
+            input.slots[0].count--;
+            is_smelting = true;
+            
+            smelting_input_type = input.slots[0].type;
+            smelting_output_type = ITEM_IRON_INGOT; // TODO: Don't just use ITEM_IRON_INGOT here!
+        }
+
+        if(is_smelting && smelting_progress == FUEL_POINTS_PER_SMELT) {
+            if(output.slots[0].count) {
+                if(output.slots[0].type == smelting_output_type && output.slots[0].count < MAX_ITEM_SLOT_SIZE) {
+                    output.slots[0].count++;
+                } else {
+                    return;
+                }
+            } else {
+                output.slots[0].type = smelting_output_type;
+                output.slots[0].count = 1;
+            }
+
+            is_smelting = false;
+            smelting_progress = 0;
+            return;
+        }
+
+        if(is_smelting) {
+            if(!fuel_points) {
+                // NOTE: Don't have to check type since we have
+                // the insertion filter.
+                if(fuel.slots[0].count) {
+                    fuel.slots[0].count--;
+                    fuel_points += COAL_FUEL_POINTS;
+                }
+            }
+
+            if(!fuel_points) return;
+
+            fuel_points--;
+            smelting_progress++;
+        }
     }
 };

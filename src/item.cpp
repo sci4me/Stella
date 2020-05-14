@@ -4,6 +4,8 @@ enum Item_Type : u8 {
     ITEM_COAL_ORE,
     ITEM_IRON_ORE,
 
+    ITEM_IRON_INGOT,
+
     ITEM_CHEST,
 
     N_ITEM_TYPES
@@ -15,6 +17,7 @@ Texture item_textures[N_ITEM_TYPES];
 void load_item_textures() {
     item_textures[ITEM_COAL_ORE] = assets::textures::coal_ore[6];
     item_textures[ITEM_IRON_ORE] = assets::textures::iron_ore[6];
+    item_textures[ITEM_IRON_INGOT] = assets::textures::iron_ingot;
     item_textures[ITEM_CHEST]    = assets::textures::chest;
 }
 
@@ -41,7 +44,7 @@ struct Item_Container {
     // often (?). But for now, blegh, who cares. Profiling will tell me
     // if this needs to change.
     //              - sci4me, 5/13/20
-    
+
     // NOTE: 4 words * 64 bits per word = 256 bits
     Static_Bitset<4> insertion_filter;
 

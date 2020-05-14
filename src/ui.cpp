@@ -122,7 +122,7 @@ namespace ui {
 
     void furnace_ui(Item_Container *player_inventory, Tile_Furnace *f, Tile **tile_ref) {
         // TODO: Looks like shit but I guess it works for now...
-        
+
         bool open = true;
         if(ImGui::Begin("Furnace", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Columns(2, NULL, false);
@@ -138,7 +138,7 @@ namespace ui {
                 container(&f->output, 1, 1);
             
                 ImGui::Dummy({0, 20});
-                ImGui::ProgressBar(0.375f, { 80, 14 }, "");
+                ImGui::ProgressBar((f32)f->smelting_progress / (f32)FUEL_POINTS_PER_SMELT, { 80, 14 }, "");
             ImGui::Columns(1);
 
             ImGui::Separator();
