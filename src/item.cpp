@@ -36,6 +36,12 @@ enum Item_Container_Flags_ : Item_Container_Flags {
 struct Item_Container {
     Item_Container_Flags flags;
 
+    // NOTE: Static_Bitset may not be the best way to implement this;
+    // we're using up 32 bytes for something that isn't used extremely
+    // often (?). But for now, blegh, who cares. Profiling will tell me
+    // if this needs to change.
+    //              - sci4me, 5/13/20
+    
     // NOTE: 4 words * 64 bits per word = 256 bits
     Static_Bitset<4> insertion_filter;
 

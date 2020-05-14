@@ -18,6 +18,24 @@ Features:
  - Particle Systems
 
 Code/Dev Features:
+ - HOT CODE RELOAD!!!!!
+   - Definitely non-trivial to implement!
+     - We have a ton of state.. sorta.
+     - Much of it is either from malloc or
+       allocated by stb_ds.h...
+   - Totally worth doing though!
+     - Not hard conceptually: just use a dynamic
+       library to hold the actual game code, and
+       a "playform layer" (although in our case,
+       it won't be a true _platform_ layer.. but..
+       semantics.. n stuff..)
+       And then just uh, have this platform layer (what
+       gets build as the actual .exe) load and reload
+       the dynamic library if it changes.
+       Just have to be really careful/specific/controlled/whatever
+       about memory; all allocation must happen from within
+       the platform layer so that when the dynlib reloads, it can
+       just keep using that same memory.
  - Shader Abstraction
    - Bind/Unbind
    - Ability to handle uniforms
@@ -33,7 +51,9 @@ Code/Dev Features:
    - File Logging
    - printf style API
 
-Code Quality:
+Quality:
+ - Instead of using N textures for ores that are diminishing,
+   just render them differently by using different UVs!
  - Tests
    - It's starting to get to the point where we have easily
      testable things that probably _should_ be tested.

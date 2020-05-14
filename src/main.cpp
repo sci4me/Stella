@@ -74,6 +74,7 @@ bool window_resized = true;
 f32 scale = 1.0f;
 
 bool show_debug_window = false;
+bool show_imgui_metrics_window = false;
 
 bool fullscreen_changed = false;
 bool fullscreen = false;
@@ -306,8 +307,14 @@ s32 main(s32 argc, char **argv) {
                         else      glfwSwapInterval(0);
                     }
                     ImGui::Checkbox("Fast Mining", &fast_mining);
+                    ImGui::Checkbox("Show ImGui Metrics", &show_imgui_metrics_window);
                 }
             }
+
+            if(show_imgui_metrics_window) {
+                ImGui::ShowMetricsWindow();
+            }
+
             ImGui::End();
         }
     

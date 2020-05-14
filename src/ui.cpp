@@ -124,20 +124,19 @@ namespace ui {
         bool open = true;
         if(ImGui::Begin("Furnace", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text("Input:");
-            ImGui::SameLine();
             container(&f->input, 1, 1);
 
-            ImGui::Text("Fuel:");
-            ImGui::SameLine();
-            container(&f->fuel, 1, 1);
-
             ImGui::Text("Output:");
-            ImGui::SameLine();
             container(&f->output, 1, 1);
 
-            ImGui::ProgressBar(0.375f, { 200, 20 });
+            ImGui::Text("Fuel:");
+            container(&f->fuel, 1, 1);
+
+            ImGui::ProgressBar(0.375f, { 50, 12 }, "");
+
 
             ImGui::Separator();
+
 
             container(player_inventory, 4, 4);
 
