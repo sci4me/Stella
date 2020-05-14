@@ -114,10 +114,18 @@ struct Tile_Chest : public Tile {
 };
 
 
-// NOTE TODO: Eventually we won't want these to 
-// be hardcoded into the furnace!
 constexpr u32 COAL_FUEL_POINTS          = 800;
 constexpr u32 FUEL_POINTS_PER_SMELT     = 100;
+
+struct Smelting_Recipe {
+    Item_Type input;
+    Item_Type output;
+};
+
+const Smelting_Recipe smelting_recipes[] = {
+    { ITEM_IRON_ORE, ITEM_IRON_INGOT },
+    { ITEM_GOLD_ORE, ITEM_GOLD_INGOT }
+};
 
 struct Tile_Furnace : public Tile {
     Item_Container input;

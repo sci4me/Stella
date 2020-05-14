@@ -46,7 +46,6 @@ struct Player {
             if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
 
             if(glfwGetKey(window, GLFW_KEY_C)) placing_tile = TILE_CHEST;
-            else if(glfwGetKey(window, GLFW_KEY_F)) placing_tile = TILE_FURNACE;
             else placing_tile = TILE_NONE;
         }
 
@@ -233,12 +232,6 @@ private:
             case TILE_IRON_ORE:
             case TILE_GOLD_ORE: {
                 Tile_Ore *ore = (Tile_Ore*) tile;
-                
-                // NOTE TODO: If the result is >0 we need to
-                // either spawn the item in the world, or,
-                // probably just don't actually perform 
-                // the mining operation.
-                //              - sci4me, 5/13/20
 
                 Item_Type ore_item;
                 switch(tile->type) {
@@ -249,6 +242,11 @@ private:
                     default: assert(0);
                 }
 
+                // NOTE TODO: If the result is >0 we need to
+                // either spawn the item in the world, or,
+                // probably just don't actually perform 
+                // the mining operation.
+                //              - sci4me, 5/13/20
                 assert(!inventory.insert({ ore_item, 1 }));
 
                 if(ore->count == 1) {

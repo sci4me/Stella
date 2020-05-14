@@ -47,7 +47,7 @@
 #include "batch_renderer.cpp"
 #include "assets.cpp"
 #include "item.cpp"
-#include "recipes.cpp"
+#include "crafting.cpp"
 #include "tile.cpp"
 #include "world.cpp"
 #include "ui.cpp"
@@ -181,6 +181,9 @@ s32 main(s32 argc, char **argv) {
     assets::load();
     load_tile_textures();
     load_item_textures();
+
+
+    crafting::init();
 
 
     glm::mat4 projection_matrix;
@@ -332,6 +335,8 @@ s32 main(s32 argc, char **argv) {
 
     r->free();
     free(r);
+
+    crafting::free();
 
     tfree();
 

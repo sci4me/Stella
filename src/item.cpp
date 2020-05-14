@@ -10,6 +10,7 @@ enum Item_Type : u8 {
     ITEM_GOLD_INGOT,
 
     ITEM_CHEST,
+    ITEM_FURNACE,
 
     N_ITEM_TYPES
 };
@@ -25,6 +26,7 @@ void load_item_textures() {
     item_textures[ITEM_IRON_INGOT]      = assets::textures::iron_ingot;
     item_textures[ITEM_GOLD_INGOT]      = assets::textures::gold_ingot;
     item_textures[ITEM_CHEST]           = assets::textures::chest;
+    item_textures[ITEM_FURNACE]         = assets::textures::furnace;
 }
 
 
@@ -169,5 +171,13 @@ struct Item_Container {
 
         memset(&slots[index], 0, sizeof(Item_Stack));
         sort();
+    }
+
+    u32 count_type(Item_Type type) {
+        u32 count = 0;
+        for(u32 i = 0; i < size; i++) {
+            if(slots[i].type == type) count += slots[i].count;
+        }
+        return count;
     }
 };

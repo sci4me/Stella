@@ -107,13 +107,13 @@ namespace ui {
         bool open = true;
         if(ImGui::Begin("Chest", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             // NOTE TODO: hardcoded bs code for days
-            ui::container(&c->container, 5, 5);
+            container(&c->container, 5, 5);
 
             ImGui::Separator();
 
-            ui::container(player_inventory, 4, 4);
+            container(player_inventory, 4, 4);
             
-            ui::held_item();
+            held_item();
         }
         ImGui::End();
 
@@ -179,8 +179,46 @@ namespace ui {
         
         if(ImGui::Begin("Inventory", open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             // NOTE TODO: hardcoded bs code for days
-            ui::container(inventory, 4, 4);
-            ui::held_item();
+            
+            container(inventory, 4, 4);
+
+            ImGui::Separator();
+
+            for(u32 i = 0; i < arrlen(crafting::recipes); i++) {
+                auto r = crafting::recipes[i];
+                
+                if(ImGui::ImageButton((ImTextureID) item_textures[r->output].id, { SLOT_SIZE, SLOT_SIZE })) {
+                    // TODO
+                    assert(0);
+                }
+
+                if(ImGui::IsItemHovered()) {
+                    ImGui::BeginTooltip();
+
+                    auto font = ImGui::GetFont();
+                    auto font_size = ImGui::GetFontSize();
+                    auto drawlist = ImGui::GetForegroundDrawList();
+
+                    for(u32 j = 0; j < r->n_inputs; j++) {
+                        auto& input = r->inputs[i];
+                        u32 n = inventory->count_type(input.type);
+                        
+                        ImGui::Image((ImTextureID) item_textures[input.type].id, { SLOT_SIZE, SLOT_SIZE });
+
+                        char buf[8];
+                        snprintf(buf, 8, "%d", input.count);
+
+                        auto tpos = ImGui::GetItemRectMax();
+                        auto tsize = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, buf);
+
+                        drawlist->AddText(font, font_size, { tpos.x - tsize.x, tpos.y - tsize.y }, n < input.count ? 0xFF0000FF : 0xFFFFFFFF, buf);
+                    }
+
+                    ImGui::EndTooltip();
+                }
+            }
+
+            held_item();
         }
         ImGui::End();
     }
