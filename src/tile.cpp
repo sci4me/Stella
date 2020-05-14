@@ -129,11 +129,15 @@ struct Tile_Furnace : public Tile {
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
 
         input.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);
-        input.insertion_filter.set(ITEM_IRON_ORE);
-
+        
+        for(u32 i = 0; i < array_length(smelting_recipes); i++) {
+            auto& r = smelting_recipes[i];
+            input.insertion_filter.set(r.input);
+        }
+        
         fuel.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);
         fuel.insertion_filter.set(ITEM_COAL_ORE);
-        
+
         output.init(1, ITEM_CONTAINER_FLAG_NO_INSERT);
     }
 
@@ -151,7 +155,15 @@ struct Tile_Furnace : public Tile {
             is_smelting = true;
             
             smelting_input_type = input.slots[0].type;
-            smelting_output_type = ITEM_IRON_INGOT; // TODO: Don't just use ITEM_IRON_INGOT here!
+            
+            smelting_output_type = N_ITEM_TYPES;
+            for(u32 i = 0; i < array_length(smelting_recipes); i++) { // PERF NOTE: linear search
+                if(smelting_recipes[i].input == smelting_input_type) {
+                    smelting_output_type = smelting_recipes[i].output;
+                    break;
+                }
+            }
+            assert(smelting_output_type != N_ITEM_TYPES);
         }
 
         if(is_smelting && smelting_progress == FUEL_POINTS_PER_SMELT) {

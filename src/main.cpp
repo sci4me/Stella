@@ -47,6 +47,7 @@
 #include "batch_renderer.cpp"
 #include "assets.cpp"
 #include "item.cpp"
+#include "recipes.cpp"
 #include "tile.cpp"
 #include "world.cpp"
 #include "ui.cpp"

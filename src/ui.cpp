@@ -122,6 +122,7 @@ namespace ui {
 
     void furnace_ui(Item_Container *player_inventory, Tile_Furnace *f, Tile **tile_ref) {
         // TODO: Looks like shit but I guess it works for now...
+        // TODO: Visual indication of fuel in internal buffer
 
         bool open = true;
         if(ImGui::Begin("Furnace", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
