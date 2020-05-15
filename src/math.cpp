@@ -1,7 +1,7 @@
 #define min(a, b) ((a)<(b)?(a):(b))
 #define max(a, b) ((a)>(b)?(a):(b))
-
-inline f32 square(f32 x) { return x * x; } 
+#define square(x) ((x)*(x))
+#define sign(x) (((x)<(0))?(-1):(1))
 
 inline glm::vec4 rgba255_to_rgba1(u32 c) {
     u8 r = c & 0xFF;
@@ -84,3 +84,15 @@ struct AABB {
         return INTERSECTS;
     }
 };
+
+
+f32 line_segment_intersection_no_parallel(glm::vec2 a, glm::vec2 b, glm::vec2 c, glm::vec2 d) {
+    auto e = b - a;
+    auto f = d - c;
+    glm::vec2 p = { -e.y, e.x };
+
+    auto denom = glm::dot(f, p);
+    assert(denom != 0);
+
+    return glm::dot(a - c, p) / denom;
+}

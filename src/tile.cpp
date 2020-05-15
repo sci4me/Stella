@@ -57,10 +57,6 @@ struct Tile {
 
     virtual void draw(Batch_Renderer *r) {
         r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) type]);
-
-        if(type == TILE_FURNACE) {
-            r->push_solid_quad(collision_aabb.min.x, collision_aabb.min.y, collision_aabb.max.x - collision_aabb.min.x, collision_aabb.max.y - collision_aabb.min.y, { 0.0f, 0.0f, 1.0f, 0.5f });
-        }
     }
 
     virtual void update() {}

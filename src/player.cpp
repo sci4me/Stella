@@ -1,6 +1,7 @@
-constexpr f32 PLAYER_SPEED = 10.0f;
-
 struct Player {
+    static constexpr f32 SPEED = 10.0f;
+    static constexpr f32 SIZE = 10.0f;
+
     GLFWwindow *window;
 
     World *world;
@@ -38,6 +39,43 @@ struct Player {
         crafting_queue.deinit();
     }
 
+
+    // TODO: Extract this collision code... once we have it all working.
+
+    struct Hit {
+        bool hit;
+        f32 h;
+    };
+
+    Hit segment_intersection(AABB const& bb, glm::vec2 pos, glm::vec2 vel, glm::vec2 padding = { 0.0f, 0.0f }) {
+        auto d = 1.0f / vel;
+        auto s = glm::vec2(sign(d.x), sign(d.y));
+        auto half = 0.5f * (bb.max - bb.min);
+        auto center = bb.min + half;
+        auto near = d * (center - s * (half + padding) - pos);
+        auto far = d * (center + s * (half + padding) - pos);
+
+        if(near.x > far.y || near.y > far.x) return { false, 1.0f };
+
+        auto n = max(near.x, near.y);
+        auto f = min(far.x, far.y);
+
+        if(n >= 1.0f || f <= 0.0f) return { false, 1.0f };
+
+        return { true, clampf(n, 0.0f, 1.0f) };
+    }
+
+    f32 sweep(AABB const& a, AABB const& b, glm::vec2 vel) {
+        auto a_half = 0.5f * (a.max - a.min);
+        auto a_center = a.min + a_half;
+
+        auto h = segment_intersection(b, a_center, vel, a_half);
+        if(!h.hit) return 1.0f;
+
+        return h.h;
+    }
+
+
     void update() {
         crafting_queue.update();
 
@@ -58,54 +96,70 @@ struct Player {
             dir = glm::normalize(dir);
             
             if(glm::length(dir) > 0) {
-                // TODO: Do collision detection with our bounding box
-                // against the bounding boxes in the world we might be
-                // about to collide with and handle those collisions.
-                //
-                // At first we'll just stop moving entirely if we detect
-                // an upcoming collision. Then, we'll want to be smarter
-                // about it. For example, if we are walking up and left
-                // and we run into something on our left, we want to
-                // stop moving left but continue moving up.
-                //
-                // To do this, we should be able to just use our collision
-                // handling to modify `dir` such that the collisions 
-                // never occur.
-                //
-                // I'm not really sure if this is a good strategy but it's
-                // what we're going to try because I'm too lazy/impatient for
-                // tutorials/papers/Handmade Hero right now :P
-                //
-                //                  - sci4me, 5/15/20
-                //
-
-                bool f = true; // TODO REMOVEME TEMPORARY/TESTING
-
-                f32 half_size = 5;
-                auto npos = pos + dir * PLAYER_SPEED;
+                auto vel = dir * SPEED;
+                if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) vel = dir * 0.5f;
+                
+                f32 half_size = SIZE / 2.0f;
                 AABB player_bb = {
-                    { npos.x - half_size, npos.y - half_size },
-                    { npos.x + half_size, npos.y + half_size }
+                    { pos.x - half_size, pos.y - half_size },
+                    { pos.x + half_size, pos.y + half_size }
                 };
 
+                // NOTE TODO: We don't really have to check EVERY tile
+                // for collisions! Just check the ones close to us.
+                
                 auto chunk = get_current_chunk();
+
+                f32 h = 1.0f;
                 for(u32 i = 0; i < hmlen(chunk->layer2); i++) {
                     auto tile = chunk->layer2[i].value;
                     if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
-                    switch(player_bb.intersects(tile->collision_aabb)) {
+                    auto& tile_bb = tile->collision_aabb;
+                    // glm::vec2 tile_tl = { tile_bb.min.x, tile_bb.min.y };
+                    // glm::vec2 tile_bl = { tile_bb.min.x, tile_bb.max.y };
+                    // glm::vec2 tile_tr = { tile_bb.max.x, tile_bb.min.y };
+                    // glm::vec2 tile_br = { tile_bb.max.x, tile_bb.max.y };
+
+                    switch(player_bb.intersects(tile_bb)) {
                         case AABB::OUTSIDE:
                             break;
                         case AABB::INSIDE:
                             assert(0);
                             break;
                         case AABB::INTERSECTS:
-                            f = false;
+                            h = min(h, swept_aabb(player_bb, tile_bb, vel));
+
+                            /*
+                            if(dir.y < 0) {
+                                auto c = npos - glm::vec2(0, half_size);
+                                auto d = pos - glm::vec2(0, half_size);
+                                f32 h = line_segment_intersection_no_parallel(tile_bl, tile_br, c, d);
+                                npos.y -= h * vel.y;
+                            } else if(dir.y > 0) {
+                                auto c = npos + glm::vec2(0, half_size);
+                                auto d = pos + glm::vec2(0, half_size);
+                                f32 h = line_segment_intersection_no_parallel(tile_tl, tile_tr, c, d);
+                                npos.y -= h * vel.y;
+                            }
+
+                            if(dir.x < 0) {
+                                auto c = npos - glm::vec2(half_size, 0);
+                                auto d = pos - glm::vec2(half_size, 0);
+                                f32 h = line_segment_intersection_no_parallel(tile_tr, tile_br, c, d);
+                                npos.x -= h * vel.x;
+                            } else if(dir.x > 0) {
+                                auto c = npos + glm::vec2(half_size, 0);
+                                auto d = pos + glm::vec2(half_size, 0);
+                                f32 h = line_segment_intersection_no_parallel(tile_tl, tile_bl, c, d);
+                                npos.x -= h * vel.x;
+                            }
+                            */
                             break;
                     }
                 }
 
-                if(f) pos += dir * PLAYER_SPEED; // TODO: yank this 10 into a constant or such
+                pos += vel * h;
             }
     
 
@@ -273,8 +327,8 @@ struct Player {
 
         if(show_crafting_queue) crafting_queue.draw();
 
-        // TODO: Move the 5s and 10s out of here
-        r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, { 1.0f, 0.0f, 0.0f, 1.0f });
+        f32 half_size = SIZE / 2.0f;
+        r->push_solid_quad(pos.x - half_size, pos.y - half_size, SIZE, SIZE, { 1.0f, 0.0f, 0.0f, 1.0f });
     }
 
 private:

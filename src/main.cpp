@@ -201,6 +201,35 @@ s32 main(s32 argc, char **argv) {
     player.pos = {4400, -100};
 
 
+
+    {
+        // TODO REMOVEME TESTING
+
+        player.inventory.insert({ ITEM_COBBLESTONE, MAX_ITEM_SLOT_SIZE });
+        player.inventory.insert({ ITEM_IRON_ORE, MAX_ITEM_SLOT_SIZE });
+        player.inventory.insert({ ITEM_GOLD_ORE, MAX_ITEM_SLOT_SIZE });
+        player.inventory.insert({ ITEM_COAL_ORE, MAX_ITEM_SLOT_SIZE });
+        player.inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
+        player.inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
+
+
+        auto c = world.get_chunk_containing(135, -4);
+
+        auto t = new Tile_Furnace;
+        t->type = TILE_FURNACE;
+        t->x = 135;
+        t->y = -4;
+        t->init();
+
+        glm::ivec2 key = {
+            t->x & (Chunk::SIZE - 1),
+            t->y & (Chunk::SIZE - 1)
+        };
+        hmput(c->layer2, key, t);
+    }
+
+
+
     u32 chunk_draw_calls = 0;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
