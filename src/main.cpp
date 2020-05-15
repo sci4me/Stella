@@ -204,6 +204,7 @@ s32 main(s32 argc, char **argv) {
 
     {
         // TODO REMOVEME TESTING
+        
 
         player.inventory.insert({ ITEM_COBBLESTONE, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_IRON_ORE, MAX_ITEM_SLOT_SIZE });
@@ -322,7 +323,7 @@ s32 main(s32 argc, char **argv) {
 
                 if(ImGui::CollapsingHeader("Player")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
-                    ImGui::Text("Tile Position: (%d, %d)", (s32)(player.pos.x / TILE_SIZE), (s32)(player.pos.y / TILE_SIZE));
+                    ImGui::Text("Tile Position: (%d, %d)", (s32) floor(player.pos.x / TILE_SIZE), (s32) floor(player.pos.y / TILE_SIZE));
                 }
 
                 if(ImGui::CollapsingHeader("World")) {

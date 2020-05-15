@@ -45,36 +45,65 @@ struct Player {
     struct Hit {
         bool hit;
         f32 h;
+        glm::vec2 n;
     };
 
-    Hit segment_intersection(AABB const& bb, glm::vec2 pos, glm::vec2 vel, glm::vec2 padding = { 0.0f, 0.0f }) {
-        auto d = 1.0f / vel;
-        auto s = glm::vec2(sign(d.x), sign(d.y));
-        auto half = 0.5f * (bb.max - bb.min);
-        auto center = bb.min + half;
-        auto near = d * (center - s * (half + padding) - pos);
-        auto far = d * (center + s * (half + padding) - pos);
+    Hit sweep(AABB const& a, AABB const& b, glm::vec2 const& vel) {
+        f32 inv_x_entry;
+        f32 inv_y_entry;
+        f32 inv_x_exit;
+        f32 inv_y_exit;
 
-        if(near.x > far.y || near.y > far.x) return { false, 1.0f };
+        if(vel.x > 0.0f) {
+            inv_x_entry = b.min.x - a.max.x;
+            inv_x_exit = b.max.x - a.min.x;
+        } else {
+            inv_x_entry = b.max.x - a.min.x;
+            inv_x_exit = b.min.x - a.max.x;
+        }
 
-        auto n = max(near.x, near.y);
-        auto f = min(far.x, far.y);
+        if(vel.y > 0.0f) {
+            inv_y_entry = b.min.y - a.max.y;
+            inv_y_exit = b.max.y - a.min.y;
+        } else {
+            inv_y_entry = b.max.y - a.min.y;
+            inv_y_exit = b.min.y - a.max.y;
+        }
 
-        if(n >= 1.0f || f <= 0.0f) return { false, 1.0f };
+        f32 x_entry;
+        f32 y_entry;
+        f32 x_exit;
+        f32 y_exit;
 
-        return { true, clampf(n, 0.0f, 1.0f) };
+        if(vel.x == 0.0f) {
+            x_entry = -FLT_MAX;
+            x_exit = FLT_MAX;
+        } else {
+            x_entry = inv_x_entry / vel.x;
+            x_exit = inv_x_exit / vel.x;
+        }
+
+        if(vel.y == 0.0f) {
+            y_entry = -FLT_MAX;
+            y_exit = FLT_MAX;
+        } else {
+            y_entry = inv_y_entry / vel.y;
+            y_exit = inv_y_exit / vel.y;
+        }
+
+        f32 entry = max(x_entry, y_entry);
+        f32 exit = min(x_exit, y_exit);
+
+        if((entry > exit) || ((x_entry < 0.0f) && (y_entry < 0.0f)) || (x_entry > 1.0f) || (y_entry > 1.0f)) {
+            return { false, 1.0f };
+        }
+
+        glm::vec2 normal = {
+            x_entry > y_entry ? -sign(vel.x) : 0,
+            x_entry > y_entry ? 0 : -sign(vel.y)
+        };
+        return { true, entry, normal };
     }
-
-    f32 sweep(AABB const& a, AABB const& b, glm::vec2 vel) {
-        auto a_half = 0.5f * (a.max - a.min);
-        auto a_center = a.min + a_half;
-
-        auto h = segment_intersection(b, a_center, vel, a_half);
-        if(!h.hit) return 1.0f;
-
-        return h.h;
-    }
-
 
     void update() {
         crafting_queue.update();
@@ -99,67 +128,37 @@ struct Player {
                 auto vel = dir * SPEED;
                 if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) vel = dir * 0.5f;
                 
-                f32 half_size = SIZE / 2.0f;
-                AABB player_bb = {
-                    { pos.x - half_size, pos.y - half_size },
-                    { pos.x + half_size, pos.y + half_size }
-                };
+                f32 half_size = 0.5f * SIZE;
+                glm::vec2 v_half_size = { half_size, half_size };
+                AABB player_bb = AABB::from_center(pos, v_half_size);
+
+                Hit best = { false, 1.0f };
 
                 // NOTE TODO: We don't really have to check EVERY tile
                 // for collisions! Just check the ones close to us.
-                
                 auto chunk = get_current_chunk();
-
-                f32 h = 1.0f;
                 for(u32 i = 0; i < hmlen(chunk->layer2); i++) {
                     auto tile = chunk->layer2[i].value;
                     if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
                     auto& tile_bb = tile->collision_aabb;
-                    // glm::vec2 tile_tl = { tile_bb.min.x, tile_bb.min.y };
-                    // glm::vec2 tile_bl = { tile_bb.min.x, tile_bb.max.y };
-                    // glm::vec2 tile_tr = { tile_bb.max.x, tile_bb.min.y };
-                    // glm::vec2 tile_br = { tile_bb.max.x, tile_bb.max.y };
-
-                    switch(player_bb.intersects(tile_bb)) {
-                        case AABB::OUTSIDE:
-                            break;
-                        case AABB::INSIDE:
-                            assert(0);
-                            break;
-                        case AABB::INTERSECTS:
-                            h = min(h, swept_aabb(player_bb, tile_bb, vel));
-
-                            /*
-                            if(dir.y < 0) {
-                                auto c = npos - glm::vec2(0, half_size);
-                                auto d = pos - glm::vec2(0, half_size);
-                                f32 h = line_segment_intersection_no_parallel(tile_bl, tile_br, c, d);
-                                npos.y -= h * vel.y;
-                            } else if(dir.y > 0) {
-                                auto c = npos + glm::vec2(0, half_size);
-                                auto d = pos + glm::vec2(0, half_size);
-                                f32 h = line_segment_intersection_no_parallel(tile_tl, tile_tr, c, d);
-                                npos.y -= h * vel.y;
-                            }
-
-                            if(dir.x < 0) {
-                                auto c = npos - glm::vec2(half_size, 0);
-                                auto d = pos - glm::vec2(half_size, 0);
-                                f32 h = line_segment_intersection_no_parallel(tile_tr, tile_br, c, d);
-                                npos.x -= h * vel.x;
-                            } else if(dir.x > 0) {
-                                auto c = npos + glm::vec2(half_size, 0);
-                                auto d = pos + glm::vec2(half_size, 0);
-                                f32 h = line_segment_intersection_no_parallel(tile_tl, tile_bl, c, d);
-                                npos.x -= h * vel.x;
-                            }
-                            */
-                            break;
+                    auto broad = player_bb.add(AABB::from_center(pos + vel * best.h, v_half_size));
+                    if(tile_bb.intersects(broad)) {
+                        static u32 blah = 0;
+                        auto hit = sweep(player_bb, tile_bb, vel);
+                        if(hit.hit && hit.h < best.h) {
+                            best = hit;
+                        }    
                     }
                 }
 
-                pos += vel * h;
+                pos += vel * best.h;
+                
+                if(best.hit) {
+                    f32 r = 1.0f - best.h;
+                    f32 d = (vel.x * best.n.y + vel.y * best.n.x) * r;
+                    pos += glm::vec2(best.n.y, best.n.x) * d;
+                }
             }
     
 
@@ -333,7 +332,7 @@ struct Player {
 
 private:
     Chunk* get_current_chunk() {
-        return world->get_chunk_containing(pos.x / TILE_SIZE, pos.y / TILE_SIZE);
+        return world->get_chunk_containing(floor(pos.x / TILE_SIZE), floor(pos.y / TILE_SIZE));
     }
 
     void open_inventory() {

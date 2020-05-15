@@ -56,32 +56,30 @@ struct AABB {
     glm::vec2 min;
     glm::vec2 max;
 
-    enum Intersection_Type {
-        OUTSIDE,
-        INSIDE,
-        INTERSECTS
-    };
+    bool intersects(AABB const& b) {
+        return !(
+            (b.max.x <= min.x) ||
+            (b.min.x >= max.x) ||
+            (b.max.y <= min.y) ||
+            (b.min.y >= max.y)
+        );
+    }
 
-    Intersection_Type intersects(AABB const& b) {
-        if(
-            b.min.x > max.x ||
-            b.min.y > max.y ||
-            b.max.x < min.x ||
-            b.max.y < min.y
-        ) {
-            return OUTSIDE;
-        }
+    AABB add(AABB const& b) {
+        return {
+            {
+                min(min.x, b.min.x),
+                min(min.y, b.min.y)
+            },
+            {
+                max(max.x, b.max.x),
+                max(max.y, b.max.y)
+            }
+        };
+    }
 
-        if(
-            b.min.x >= min.x &&
-            b.min.y >= min.y &&
-            b.max.x <= max.x &&
-            b.max.y <= max.y
-        ) {
-            return INSIDE;
-        }
-
-        return INTERSECTS;
+    static AABB from_center(glm::vec2 const& center, glm::vec2 const& half_size) {
+        return { center - half_size, center + half_size };
     }
 };
 
