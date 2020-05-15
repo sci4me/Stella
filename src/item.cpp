@@ -19,8 +19,9 @@ enum Item_Type : u8 {
 
 
 Texture item_textures[N_ITEM_TYPES];
+const char *item_names[N_ITEM_TYPES];
 
-void load_item_textures() {
+void init_items() {
     item_textures[ITEM_COBBLESTONE]     = assets::textures::cobblestone[6];
     item_textures[ITEM_COAL_ORE]        = assets::textures::coal_ore[6];
     item_textures[ITEM_IRON_ORE]        = assets::textures::iron_ore[6];
@@ -30,6 +31,16 @@ void load_item_textures() {
     item_textures[ITEM_IRON_GEAR]       = assets::textures::iron_gear;
     item_textures[ITEM_CHEST]           = assets::textures::chest;
     item_textures[ITEM_FURNACE]         = assets::textures::furnace;
+
+    item_names[ITEM_COBBLESTONE]        = "Cobblestone";
+    item_names[ITEM_COAL_ORE]           = "Coal Ore";
+    item_names[ITEM_IRON_ORE]           = "Iron Ore";
+    item_names[ITEM_GOLD_ORE]           = "Gold Ore";
+    item_names[ITEM_IRON_PLATE]         = "Iron Plate";
+    item_names[ITEM_GOLD_PLATE]         = "Gold Plate";
+    item_names[ITEM_IRON_GEAR]          = "Iron Gear";
+    item_names[ITEM_CHEST]              = "Chest";
+    item_names[ITEM_FURNACE]            = "Furnace";
 }
 
 

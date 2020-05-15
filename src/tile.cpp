@@ -20,7 +20,7 @@ enum Tile_Type : u8 {
 
 Texture tile_textures[N_TILE_TYPES];
 
-void load_tile_textures() {
+void init_tiles() {
     tile_textures[TILE_STONE] = assets::textures::stone;
     tile_textures[TILE_GRASS] = assets::textures::grass;
     tile_textures[TILE_COBBLESTONE] = assets::textures::cobblestone[array_length(assets::textures::coal_ore) - 1];

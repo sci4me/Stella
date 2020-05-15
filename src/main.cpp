@@ -182,8 +182,8 @@ s32 main(s32 argc, char **argv) {
 
 
     assets::load();
-    load_tile_textures();
-    load_item_textures();
+    init_tiles();
+    init_items();
 
 
     crafting::init();

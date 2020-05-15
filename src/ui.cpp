@@ -60,6 +60,12 @@ namespace ui {
             clicked = ImGui::Button("", { SLOT_SIZE + style.FramePadding.x * 2, SLOT_SIZE + style.FramePadding.y * 2 });
         }
 
+        if(slot.count && ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text(item_names[slot.type]);
+            ImGui::EndTooltip();
+        }
+
         ImGui::PopID();
 
         if(clicked) {
@@ -197,6 +203,8 @@ namespace ui {
 
                 if(ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
+
+                    ImGui::Text(item_names[r->output.type]);
 
                     auto font = ImGui::GetFont();
                     auto font_size = ImGui::GetFontSize();

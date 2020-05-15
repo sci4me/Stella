@@ -164,6 +164,9 @@ struct Player {
                     }
                 }
             }
+        } else {
+            tile_hovered = false;
+            is_mining = false;
         }
 
         if(!is_mining) mining_progress = 0.0f;
