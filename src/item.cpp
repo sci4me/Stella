@@ -6,8 +6,8 @@ enum Item_Type : u8 {
     ITEM_IRON_ORE,
     ITEM_GOLD_ORE,
 
-    ITEM_IRON_INGOT,
-    ITEM_GOLD_INGOT,
+    ITEM_IRON_PLATE,
+    ITEM_GOLD_PLATE,
 
     ITEM_CHEST,
     ITEM_FURNACE,
@@ -23,8 +23,8 @@ void load_item_textures() {
     item_textures[ITEM_COAL_ORE]        = assets::textures::coal_ore[6];
     item_textures[ITEM_IRON_ORE]        = assets::textures::iron_ore[6];
     item_textures[ITEM_GOLD_ORE]        = assets::textures::gold_ore[6];
-    item_textures[ITEM_IRON_INGOT]      = assets::textures::iron_ingot;
-    item_textures[ITEM_GOLD_INGOT]      = assets::textures::gold_ingot;
+    item_textures[ITEM_IRON_PLATE]      = assets::textures::iron_plate;
+    item_textures[ITEM_GOLD_PLATE]      = assets::textures::gold_plate;
     item_textures[ITEM_CHEST]           = assets::textures::chest;
     item_textures[ITEM_FURNACE]         = assets::textures::furnace;
 }
