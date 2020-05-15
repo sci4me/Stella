@@ -1,3 +1,5 @@
+constexpr f32 PLAYER_SPEED = 10.0f;
+
 struct Player {
     GLFWwindow *window;
 
@@ -53,14 +55,9 @@ struct Player {
             if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
             if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
             if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
+            dir = glm::normalize(dir);
             
             if(glm::length(dir) > 0) {
-                f32 half_size = 5;
-                AABB player_bb = {
-                    { pos.x - half_size, pos.y - half_size },
-                    { pos.x + half_size, pos.y + half_size }
-                };
-
                 // TODO: Do collision detection with our bounding box
                 // against the bounding boxes in the world we might be
                 // about to collide with and handle those collisions.
@@ -82,7 +79,33 @@ struct Player {
                 //                  - sci4me, 5/15/20
                 //
 
-                pos += glm::normalize(dir) * 10.0f; // TODO: yank this 10 into a constant or such
+                bool f = true; // TODO REMOVEME TEMPORARY/TESTING
+
+                f32 half_size = 5;
+                auto npos = pos + dir * PLAYER_SPEED;
+                AABB player_bb = {
+                    { npos.x - half_size, npos.y - half_size },
+                    { npos.x + half_size, npos.y + half_size }
+                };
+
+                auto chunk = get_current_chunk();
+                for(u32 i = 0; i < hmlen(chunk->layer2); i++) {
+                    auto tile = chunk->layer2[i].value;
+                    if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
+
+                    switch(player_bb.intersects(tile->collision_aabb)) {
+                        case AABB::OUTSIDE:
+                            break;
+                        case AABB::INSIDE:
+                            assert(0);
+                            break;
+                        case AABB::INTERSECTS:
+                            f = false;
+                            break;
+                    }
+                }
+
+                if(f) pos += dir * PLAYER_SPEED; // TODO: yank this 10 into a constant or such
             }
     
 
@@ -255,6 +278,10 @@ struct Player {
     }
 
 private:
+    Chunk* get_current_chunk() {
+        return world->get_chunk_containing(pos.x / TILE_SIZE, pos.y / TILE_SIZE);
+    }
+
     void open_inventory() {
         active_ui_tile = nullptr;
         show_inventory = true;

@@ -293,6 +293,7 @@ s32 main(s32 argc, char **argv) {
 
                 if(ImGui::CollapsingHeader("Player")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
+                    ImGui::Text("Tile Position: (%d, %d)", (s32)(player.pos.x / TILE_SIZE), (s32)(player.pos.y / TILE_SIZE));
                 }
 
                 if(ImGui::CollapsingHeader("World")) {

@@ -35,7 +35,8 @@ void init_tiles() {
 typedef u8 Tile_Flags;
 enum Tile_Flags_ : u8 {
     TILE_FLAG_NONE                          = 0,
-    TILE_FLAG_WANTS_DYNAMIC_UPDATES         = 1
+    TILE_FLAG_WANTS_DYNAMIC_UPDATES         = 1,
+    TILE_FLAG_IS_COLLIDER                   = 2
 };
 
 
@@ -45,11 +46,21 @@ struct Tile {
     s32 y;
     Tile_Flags flags;
 
+    // NOTE: I don't _love_ having this here.
+    // Maybe we just compute it as needed
+    // if the flag is set? *shrugs*
+    //          - sci4me, 5/15/20
+    AABB collision_aabb;
+
     virtual void init() {}
     virtual void free() {}
 
     virtual void draw(Batch_Renderer *r) {
         r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) type]);
+
+        if(type == TILE_FURNACE) {
+            r->push_solid_quad(collision_aabb.min.x, collision_aabb.min.y, collision_aabb.max.x - collision_aabb.min.x, collision_aabb.max.y - collision_aabb.min.y, { 0.0f, 0.0f, 1.0f, 0.5f });
+        }
     }
 
     virtual void update() {}
@@ -102,6 +113,14 @@ struct Tile_Chest : public Tile {
 
     virtual void init() override {
         Tile::init();
+        flags |= TILE_FLAG_IS_COLLIDER;
+
+        // NOTE: See comment in Tile_Furnace::init about this.
+        glm::vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        collision_aabb = {
+            wp + glm::vec2(4.0f, 4.0f),
+            wp + glm::vec2(28.0f, 28.0f)
+        };
 
         container.init(25);
     }
@@ -141,6 +160,20 @@ struct Tile_Furnace : public Tile {
     virtual void init() override {
         Tile::init();
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
+        flags |= TILE_FLAG_IS_COLLIDER;
+
+        // NOTE TODO: Don't hardcode these numbers!!
+        // They're 4 and 28 because our tile size is 32;
+        // if our tile size were the same as the pixel width
+        // and height of our textures (16), this would be 2
+        // and 14, in order to select the inner 12x12 pixels,
+        // with a 2 pixel border on all sides.
+        //              - sci4me, 5/15/20
+        glm::vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        collision_aabb = {
+            wp + glm::vec2(4.0f, 4.0f),
+            wp + glm::vec2(28.0f, 28.0f)
+        };
 
         input.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);
         
