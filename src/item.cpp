@@ -202,6 +202,10 @@ struct Item_Container {
         }
 
         assert(!remaining);
+        
+        // NOTE: There are definitely cases where this isn't necessary.
+        // But it's easier, for now _at least_, to just ignore that and
+        // re-sort every time.
         sort();
 
         return true;

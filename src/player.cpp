@@ -39,6 +39,11 @@ struct Player {
     void update() {
         crafting_queue.update();
 
+        // NOTE: We set these, if necessary, every update.
+        tile_hovered = false;
+        placement_valid = false;
+        is_mining = false;
+
         ImGuiIO& io = ImGui::GetIO();
 
 
@@ -70,8 +75,6 @@ struct Player {
             f64 mx, my;
             glfwGetCursorPos(window, &mx, &my);
 
-            tile_hovered = false;
-            is_mining = false;
             if(mx >= 0 && my >= 0 && mx < window_width && my < window_height) {
                 glm::vec2 mouse_world_pos = {
                     pos.x + ((mx - (window_width / 2)) / scale),
@@ -122,14 +125,20 @@ struct Player {
                                 hmput(chunk->layer2, key, tile);
 
                                 
-                                ui::held_item_container->remove({ held_stack->type, 1 });
-                                if(held_stack->count == 0) {
-                                    // TODO: there may be more of this item type in a different slot!
-                                    // Also this appears to not quite work anyway... so... come back here
-                                    // _soon_ and actually implement this. And maybe find a way to make
-                                    // this whole section nicer...
-                                    //              - sci4me, 5/14/20
+                                Item_Stack stack = *held_stack;
+                                assert(ui::held_item_container->remove({ stack.type, 1 }));
+                                if(stack.count == 1) {
+                                    // NOTE: We removed the last one in this slot/stack.
+
+                                    auto inv = ui::held_item_container;
                                     ui::held_item_container = nullptr;
+                                    for(u32 i = 0; i < inv->size; i++) {
+                                        if(inv->slots[i].type == stack.type) {
+                                            ui::held_item_container = inv;
+                                            ui::held_item_index = i;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -164,9 +173,6 @@ struct Player {
                     }
                 }
             }
-        } else {
-            tile_hovered = false;
-            is_mining = false;
         }
 
         if(!is_mining) mining_progress = 0.0f;
