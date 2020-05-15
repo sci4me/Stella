@@ -51,8 +51,13 @@ inline glm::vec4 alpha_premultiply(glm::vec4 c) {
     return linear_to_rgba1(p);
 }
 
-
 struct AABB {
+    struct Hit {
+        bool hit;
+        f32 h;
+        glm::vec2 n;
+    };
+
     glm::vec2 min;
     glm::vec2 max;
 
@@ -80,6 +85,63 @@ struct AABB {
 
     static AABB from_center(glm::vec2 const& center, glm::vec2 const& half_size) {
         return { center - half_size, center + half_size };
+    }
+
+    static Hit sweep(AABB const& a, AABB const& b, glm::vec2 const& vel) {
+        f32 inv_x_entry;
+        f32 inv_y_entry;
+        f32 inv_x_exit;
+        f32 inv_y_exit;
+
+        if(vel.x > 0.0f) {
+            inv_x_entry = b.min.x - a.max.x;
+            inv_x_exit = b.max.x - a.min.x;
+        } else {
+            inv_x_entry = b.max.x - a.min.x;
+            inv_x_exit = b.min.x - a.max.x;
+        }
+
+        if(vel.y > 0.0f) {
+            inv_y_entry = b.min.y - a.max.y;
+            inv_y_exit = b.max.y - a.min.y;
+        } else {
+            inv_y_entry = b.max.y - a.min.y;
+            inv_y_exit = b.min.y - a.max.y;
+        }
+
+        f32 x_entry;
+        f32 y_entry;
+        f32 x_exit;
+        f32 y_exit;
+
+        if(vel.x == 0.0f) {
+            x_entry = -FLT_MAX;
+            x_exit = FLT_MAX;
+        } else {
+            x_entry = inv_x_entry / vel.x;
+            x_exit = inv_x_exit / vel.x;
+        }
+
+        if(vel.y == 0.0f) {
+            y_entry = -FLT_MAX;
+            y_exit = FLT_MAX;
+        } else {
+            y_entry = inv_y_entry / vel.y;
+            y_exit = inv_y_exit / vel.y;
+        }
+
+        f32 entry = max(x_entry, y_entry);
+        f32 exit = min(x_exit, y_exit);
+
+        if((entry > exit) || ((x_entry < 0.0f) && (y_entry < 0.0f)) || (x_entry > 1.0f) || (y_entry > 1.0f)) {
+            return { false, 1.0f };
+        }
+
+        glm::vec2 normal = {
+            x_entry > y_entry ? -sign(vel.x) : 0,
+            x_entry > y_entry ? 0 : -sign(vel.y)
+        };
+        return { true, entry, normal };
     }
 };
 

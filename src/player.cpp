@@ -1,5 +1,7 @@
 struct Player {
-    static constexpr f32 SPEED = 10.0f;
+    // TOOD: Probably pick slightly better
+    // names for these constants.
+    static constexpr f32 SPEED = 2.5f;
     static constexpr f32 SIZE = 10.0f;
 
     GLFWwindow *window;
@@ -26,6 +28,9 @@ struct Player {
     // display whenever arrlen(queue) > 0?
     bool show_crafting_queue = false;
 
+    u32 broad_collisions_this_frame = 0;
+    u32 sweep_collisions_this_frame = 0;
+
     void init(GLFWwindow *window, World *world) {
         this->window = window;
         this->world = world;
@@ -39,72 +44,6 @@ struct Player {
         crafting_queue.deinit();
     }
 
-
-    // TODO: Extract this collision code... once we have it all working.
-
-    struct Hit {
-        bool hit;
-        f32 h;
-        glm::vec2 n;
-    };
-
-    Hit sweep(AABB const& a, AABB const& b, glm::vec2 const& vel) {
-        f32 inv_x_entry;
-        f32 inv_y_entry;
-        f32 inv_x_exit;
-        f32 inv_y_exit;
-
-        if(vel.x > 0.0f) {
-            inv_x_entry = b.min.x - a.max.x;
-            inv_x_exit = b.max.x - a.min.x;
-        } else {
-            inv_x_entry = b.max.x - a.min.x;
-            inv_x_exit = b.min.x - a.max.x;
-        }
-
-        if(vel.y > 0.0f) {
-            inv_y_entry = b.min.y - a.max.y;
-            inv_y_exit = b.max.y - a.min.y;
-        } else {
-            inv_y_entry = b.max.y - a.min.y;
-            inv_y_exit = b.min.y - a.max.y;
-        }
-
-        f32 x_entry;
-        f32 y_entry;
-        f32 x_exit;
-        f32 y_exit;
-
-        if(vel.x == 0.0f) {
-            x_entry = -FLT_MAX;
-            x_exit = FLT_MAX;
-        } else {
-            x_entry = inv_x_entry / vel.x;
-            x_exit = inv_x_exit / vel.x;
-        }
-
-        if(vel.y == 0.0f) {
-            y_entry = -FLT_MAX;
-            y_exit = FLT_MAX;
-        } else {
-            y_entry = inv_y_entry / vel.y;
-            y_exit = inv_y_exit / vel.y;
-        }
-
-        f32 entry = max(x_entry, y_entry);
-        f32 exit = min(x_exit, y_exit);
-
-        if((entry > exit) || ((x_entry < 0.0f) && (y_entry < 0.0f)) || (x_entry > 1.0f) || (y_entry > 1.0f)) {
-            return { false, 1.0f };
-        }
-
-        glm::vec2 normal = {
-            x_entry > y_entry ? -sign(vel.x) : 0,
-            x_entry > y_entry ? 0 : -sign(vel.y)
-        };
-        return { true, entry, normal };
-    }
-
     void update() {
         crafting_queue.update();
 
@@ -113,8 +52,17 @@ struct Player {
         placement_valid = false;
         is_mining = false;
 
-        ImGuiIO& io = ImGui::GetIO(); 
+        broad_collisions_this_frame = 0;
+        sweep_collisions_this_frame = 0;
 
+
+        #ifdef COLLISION_DEBUG
+            arrsetlen(broad_collision_debug_data_this_frame, 0);
+            arrsetlen(swept_collision_debug_data_this_frame, 0);
+        #endif
+
+
+        ImGuiIO& io = ImGui::GetIO(); 
 
         if(!io.WantCaptureKeyboard) {
             glm::vec2 dir = {0, 0};
@@ -132,7 +80,7 @@ struct Player {
                 glm::vec2 v_half_size = { half_size, half_size };
                 AABB player_bb = AABB::from_center(pos, v_half_size);
 
-                Hit best = { false, 1.0f };
+                AABB::Hit best = { false, 1.0f };
 
                 // NOTE TODO: We don't really have to check EVERY tile
                 // for collisions! Just check the ones close to us.
@@ -142,13 +90,31 @@ struct Player {
                     if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
                     auto& tile_bb = tile->collision_aabb;
-                    auto broad = player_bb.add(AABB::from_center(pos + vel * best.h, v_half_size));
+                    auto broad = player_bb.add(AABB::from_center(pos + vel, v_half_size));
                     if(tile_bb.intersects(broad)) {
-                        static u32 blah = 0;
-                        auto hit = sweep(player_bb, tile_bb, vel);
+                        #ifdef COLLISION_DEBUG
+                            Broad_Collision_Debug_Data _b = { broad, tile_bb };
+                        #endif
+
+                        auto hit = AABB::sweep(player_bb, tile_bb, vel);
                         if(hit.hit && hit.h < best.h) {
                             best = hit;
-                        }    
+
+                            #ifdef COLLISION_DEBUG
+                                _b.swept_collision_index = arrlen(swept_collision_debug_data_this_frame);
+
+                                Swept_Collision_Debug_Data _s = { player_bb, hit };
+                                arrput(swept_collision_debug_data_this_frame, _s);
+                            #endif
+
+                            sweep_collisions_this_frame++;
+                        }
+
+                        #ifdef COLLISION_DEBUG
+                            arrput(broad_collision_debug_data_this_frame, _b);
+                        #endif
+
+                        broad_collisions_this_frame++;    
                     }
                 }
 

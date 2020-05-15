@@ -83,6 +83,107 @@ bool fullscreen = false;
 bool vsync = true;
 bool fast_mining = false;
 
+// TODO: Eventually we'll want to properly separate
+// the "debug" / "dev" code from the production code
+// using the preprocessor so we can just disable all
+// of it from even being compiled. Someday TM.
+//              - sci4me, 5/15/20
+bool debug_pause = false;
+
+
+#define COLLISION_DEBUG
+#ifdef COLLISION_DEBUG
+struct Broad_Collision_Debug_Data {
+    AABB broad_aabb;
+    AABB collider_aabb;
+    s32 swept_collision_index = -1;
+
+    bool broad_aabb_selected;
+    bool collider_aabb_selected;
+};
+
+struct Swept_Collision_Debug_Data {
+    AABB player_aabb;
+    AABB::Hit h;
+
+    bool player_aabb_selected;
+    bool h_selected;
+};
+
+Broad_Collision_Debug_Data *broad_collision_debug_data_this_frame = nullptr;
+Swept_Collision_Debug_Data *swept_collision_debug_data_this_frame = nullptr;
+
+void show_collision_debug_per_frame_data(glm::mat4 view) {
+    auto dl = ImGui::GetForegroundDrawList();
+
+    auto txfm = [&](glm::vec2 v) {
+        auto t = view * glm::vec4(v, 0.0f, 1.0f);
+        return ImVec2(t.x, t.y);
+    };
+
+    auto draw_aabb = [&](AABB const& a, glm::vec4 color) {
+        auto min = txfm(a.min);
+        auto max = txfm(a.max);
+        dl->AddRect(min, max, rgba1_to_rgba255(color));
+    };
+
+    auto nbroad = arrlen(broad_collision_debug_data_this_frame);
+    for(u32 i = 0; i < nbroad; i++) {
+        auto& b = broad_collision_debug_data_this_frame[i];
+
+        ImGui::PushID(i);
+        if(ImGui::TreeNodeEx("Broad_Collision_Debug_Data", 0, "Broad Collision #%d", i)) {
+            ImGui::PushID("broad_aabb_selected");
+                ImGui::Selectable("", &b.broad_aabb_selected);
+                ImGui::SameLine();
+                ImGui::Text("broad: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", b.broad_aabb.min.x, b.broad_aabb.min.y, b.broad_aabb.max.x, b.broad_aabb.max.y);
+            ImGui::PopID();
+
+            if(b.broad_aabb_selected) draw_aabb(b.broad_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
+
+            ImGui::PushID("collider_aabb_selected");
+                ImGui::Selectable("", &b.collider_aabb_selected);
+                ImGui::SameLine();
+                ImGui::Text("collider: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", b.collider_aabb.min.x, b.collider_aabb.min.y, b.collider_aabb.max.x, b.collider_aabb.max.y);
+            ImGui::PopID();
+
+            if(b.collider_aabb_selected) draw_aabb(b.collider_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
+
+            if(b.swept_collision_index != -1) {
+                auto& s = swept_collision_debug_data_this_frame[b.swept_collision_index];
+
+                ImGui::PushID(b.swept_collision_index);
+                if(ImGui::TreeNodeEx("Swept_Collision_Debug_Data", 0, "Swept Collision #%d", b.swept_collision_index)) {
+                    ImGui::PushID("player_aabb_selected");
+                        ImGui::Selectable("", &s.player_aabb_selected);
+                        ImGui::SameLine();
+                        ImGui::Text("player: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", s.player_aabb.min.x, s.player_aabb.min.y, s.player_aabb.max.x, s.player_aabb.max.y);
+                    ImGui::PopID();
+
+                    if(s.player_aabb_selected) draw_aabb(s.player_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
+
+                    ImGui::PushID("h_selected");
+                        ImGui::Selectable("", &s.h_selected);
+                        ImGui::SameLine();
+                        ImGui::BeginGroup();
+                            ImGui::Text("h: %0.3f, N: (%0.1f, %0.1f)", s.h.h, s.h.n.x, s.h.n.y);
+                        ImGui::EndGroup();
+                    ImGui::PopID();
+
+                    if(s.h_selected) assert(0); // TODO
+
+                    ImGui::TreePop();
+                }
+                ImGui::PopID();
+            }
+
+            ImGui::TreePop();
+        }
+        ImGui::PopID();
+    }
+}
+#endif
+
 
 // TODO: Move this up with the rest of the includes!
 // We probably want to create a struct to hold things
@@ -99,11 +200,19 @@ void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
 }
 
 void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mods) {
-    if(key == GLFW_KEY_F3 && action == GLFW_RELEASE) show_debug_window = !show_debug_window;
-
-    if(key == GLFW_KEY_F11 && action == GLFW_RELEASE) {
-        fullscreen = !fullscreen;
-        fullscreen_changed = true;
+    if(action == GLFW_RELEASE) {
+        switch(key) {
+            case GLFW_KEY_F3:
+                show_debug_window = !show_debug_window;
+                break;
+            case GLFW_KEY_F11:
+                fullscreen = !fullscreen;
+                fullscreen_changed = true;
+                break;
+            case GLFW_KEY_F12:
+                debug_pause = !debug_pause;
+                break;
+        }
     }
 }
 
@@ -213,20 +322,25 @@ s32 main(s32 argc, char **argv) {
         player.inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
 
+        auto f = [&](s32 x, s32 y) {
+            auto c = world.get_chunk_containing(x, y);
 
-        auto c = world.get_chunk_containing(135, -4);
+            auto t = new Tile_Furnace;
+            t->type = TILE_FURNACE;
+            t->x = x;
+            t->y = y;
+            t->init();
 
-        auto t = new Tile_Furnace;
-        t->type = TILE_FURNACE;
-        t->x = 135;
-        t->y = -4;
-        t->init();
-
-        glm::ivec2 key = {
-            t->x & (Chunk::SIZE - 1),
-            t->y & (Chunk::SIZE - 1)
+            glm::ivec2 key = {
+                t->x & (Chunk::SIZE - 1),
+                t->y & (Chunk::SIZE - 1)
+            };
+            hmput(c->layer2, key, t);
         };
-        hmput(c->layer2, key, t);
+
+        f(135, -4);
+        f(135, -5);
+        f(136, -5);
     }
 
 
@@ -284,12 +398,14 @@ s32 main(s32 argc, char **argv) {
         // since world creation, what day is it, is it day/night, etc.)
         //
         //              - sci4me, 5/13/20
-        world.update();
-        player.update();
+
+        if(!debug_pause) {
+            world.update();
+            player.update();
+        }
 
 
         imgui_begin_frame();
-
 
         auto view = glm::translate(
             glm::scale(
@@ -324,6 +440,16 @@ s32 main(s32 argc, char **argv) {
                 if(ImGui::CollapsingHeader("Player")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
                     ImGui::Text("Tile Position: (%d, %d)", (s32) floor(player.pos.x / TILE_SIZE), (s32) floor(player.pos.y / TILE_SIZE));
+
+                    ImGui::Separator();
+                    ImGui::Text("Collisions");
+
+                    ImGui::Text("Broad: %d", player.broad_collisions_this_frame);
+                    ImGui::Text("Sweep: %d", player.sweep_collisions_this_frame);
+
+#ifdef COLLISION_DEBUG
+                    show_collision_debug_per_frame_data(view);
+#endif
                 }
 
                 if(ImGui::CollapsingHeader("World")) {
