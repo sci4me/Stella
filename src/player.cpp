@@ -7,6 +7,7 @@ struct Player {
     bool tile_hovered = false;
     s32 hovered_tile_x;
     s32 hovered_tile_y;
+    bool placement_valid = false;
 
     bool is_mining = false;
     f32 mining_progress;
@@ -21,9 +22,6 @@ struct Player {
     // TODO: maybe change this to be an overlay that we always
     // display whenever arrlen(queue) > 0?
     bool show_crafting_queue = false;
-
-    Tile_Type placing_tile = TILE_NONE; // TODO
-    bool placement_valid;
 
     void init(GLFWwindow *window, World *world) {
         this->window = window;
@@ -64,8 +62,7 @@ struct Player {
                 last_c_key = false;
             }
 
-            if(glfwGetKey(window, GLFW_KEY_C)) placing_tile = TILE_CHEST;
-            else placing_tile = TILE_NONE;
+            // TODO escape should un-hold a held item?
         }
 
 
@@ -93,8 +90,9 @@ struct Player {
                         hovered_tile_y & (Chunk::SIZE - 1)
                     };
                     
-                    // NOTE TODO: Rip most of this out and such.
-                    if(placing_tile != TILE_NONE) {
+                    if(ui::held_item_container) {
+                        auto held_stack = &ui::held_item_container->slots[ui::held_item_index];
+
                         auto wtf = hmgeti(chunk->layer2, key);
                         if(wtf != -1) {
                             placement_valid = false;
@@ -104,12 +102,12 @@ struct Player {
                             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
                                 Tile *tile;
 
-                                if(placing_tile == TILE_CHEST) {
+                                if(held_stack->type == ITEM_CHEST) {
                                     auto tile_mem = malloc(sizeof(Tile_Chest));
                                     Tile_Chest *chest = new(tile_mem) Tile_Chest;
                                     chest->type = TILE_CHEST;
                                     tile = chest;
-                                } else if(placing_tile == TILE_FURNACE) {
+                                } else if(held_stack->type == ITEM_FURNACE) {
                                     auto tile_mem = malloc(sizeof(Tile_Furnace));
                                     Tile_Furnace *furnace = new(tile_mem) Tile_Furnace;
                                     furnace->type = TILE_FURNACE;
@@ -122,6 +120,17 @@ struct Player {
                                 tile->y = hovered_tile_y;
                                 tile->init();
                                 hmput(chunk->layer2, key, tile);
+
+                                
+                                ui::held_item_container->remove({ held_stack->type, 1 });
+                                if(held_stack->count == 0) {
+                                    // TODO: there may be more of this item type in a different slot!
+                                    // Also this appears to not quite work anyway... so... come back here
+                                    // _soon_ and actually implement this. And maybe find a way to make
+                                    // this whole section nicer...
+                                    //              - sci4me, 5/14/20
+                                    ui::held_item_container = nullptr;
+                                }
                             }
                         }
                     } else {
@@ -161,24 +170,14 @@ struct Player {
     }
 
     void draw(Batch_Renderer *r) {
-        if(placing_tile != TILE_NONE) {
-            r->push_textured_quad(
+        if(placement_valid) {
+            r->push_solid_quad(
                 hovered_tile_x * TILE_SIZE, 
                 hovered_tile_y * TILE_SIZE, 
-                TILE_SIZE,
-                TILE_SIZE,
-                tile_textures[placing_tile].id
-            );
-
-            if(!placement_valid) {
-                r->push_solid_quad(
-                    hovered_tile_x * TILE_SIZE, 
-                    hovered_tile_y * TILE_SIZE, 
-                    TILE_SIZE,
-                    TILE_SIZE,
-                    glm::vec4(1.0f, 0.0f, 0.0f, 0.65f)
-                );
-            }
+                TILE_SIZE, 
+                TILE_SIZE, 
+                glm::vec4(1.0f, 1.0f, 1.0f, 0.2f)
+            ); 
         }
 
         if(tile_hovered) {

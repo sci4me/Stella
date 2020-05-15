@@ -203,7 +203,7 @@ namespace ui {
                     auto drawlist = ImGui::GetForegroundDrawList();
 
                     for(u32 j = 0; j < r->n_inputs; j++) {
-                        auto& input = r->inputs[i];
+                        auto& input = r->inputs[j];
                         u32 n = inventory->count_type(input.type);
                         
                         ImGui::Image((ImTextureID) item_textures[input.type].id, { SLOT_SIZE, SLOT_SIZE });
@@ -215,10 +215,16 @@ namespace ui {
                         auto tsize = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, buf);
 
                         drawlist->AddText(font, font_size, { tpos.x - tsize.x, tpos.y - tsize.y }, n < input.count ? 0xFF0000FF : 0xFFFFFFFF, buf);
+
+                        // TODO: Eventually we'll want multiple lines...
+                        if(j < (r->n_inputs - 1)) ImGui::SameLine();
                     }
 
                     ImGui::EndTooltip();
                 }
+
+                // TODO: Don't _always_ do this!
+                ImGui::SameLine();
             }
 
             held_item();
