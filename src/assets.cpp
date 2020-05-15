@@ -13,6 +13,7 @@ namespace assets {
         // into their own namespaces? Dunno. Maybe.
         Texture iron_plate;
         Texture gold_plate;
+        Texture iron_gear;
     }
 
     void load() {
@@ -54,5 +55,6 @@ namespace assets {
         // TODO: Do we actually want MIPs for items? i.e. for item entities?
         textures::iron_plate      = load_texture_from_file("res/textures/item/iron_plate.png", false);
         textures::gold_plate      = load_texture_from_file("res/textures/item/gold_plate.png", false);
+        textures::iron_gear       = load_texture_from_file("res/textures/item/iron_gear.png", false);
     }
 }

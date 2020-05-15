@@ -29,8 +29,9 @@ namespace crafting {
     }
 
     void init() {
-        register_recipe({ ITEM_FURNACE, 1 }, 100, { { ITEM_COBBLESTONE, 8 } });
-        register_recipe({ ITEM_CHEST, 1 }, 100, { { ITEM_COBBLESTONE, 8 }, { ITEM_IRON_PLATE, 4 } });
+        register_recipe({ ITEM_FURNACE, 1 },    100, { { ITEM_COBBLESTONE, 8 } });
+        register_recipe({ ITEM_CHEST, 1 },      100, { { ITEM_COBBLESTONE, 8 }, { ITEM_IRON_PLATE, 4 } });
+        register_recipe({ ITEM_IRON_GEAR, 1 },  100, { { ITEM_IRON_PLATE, 6 } });
     }
 
     void free() {
