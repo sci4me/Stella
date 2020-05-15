@@ -44,7 +44,7 @@ struct Player {
         placement_valid = false;
         is_mining = false;
 
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO& io = ImGui::GetIO(); 
 
 
         if(!io.WantCaptureKeyboard) {
@@ -53,9 +53,41 @@ struct Player {
             if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
             if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
             if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
-            if(glm::length(dir) > 0) pos += glm::normalize(dir) * 10.0f;
+            
+            if(glm::length(dir) > 0) {
+                f32 half_size = 5;
+                AABB player_bb = {
+                    { pos.x - half_size, pos.y - half_size },
+                    { pos.x + half_size, pos.y + half_size }
+                };
+
+                // TODO: Do collision detection with our bounding box
+                // against the bounding boxes in the world we might be
+                // about to collide with and handle those collisions.
+                //
+                // At first we'll just stop moving entirely if we detect
+                // an upcoming collision. Then, we'll want to be smarter
+                // about it. For example, if we are walking up and left
+                // and we run into something on our left, we want to
+                // stop moving left but continue moving up.
+                //
+                // To do this, we should be able to just use our collision
+                // handling to modify `dir` such that the collisions 
+                // never occur.
+                //
+                // I'm not really sure if this is a good strategy but it's
+                // what we're going to try because I'm too lazy/impatient for
+                // tutorials/papers/Handmade Hero right now :P
+                //
+                //                  - sci4me, 5/15/20
+                //
+
+                pos += glm::normalize(dir) * 10.0f; // TODO: yank this 10 into a constant or such
+            }
     
+
             if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
+
 
             static bool last_c_key = false;
             if(glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
@@ -102,6 +134,8 @@ struct Player {
                         } else {
                             placement_valid = true;
 
+                            // TODO: Instead of polling the mouse, we want to do this stuff
+                            // in a mouse event handler!
                             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
                                 Tile *tile;
 
@@ -149,6 +183,8 @@ struct Player {
                         if(l1i != -1 || l2i != -1) {
                             tile_hovered = true;
 
+                            // TODO: Instead of polling the mouse, we want to do this stuff
+                            // in a mouse event handler!
                             if(l2i != -1 && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
                                 // NOTE TODO: This shit is fkin hardcoded asf yo. But I don't want to go through
                                 // the pain of making all these fkin hpp files and .. goddamn.. uh.. forward declaring
@@ -214,7 +250,8 @@ struct Player {
 
         if(show_crafting_queue) crafting_queue.draw();
 
-        r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        // TODO: Move the 5s and 10s out of here
+        r->push_solid_quad(pos.x - 5, pos.y - 5, 10, 10, { 1.0f, 0.0f, 0.0f, 1.0f });
     }
 
 private:

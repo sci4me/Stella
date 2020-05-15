@@ -50,3 +50,37 @@ inline glm::vec4 alpha_premultiply(glm::vec4 c) {
     p.z *= p.w;
     return linear_to_rgba1(p);
 }
+
+
+struct AABB {
+    glm::vec2 min;
+    glm::vec2 max;
+
+    enum Intersection_Type {
+        OUTSIDE,
+        INSIDE,
+        INTERSECTS
+    };
+
+    Intersection_Type intersects(AABB const& b) {
+        if(
+            b.min.x > max.x ||
+            b.min.y > max.y ||
+            b.max.x < min.x ||
+            b.max.y < min.y
+        ) {
+            return OUTSIDE;
+        }
+
+        if(
+            b.min.x >= min.x &&
+            b.min.y >= min.y &&
+            b.max.x <= max.x &&
+            b.max.y <= max.y
+        ) {
+            return INSIDE;
+        }
+
+        return INTERSECTS;
+    }
+};

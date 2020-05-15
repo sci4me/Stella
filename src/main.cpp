@@ -278,9 +278,9 @@ s32 main(s32 argc, char **argv) {
             chunk_draw_calls = world.draw_around(r, player.pos, scale, window_width, window_height, view);
 
             player.draw(r);
+
         }
         auto per_frame_stats = r->end_frame();
-
 
         if(show_debug_window) {
             if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
