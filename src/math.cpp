@@ -1,7 +1,12 @@
-#define min(a, b) ((a)<(b)?(a):(b))
-#define max(a, b) ((a)>(b)?(a):(b))
-#define square(x) ((x)*(x))
-#define sign(x) (((x)<(0))?(-1):(1))
+const f32 PI = 3.14159265359f;
+
+
+// TODO: templatize these!
+inline f32 min(f32 a, f32 b) { return a < b ? a : b; }
+inline f32 max(f32 a, f32 b) { return a > b ? a : b; }
+inline f32 square(f32 x) { return x * x; }
+inline f32 sign(f32 x) { return x < 0 ? -1 : 1; }
+
 
 inline glm::vec4 rgba255_to_rgba1(u32 c) {
     u8 r = c & 0xFF;
@@ -51,6 +56,7 @@ inline glm::vec4 alpha_premultiply(glm::vec4 c) {
     return linear_to_rgba1(p);
 }
 
+
 struct AABB {
     struct Hit {
         bool hit;
@@ -71,16 +77,7 @@ struct AABB {
     }
 
     AABB add(AABB const& b) const {
-        return {
-            {
-                min(min.x, b.min.x),
-                min(min.y, b.min.y)
-            },
-            {
-                max(max.x, b.max.x),
-                max(max.y, b.max.y)
-            }
-        };
+        return { glm::min(min, b.min), glm::max(max, b.max) };
     }
 
     inline glm::vec2 get_center() const {
@@ -142,8 +139,8 @@ struct AABB {
             y_exit = inv_y_exit / delta.y;
         }
 
-        f32 entry = max(x_entry, y_entry);
-        f32 exit = min(x_exit, y_exit);
+        f32 entry = ::max(x_entry, y_entry);
+        f32 exit = ::min(x_exit, y_exit);
 
         if((entry > exit) || ((x_entry < 0.0f) && (y_entry < 0.0f)) || (x_entry > 1.0f) || (y_entry > 1.0f)) {
             return { false, 1.0f };

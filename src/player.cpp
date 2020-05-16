@@ -1,13 +1,14 @@
 struct Player {
     // TOOD: Probably pick slightly better
     // names for these constants.
-    static constexpr f32 SPEED = 2.5f;
+    static constexpr f32 SPEED = 150.0f;
     static constexpr f32 SIZE = 10.0f;
 
     GLFWwindow *window;
 
     World *world;
     glm::vec2 pos;
+    glm::vec2 vel;
 
     bool tile_hovered = false;
     s32 hovered_tile_x;
@@ -42,7 +43,7 @@ struct Player {
         crafting_queue.deinit();
     }
 
-    void update() {
+    void update(f64 dt) {
         crafting_queue.update();
 
         // NOTE: We set these, if necessary, every update.
@@ -64,16 +65,18 @@ struct Player {
             if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
             if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
             if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
-            dir = glm::normalize(dir);
             
-            if(glm::length(dir) > 0) {
-                auto vel = dir * SPEED;
-                if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) vel = dir * 0.5f;
-                
+            auto speed = SPEED;
+            if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
+            vel = glm::normalize(dir) * speed;
+            
+            if(glm::length(vel) > 0) {
+                auto delta = vel * (f32)dt; // ?
+
                 f32 half_size = 0.5f * SIZE;
                 glm::vec2 v_half_size = { half_size, half_size };
                 auto player_bb = AABB::from_center(pos, v_half_size);
-                auto target_bb = AABB::from_center(pos + vel, v_half_size);
+                auto target_bb = AABB::from_center(pos + delta, v_half_size);
                 auto broad = player_bb.add(target_bb);
 
                 AABB::Hit best = { false, 1.0f };
@@ -87,27 +90,29 @@ struct Player {
 
                     auto& tile_bb = tile->collision_aabb;
                     if(tile_bb.intersects(broad)) {
-                        auto hit = AABB::sweep(player_bb, tile_bb, vel);
+                        auto hit = AABB::sweep(player_bb, tile_bb, delta);
                         if(hit.hit && hit.h < best.h) {
                             best = hit;
                         }
 
                         #ifdef COLLISION_DEBUG
-                            Collision_Debug_Data _b = { broad, tile_bb, player_bb, vel, hit };
+                            Collision_Debug_Data _b = { broad, tile_bb, player_bb, hit };
                             arrput(collision_debug_data_this_frame, _b);
                         #endif
                     }
                 }
+
+                pos += vel * best.h * (f32)dt;
                 
                 if(best.hit) {
                     f32 r = 1.0f - best.h;
-                    f32 d = (vel.x * best.n.y + vel.y * best.n.x) * r;
+                    f32 d = (delta.x * best.n.y + delta.y * best.n.x) * r;
                     pos += glm::vec2(best.n.y, best.n.x) * d;
                 }
-
-                pos += vel * best.h;
+            } else {
+                vel = { 0.0f, 0.0f };
             }
-    
+
 
             if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
 

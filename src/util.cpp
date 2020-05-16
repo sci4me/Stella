@@ -1,7 +1,5 @@
 #define array_length(a) ((sizeof(a))/(sizeof(a[0])))
 
-const f32 PI = 3.14159265359f;
-
 char* read_entire_file(char *name) {
     FILE *fp = fopen(name, "rb");
     if (!fp) {

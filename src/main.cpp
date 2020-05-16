@@ -102,7 +102,6 @@ struct Collision_Debug_Data {
     AABB broad_aabb;
     AABB collider_aabb;
     AABB player_aabb;
-    glm::vec2 vel;
     AABB::Hit h;
 
     bool broad_aabb_selected;
@@ -125,12 +124,6 @@ void show_collision_debug_per_frame_data(glm::mat4 view) {
         auto min = txfm(a.min);
         auto max = txfm(a.max);
         dl->AddRect(min, max, rgba1_to_rgba255(color));
-    };
-
-    auto draw_line = [&](glm::vec2 const& start, glm::vec2 const& end, glm::vec4 const& color, f32 const thicc = 3.0f) {
-        auto a = txfm(start);
-        auto b = txfm(end);
-        dl->AddLine(a, b, rgba1_to_rgba255(color), thicc);
     };
 
     for(u32 i = 0; i < arrlen(collision_debug_data_this_frame); i++) {
@@ -164,19 +157,11 @@ void show_collision_debug_per_frame_data(glm::mat4 view) {
 
             ImGui::Text("Collider ^ Player: %s", c.collider_aabb.intersects(c.player_aabb) ? "true" : "false");
             ImGui::Text("Collider ^ Broad: %s", c.collider_aabb.intersects(c.broad_aabb) ? "true" : "false");
-            ImGui::Text("Velocity: (%0.3f, %0.3f)", c.vel.x, c.vel.y);
 
             if(c.player_aabb_selected) draw_aabb(c.player_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
             if(c.broad_aabb_selected) draw_aabb(c.broad_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
             if(c.collider_aabb_selected) draw_aabb(c.collider_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
             if(c.h_selected) assert(0); // TODO
-
-            if(c.h.hit) {
-                auto& bb = c.collider_aabb;
-                auto& n = c.h.n;
-                auto& start = n * bb.get_half_size() + bb.get_center();
-                draw_line(start, start + n * 16.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
-            }
 
             ImGui::TreePop();
         }
@@ -346,9 +331,17 @@ s32 main(s32 argc, char **argv) {
 
 
 
+    f64 last_time = glfwGetTime();
+    f64 dt = 0.0;
+
     u32 chunk_draw_calls = 0;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+
+
+        f64 now = glfwGetTime();
+        dt = now - last_time;
+        last_time = now;
 
 
         if(window_resized) {
@@ -402,7 +395,7 @@ s32 main(s32 argc, char **argv) {
 
         if(!debug_pause) {
             world.update();
-            player.update();
+            player.update(dt);
         }
 
 
@@ -434,13 +427,15 @@ s32 main(s32 argc, char **argv) {
                 ImGui::Dummy(ImVec2(130, 0));
 
                 if(ImGui::CollapsingHeader("Misc.")) {
-                    ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
                     ImGui::Text("FPS: %.1f", io.Framerate);
+                    ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
+                    ImGui::Text("dt: %llf", dt); // NOTE: io.Framerate is probably equivalent to dt; using dt defensively.
                 }
 
                 if(ImGui::CollapsingHeader("Player")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
                     ImGui::Text("Tile Position: (%d, %d)", (s32) floor(player.pos.x / TILE_SIZE), (s32) floor(player.pos.y / TILE_SIZE));
+                    ImGui::Text("Velocity: (%0.3f, %0.3f)", player.vel.x, player.vel.y);
 
 #ifdef COLLISION_DEBUG
                     ImGui::Separator();
