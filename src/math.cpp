@@ -61,7 +61,7 @@ struct AABB {
     glm::vec2 min;
     glm::vec2 max;
 
-    bool intersects(AABB const& b) {
+    bool intersects(AABB const& b) const {
         return !(
             (b.max.x <= min.x) ||
             (b.min.x >= max.x) ||
@@ -70,7 +70,7 @@ struct AABB {
         );
     }
 
-    AABB add(AABB const& b) {
+    AABB add(AABB const& b) const {
         return {
             {
                 min(min.x, b.min.x),
@@ -83,15 +83,15 @@ struct AABB {
         };
     }
 
-    inline glm::vec2 get_center() {
+    inline glm::vec2 get_center() const {
         return 0.5f * (min + max);
     }
 
-    inline glm::vec2 get_size() {
+    inline glm::vec2 get_size() const {
         return max - min;
     }
 
-    inline glm::vec2 get_half_size() {
+    inline glm::vec2 get_half_size() const {
         return 0.5f * get_size();
     }
 
@@ -99,13 +99,13 @@ struct AABB {
         return { center - half_size, center + half_size };
     }
 
-    static Hit sweep(AABB const& a, AABB const& b, glm::vec2 const& vel) {
+    static Hit sweep(AABB const& a, AABB const& b, glm::vec2 const& delta) {
         f32 inv_x_entry;
         f32 inv_y_entry;
         f32 inv_x_exit;
         f32 inv_y_exit;
 
-        if(vel.x > 0.0f) {
+        if(delta.x > 0.0f) {
             inv_x_entry = b.min.x - a.max.x;
             inv_x_exit = b.max.x - a.min.x;
         } else {
@@ -113,7 +113,7 @@ struct AABB {
             inv_x_exit = b.min.x - a.max.x;
         }
 
-        if(vel.y > 0.0f) {
+        if(delta.y > 0.0f) {
             inv_y_entry = b.min.y - a.max.y;
             inv_y_exit = b.max.y - a.min.y;
         } else {
@@ -126,20 +126,20 @@ struct AABB {
         f32 x_exit;
         f32 y_exit;
 
-        if(vel.x == 0.0f) {
+        if(delta.x == 0.0f) {
             x_entry = -FLT_MAX;
             x_exit = FLT_MAX;
         } else {
-            x_entry = inv_x_entry / vel.x;
-            x_exit = inv_x_exit / vel.x;
+            x_entry = inv_x_entry / delta.x;
+            x_exit = inv_x_exit / delta.x;
         }
 
-        if(vel.y == 0.0f) {
+        if(delta.y == 0.0f) {
             y_entry = -FLT_MAX;
             y_exit = FLT_MAX;
         } else {
-            y_entry = inv_y_entry / vel.y;
-            y_exit = inv_y_exit / vel.y;
+            y_entry = inv_y_entry / delta.y;
+            y_exit = inv_y_exit / delta.y;
         }
 
         f32 entry = max(x_entry, y_entry);
@@ -152,8 +152,8 @@ struct AABB {
         assert(entry >= 0.0f && entry <= 1.0f);
 
         glm::vec2 normal = {
-            x_entry > y_entry ? -sign(vel.x) : 0,
-            x_entry > y_entry ? 0 : -sign(vel.y)
+            x_entry > y_entry ? -sign(delta.x) : 0,
+            x_entry > y_entry ? 0 : -sign(delta.y)
         };
         return { true, entry, normal };
     }

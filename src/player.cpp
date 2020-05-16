@@ -86,7 +86,6 @@ struct Player {
                     if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
                     auto& tile_bb = tile->collision_aabb;
-                    
                     if(tile_bb.intersects(broad)) {
                         auto hit = AABB::sweep(player_bb, tile_bb, vel);
                         if(hit.hit && hit.h < best.h) {
