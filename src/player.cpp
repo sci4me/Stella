@@ -28,8 +28,6 @@ struct Player {
     // display whenever arrlen(queue) > 0?
     bool show_crafting_queue = false;
 
-    u32 broad_collisions_this_frame = 0;
-    u32 sweep_collisions_this_frame = 0;
 
     void init(GLFWwindow *window, World *world) {
         this->window = window;
@@ -52,13 +50,9 @@ struct Player {
         placement_valid = false;
         is_mining = false;
 
-        broad_collisions_this_frame = 0;
-        sweep_collisions_this_frame = 0;
-
 
         #ifdef COLLISION_DEBUG
-            arrsetlen(broad_collision_debug_data_this_frame, 0);
-            arrsetlen(swept_collision_debug_data_this_frame, 0);
+            arrsetlen(collision_debug_data_this_frame, 0);
         #endif
 
 
@@ -78,7 +72,9 @@ struct Player {
                 
                 f32 half_size = 0.5f * SIZE;
                 glm::vec2 v_half_size = { half_size, half_size };
-                AABB player_bb = AABB::from_center(pos, v_half_size);
+                auto player_bb = AABB::from_center(pos, v_half_size);
+                auto target_bb = AABB::from_center(pos + vel, v_half_size);
+                auto broad = player_bb.add(target_bb);
 
                 AABB::Hit best = { false, 1.0f };
 
@@ -90,41 +86,27 @@ struct Player {
                     if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
                     auto& tile_bb = tile->collision_aabb;
-                    auto broad = player_bb.add(AABB::from_center(pos + vel, v_half_size));
+                    
                     if(tile_bb.intersects(broad)) {
-                        #ifdef COLLISION_DEBUG
-                            Broad_Collision_Debug_Data _b = { broad, tile_bb };
-                        #endif
-
                         auto hit = AABB::sweep(player_bb, tile_bb, vel);
                         if(hit.hit && hit.h < best.h) {
                             best = hit;
-
-                            #ifdef COLLISION_DEBUG
-                                _b.swept_collision_index = arrlen(swept_collision_debug_data_this_frame);
-
-                                Swept_Collision_Debug_Data _s = { player_bb, hit };
-                                arrput(swept_collision_debug_data_this_frame, _s);
-                            #endif
-
-                            sweep_collisions_this_frame++;
                         }
 
                         #ifdef COLLISION_DEBUG
-                            arrput(broad_collision_debug_data_this_frame, _b);
+                            Collision_Debug_Data _b = { broad, tile_bb, player_bb, vel, hit };
+                            arrput(collision_debug_data_this_frame, _b);
                         #endif
-
-                        broad_collisions_this_frame++;    
                     }
                 }
-
-                pos += vel * best.h;
                 
                 if(best.hit) {
                     f32 r = 1.0f - best.h;
                     f32 d = (vel.x * best.n.y + vel.y * best.n.x) * r;
                     pos += glm::vec2(best.n.y, best.n.x) * d;
                 }
+
+                pos += vel * best.h;
             }
     
 

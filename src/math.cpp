@@ -83,6 +83,18 @@ struct AABB {
         };
     }
 
+    inline glm::vec2 get_center() {
+        return 0.5f * (min + max);
+    }
+
+    inline glm::vec2 get_size() {
+        return max - min;
+    }
+
+    inline glm::vec2 get_half_size() {
+        return 0.5f * get_size();
+    }
+
     static AABB from_center(glm::vec2 const& center, glm::vec2 const& half_size) {
         return { center - half_size, center + half_size };
     }
@@ -137,6 +149,8 @@ struct AABB {
             return { false, 1.0f };
         }
 
+        assert(entry >= 0.0f && entry <= 1.0f);
+
         glm::vec2 normal = {
             x_entry > y_entry ? -sign(vel.x) : 0,
             x_entry > y_entry ? 0 : -sign(vel.y)
@@ -144,15 +158,3 @@ struct AABB {
         return { true, entry, normal };
     }
 };
-
-
-f32 line_segment_intersection_no_parallel(glm::vec2 a, glm::vec2 b, glm::vec2 c, glm::vec2 d) {
-    auto e = b - a;
-    auto f = d - c;
-    glm::vec2 p = { -e.y, e.x };
-
-    auto denom = glm::dot(f, p);
-    assert(denom != 0);
-
-    return glm::dot(a - c, p) / denom;
-}

@@ -93,25 +93,25 @@ bool debug_pause = false;
 
 #define COLLISION_DEBUG
 #ifdef COLLISION_DEBUG
-struct Broad_Collision_Debug_Data {
+// TODO: Combine these structs! Every time we get a
+// collision using the broad AABB, we _always_ perform
+// the swept collision check. So. No need for these 
+// to be separate.
+//              - sci4me, 5/15/20
+struct Collision_Debug_Data {
     AABB broad_aabb;
     AABB collider_aabb;
-    s32 swept_collision_index = -1;
+    AABB player_aabb;
+    glm::vec2 vel;
+    AABB::Hit h;
 
     bool broad_aabb_selected;
     bool collider_aabb_selected;
-};
-
-struct Swept_Collision_Debug_Data {
-    AABB player_aabb;
-    AABB::Hit h;
-
     bool player_aabb_selected;
     bool h_selected;
 };
 
-Broad_Collision_Debug_Data *broad_collision_debug_data_this_frame = nullptr;
-Swept_Collision_Debug_Data *swept_collision_debug_data_this_frame = nullptr;
+Collision_Debug_Data *collision_debug_data_this_frame = nullptr;
 
 void show_collision_debug_per_frame_data(glm::mat4 view) {
     auto dl = ImGui::GetForegroundDrawList();
@@ -121,60 +121,61 @@ void show_collision_debug_per_frame_data(glm::mat4 view) {
         return ImVec2(t.x, t.y);
     };
 
-    auto draw_aabb = [&](AABB const& a, glm::vec4 color) {
+    auto draw_aabb = [&](AABB const& a, glm::vec4 const& color) {
         auto min = txfm(a.min);
         auto max = txfm(a.max);
         dl->AddRect(min, max, rgba1_to_rgba255(color));
     };
 
-    auto nbroad = arrlen(broad_collision_debug_data_this_frame);
-    for(u32 i = 0; i < nbroad; i++) {
-        auto& b = broad_collision_debug_data_this_frame[i];
+    auto draw_line = [&](glm::vec2 const& start, glm::vec2 const& end, glm::vec4 const& color, f32 const thicc = 3.0f) {
+        auto a = txfm(start);
+        auto b = txfm(end);
+        dl->AddLine(a, b, rgba1_to_rgba255(color), thicc);
+    };
+
+    for(u32 i = 0; i < arrlen(collision_debug_data_this_frame); i++) {
+        auto& c = collision_debug_data_this_frame[i];
 
         ImGui::PushID(i);
-        if(ImGui::TreeNodeEx("Broad_Collision_Debug_Data", 0, "Broad Collision #%d", i)) {
-            ImGui::PushID("broad_aabb_selected");
-                ImGui::Selectable("", &b.broad_aabb_selected);
+        if(ImGui::TreeNodeEx("Collision_Debug_Data", 0, "Collision #%d", i)) {
+            ImGui::PushID("player_aabb_selected");
+                ImGui::Selectable("", &c.player_aabb_selected);
                 ImGui::SameLine();
-                ImGui::Text("broad: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", b.broad_aabb.min.x, b.broad_aabb.min.y, b.broad_aabb.max.x, b.broad_aabb.max.y);
+                ImGui::Text("Player: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", c.player_aabb.min.x, c.player_aabb.min.y, c.player_aabb.max.x, c.player_aabb.max.y);
             ImGui::PopID();
 
-            if(b.broad_aabb_selected) draw_aabb(b.broad_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
+            ImGui::PushID("broad_aabb_selected");
+                ImGui::Selectable("", &c.broad_aabb_selected);
+                ImGui::SameLine();
+                ImGui::Text("Broad: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", c.broad_aabb.min.x, c.broad_aabb.min.y, c.broad_aabb.max.x, c.broad_aabb.max.y);
+            ImGui::PopID();
 
             ImGui::PushID("collider_aabb_selected");
-                ImGui::Selectable("", &b.collider_aabb_selected);
+                ImGui::Selectable("", &c.collider_aabb_selected);
                 ImGui::SameLine();
-                ImGui::Text("collider: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", b.collider_aabb.min.x, b.collider_aabb.min.y, b.collider_aabb.max.x, b.collider_aabb.max.y);
+                ImGui::Text("Collider: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", c.collider_aabb.min.x, c.collider_aabb.min.y, c.collider_aabb.max.x, c.collider_aabb.max.y);
             ImGui::PopID();
 
-            if(b.collider_aabb_selected) draw_aabb(b.collider_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
+            ImGui::PushID("h_selected");
+                ImGui::Selectable("", &c.h_selected);
+                ImGui::SameLine();
+                ImGui::Text("Hit: %s, h: %0.9f, N: (%0.1f, %0.1f)", c.h.hit ? "true" : "false", c.h.h, c.h.n.x, c.h.n.y);
+            ImGui::PopID();
 
-            if(b.swept_collision_index != -1) {
-                auto& s = swept_collision_debug_data_this_frame[b.swept_collision_index];
+            ImGui::Text("Collider ^ Player: %s", c.collider_aabb.intersects(c.player_aabb) ? "true" : "false");
+            ImGui::Text("Collider ^ Broad: %s", c.collider_aabb.intersects(c.broad_aabb) ? "true" : "false");
+            ImGui::Text("Velocity: (%0.3f, %0.3f)", c.vel.x, c.vel.y);
 
-                ImGui::PushID(b.swept_collision_index);
-                if(ImGui::TreeNodeEx("Swept_Collision_Debug_Data", 0, "Swept Collision #%d", b.swept_collision_index)) {
-                    ImGui::PushID("player_aabb_selected");
-                        ImGui::Selectable("", &s.player_aabb_selected);
-                        ImGui::SameLine();
-                        ImGui::Text("player: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", s.player_aabb.min.x, s.player_aabb.min.y, s.player_aabb.max.x, s.player_aabb.max.y);
-                    ImGui::PopID();
+            if(c.player_aabb_selected) draw_aabb(c.player_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
+            if(c.broad_aabb_selected) draw_aabb(c.broad_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
+            if(c.collider_aabb_selected) draw_aabb(c.collider_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
+            if(c.h_selected) assert(0); // TODO
 
-                    if(s.player_aabb_selected) draw_aabb(s.player_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
-
-                    ImGui::PushID("h_selected");
-                        ImGui::Selectable("", &s.h_selected);
-                        ImGui::SameLine();
-                        ImGui::BeginGroup();
-                            ImGui::Text("h: %0.3f, N: (%0.1f, %0.1f)", s.h.h, s.h.n.x, s.h.n.y);
-                        ImGui::EndGroup();
-                    ImGui::PopID();
-
-                    if(s.h_selected) assert(0); // TODO
-
-                    ImGui::TreePop();
-                }
-                ImGui::PopID();
+            if(c.h.hit) {
+                auto& bb = c.collider_aabb;
+                auto& n = c.h.n;
+                auto& start = n * bb.get_half_size() + bb.get_center();
+                draw_line(start, start + n * 16.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
             }
 
             ImGui::TreePop();
@@ -441,13 +442,8 @@ s32 main(s32 argc, char **argv) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
                     ImGui::Text("Tile Position: (%d, %d)", (s32) floor(player.pos.x / TILE_SIZE), (s32) floor(player.pos.y / TILE_SIZE));
 
-                    ImGui::Separator();
-                    ImGui::Text("Collisions");
-
-                    ImGui::Text("Broad: %d", player.broad_collisions_this_frame);
-                    ImGui::Text("Sweep: %d", player.sweep_collisions_this_frame);
-
 #ifdef COLLISION_DEBUG
+                    ImGui::Separator();
                     show_collision_debug_per_frame_data(view);
 #endif
                 }
