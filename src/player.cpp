@@ -256,19 +256,24 @@ private:
         constexpr f32 EPSILON = 0.00001;
         constexpr u32 MAX_ITER = 6;
 
+        f32 half_size = 0.5f * SIZE;
+        glm::vec2 v_half_size = { half_size, half_size };
+
         u32 iteration = 0;
         while(glm::length(delta) > EPSILON && iteration++ < MAX_ITER) {
-            f32 half_size = 0.5f * SIZE;
-            glm::vec2 v_half_size = { half_size, half_size };
             auto player_bb = AABB::from_center(pos, v_half_size);
             auto target_bb = AABB::from_center(pos + delta, v_half_size);
             auto broad = player_bb.add(target_bb);
+
+            // NOTE: We query the current chunk every time
+            // just in case the player happens to move into
+            // a new chunk during this loop.
+            auto chunk = get_current_chunk();
 
             AABB::Hit best = { false, 1.0f };
 
             // NOTE TODO: We don't really have to check EVERY tile
             // for collisions! Just check the ones close to us.
-            auto chunk = get_current_chunk();
             for(u32 i = 0; i < hmlen(chunk->layer2); i++) {
                 auto tile = chunk->layer2[i].value;
                 if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
