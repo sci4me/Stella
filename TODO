@@ -18,6 +18,9 @@ Features:
  - Particle Systems
 
 Code/Dev Features:
+ - Consider switching away from stb_ds.h
+   - It's a great library! But .. eh.
+     - Fewer Libraries = Better
  - Internal
    - #define internal static
  - HOT CODE RELOAD!!!!!

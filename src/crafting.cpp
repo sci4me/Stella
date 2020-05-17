@@ -81,6 +81,18 @@ namespace crafting {
             //
             //                  - sci4me, 5/14/20
 
+            //
+            // Okay, so, first go at this. Here's my idea:
+            // We have a function that recursively builds a list of itemstacks that
+            // should be requested in order to craft `r`. This function also builds
+            // a list of itemstacks that are missing.
+            //
+            // Then, if the list of items that are missing is empty, we can request
+            // all of the items in the first list, and ... yeah. return true;
+            //
+            //                  - sci4me, 5/17/20
+            //
+
             for(u32 i = 0; i < r->n_inputs; i++) {
                 if(!inventory->contains(r->inputs[i])) return false;
             }

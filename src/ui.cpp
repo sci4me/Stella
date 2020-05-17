@@ -170,6 +170,11 @@ namespace ui {
     }
 
     void tile_ui(Item_Container *player_inventory, Tile **tile_ref) {
+        // TODO: Move the UI code into methods in the respective
+        // Tile classes! We'll need to do forward declarations
+        // to do this; that's why I did it this way in the first
+        // place. Too lazy :P
+        //              - sci4me, 5/17/20
         Tile *tile = *tile_ref;
         if(tile) {
             switch(tile->type) {
