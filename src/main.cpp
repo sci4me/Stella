@@ -93,11 +93,6 @@ bool debug_pause = false;
 
 #define COLLISION_DEBUG
 #ifdef COLLISION_DEBUG
-// TODO: Combine these structs! Every time we get a
-// collision using the broad AABB, we _always_ perform
-// the swept collision check. So. No need for these 
-// to be separate.
-//              - sci4me, 5/15/20
 struct Collision_Debug_Data {
     AABB broad_aabb;
     AABB collider_aabb;

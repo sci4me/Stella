@@ -11,8 +11,8 @@ struct Texture_Atlas_Entry {
 };
 
 struct Texture_Atlas {
-    static const GLenum internal_format = GL_RGBA8;
-    static const GLenum data_format = GL_RGBA;
+    static constexpr GLenum internal_format = GL_RGBA8;
+    static constexpr GLenum data_format = GL_RGBA;
 
     GLuint id;
 

@@ -1,6 +1,6 @@
 template<u32 n_words>
 struct Static_Bitset {
-    static const u32 WORD_BITS = 64;
+    static constexpr u32 WORD_BITS = 64;
 
     u64 words[n_words];
 

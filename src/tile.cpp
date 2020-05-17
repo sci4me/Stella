@@ -1,4 +1,4 @@
-#define TILE_SIZE 32.0f
+constexpr f32 TILE_SIZE = 32.0f;
 
 
 enum Tile_Type : u8 {

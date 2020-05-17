@@ -12,12 +12,12 @@ struct Chunk {
         Tile *value;
     };
 
-    static const s32 SIZE = 64; // must be a power of 2!
-    static const s32 LAYERS = 3;
+    static constexpr s32 SIZE = 64; // must be a power of 2!
+    static constexpr s32 LAYERS = 3;
 
-    static const u32 MAX_VERTICES = SIZE * SIZE * 4;
-    static const u32 MAX_INDICES = SIZE * SIZE * 6;
-    static const u32 MAX_TEXTURE_SLOTS = 16; // TODO
+    static constexpr u32 MAX_VERTICES = SIZE * SIZE * 4;
+    static constexpr u32 MAX_INDICES = SIZE * SIZE * 6;
+    static constexpr u32 MAX_TEXTURE_SLOTS = 16; // TODO
 
     struct World *world;
     
@@ -377,7 +377,7 @@ void Chunk::render() {
 
     rnd_pcg_t l0rot = make_rng_for_chunk();
 
-    static const glm::vec2 uvs[4][4] = {
+    static constexpr glm::vec2 uvs[4][4] = {
         { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } },
         { { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } },
         { { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } },
