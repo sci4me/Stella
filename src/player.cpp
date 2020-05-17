@@ -64,47 +64,7 @@ struct Player {
             if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
             delta = glm::normalize(delta) * speed;
             
-            // NOTE: We'll probably want to tweak these
-            // as we go/later on!
-            constexpr f32 EPSILON = 0.00001;
-            constexpr u32 MAX_ITER = 6;
-
-            u32 iteration = 0;
-            while(glm::length(delta) > EPSILON && iteration++ < MAX_ITER) {
-                f32 half_size = 0.5f * SIZE;
-                glm::vec2 v_half_size = { half_size, half_size };
-                auto player_bb = AABB::from_center(pos, v_half_size);
-                auto target_bb = AABB::from_center(pos + delta, v_half_size);
-                auto broad = player_bb.add(target_bb);
-
-                AABB::Hit best = { false, 1.0f };
-
-                // NOTE TODO: We don't really have to check EVERY tile
-                // for collisions! Just check the ones close to us.
-                auto chunk = get_current_chunk();
-                for(u32 i = 0; i < hmlen(chunk->layer2); i++) {
-                    auto tile = chunk->layer2[i].value;
-                    if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
-
-                    auto const& tile_bb = tile->collision_aabb;
-                    if(tile_bb.intersects(broad)) {
-                        auto hit = AABB::sweep(player_bb, tile_bb, delta);
-                        if(hit.hit && hit.h < best.h) {
-                            best = hit;
-                        }
-                    }
-                }
-
-                pos += delta * best.h;
-                
-                if(best.hit) {
-                    f32 r = 1.0f - best.h;
-                    f32 d = (delta.x * best.n.y + delta.y * best.n.x) * r;
-                    delta = glm::vec2(best.n.y, best.n.x) * d;
-                } else {
-                    break;
-                }
-            }
+            move(delta);
 
 
             if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
@@ -288,6 +248,59 @@ private:
     void open_tile_ui(Tile *t) {
         active_ui_tile = t;
         show_inventory = false;
+    }
+
+    void move(glm::vec2 delta) {
+        // NOTE: We'll probably want to tweak these
+        // as we go/later on!
+        constexpr f32 EPSILON = 0.00001;
+        constexpr u32 MAX_ITER = 6;
+
+        u32 iteration = 0;
+        while(glm::length(delta) > EPSILON && iteration++ < MAX_ITER) {
+            f32 half_size = 0.5f * SIZE;
+            glm::vec2 v_half_size = { half_size, half_size };
+            auto player_bb = AABB::from_center(pos, v_half_size);
+            auto target_bb = AABB::from_center(pos + delta, v_half_size);
+            auto broad = player_bb.add(target_bb);
+
+            AABB::Hit best = { false, 1.0f };
+
+            // NOTE TODO: We don't really have to check EVERY tile
+            // for collisions! Just check the ones close to us.
+            auto chunk = get_current_chunk();
+            for(u32 i = 0; i < hmlen(chunk->layer2); i++) {
+                auto tile = chunk->layer2[i].value;
+                if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
+
+                auto const& tile_bb = tile->collision_aabb;
+                if(tile_bb.intersects(broad)) {
+                    auto hit = AABB::sweep(player_bb, tile_bb, delta);
+                    if(hit.hit && hit.h < best.h) {
+                        best = hit;
+                    }
+                }
+            }
+
+            pos += delta * best.h;
+            
+            if(best.hit) {
+                f32 r = 1.0f - best.h;
+                f32 d = (delta.x * best.n.y + delta.y * best.n.x) * r;
+                delta = glm::vec2(best.n.y, best.n.x) * d;
+            } else {
+                break;
+            }
+        }
+
+        // NOTE: Just doing this as a sanity check.
+        // A gift that keeps on giving :P
+        // Really, as of now, MAX_ITER can be 2.
+        // But if anything ever changes that, I'll
+        // find out real quick thanks to my little
+        // friend: ļě AS§éŔT
+        //              - sci4me, 5/16/20
+        assert(iteration <= 2);
     }
 
     void handle_mining() {
