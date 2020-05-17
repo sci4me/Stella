@@ -1,9 +1,9 @@
 struct Batch_Renderer {
     #pragma pack(push, 1)
     struct Vertex {
-        glm::vec2 pos;
-        glm::vec4 color;
-        glm::vec2 uv;
+        vec2 pos;
+        vec4 color;
+        vec2 uv;
         s32 tex;
     };
     #pragma pack(pop)
@@ -143,7 +143,7 @@ public:
         return stats;
     }
 
-    void push_quad(f32 x, f32 y, f32 w, f32 h, glm::vec4 color, glm::vec2 uvs[4], GLuint texture) {
+    void push_quad(f32 x, f32 y, f32 w, f32 h, vec4 color, vec2 uvs[4], GLuint texture) {
         ensure_available(4, 6);
 
         s32 tex_index;
@@ -167,30 +167,30 @@ public:
         per_frame_stats.quads++;
     }
 
-    void push_quad(f32 x, f32 y, f32 w, f32 h, glm::vec4 color, GLuint texture) {
-        glm::vec2 uvs[] = {
-            glm::vec2(0.0f, 0.0f),
-            glm::vec2(1.0f, 0.0f),
-            glm::vec2(1.0f, 1.0f),
-            glm::vec2(0.0f, 1.0f)
+    void push_quad(f32 x, f32 y, f32 w, f32 h, vec4 color, GLuint texture) {
+        vec2 uvs[] = {
+            vec2(0.0f, 0.0f),
+            vec2(1.0f, 0.0f),
+            vec2(1.0f, 1.0f),
+            vec2(0.0f, 1.0f)
         };
         push_quad(x, y, w, h, color, uvs, texture);
     }
 
-    void push_solid_quad(f32 x, f32 y, f32 w, f32 h, glm::vec4 color) {
+    void push_solid_quad(f32 x, f32 y, f32 w, f32 h, vec4 color) {
         push_quad(x, y, w, h, color, white_texture);
     }
 
     void push_textured_quad(f32 x, f32 y, f32 w, f32 h, GLuint texture) {
-        push_quad(x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), texture);
+        push_quad(x, y, w, h, vec4(1.0f, 1.0f, 1.0f, 1.0f), texture);
     }
 
     void push_textured_quad(f32 x, f32 y, f32 w, f32 h, Texture *texture) {
-        push_quad(x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), texture->id);
+        push_quad(x, y, w, h, vec4(1.0f, 1.0f, 1.0f, 1.0f), texture->id);
     }
 
     void push_textured_quad(f32 x, f32 y, f32 w, f32 h, Texture_Atlas *atlas, u32 id) {
         auto entry = atlas->entries[id];
-        push_quad(x, y, w, h, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), entry.uvs, atlas->id);
+        push_quad(x, y, w, h, vec4(1.0f, 1.0f, 1.0f, 1.0f), entry.uvs, atlas->id);
     }
 };

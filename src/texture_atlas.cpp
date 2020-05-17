@@ -7,7 +7,7 @@ enum {
 
 struct Texture_Atlas_Entry {
     struct Texture_Atlas *atlas;
-    glm::vec2 uvs[4];
+    vec2 uvs[4];
 };
 
 struct Texture_Atlas {
@@ -65,10 +65,10 @@ struct Texture_Atlas {
         Texture_Atlas_Entry entry = {
             this,
             {
-                glm::vec2(u1, v1),
-                glm::vec2(u2, v1),
-                glm::vec2(u2, v2),
-                glm::vec2(u1, v2)
+                vec2(u1, v1),
+                vec2(u2, v1),
+                vec2(u2, v2),
+                vec2(u1, v2)
             }
         };
         arrput(entries, entry);

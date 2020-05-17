@@ -1,14 +1,14 @@
 struct Chunk {
     #pragma pack(push, 1)
     struct Vertex {
-        glm::vec2 pos;
-        glm::vec2 uv;
+        vec2 pos;
+        vec2 uv;
         s32 tex;
     };
     #pragma pack(pop)
 
     struct Tile_Map {
-        glm::ivec2 key;
+        ivec2 key;
         Tile *value;
     };
 
@@ -50,7 +50,7 @@ struct World {
     u32 seed;
 
     struct {
-        glm::ivec2 key;
+        ivec2 key;
         struct Chunk *value;
     } *chunks = NULL;
 
@@ -89,7 +89,7 @@ struct World {
     }
 
     Chunk* get_chunk(s32 x, s32 y) {
-        glm::ivec2 key = {x, y};
+        ivec2 key = {x, y};
         s64 i = hmgeti(chunks, key);
 
         if(i == -1) {
@@ -132,7 +132,7 @@ struct World {
         }
     }
 
-    u32 draw_around(Batch_Renderer *r, glm::vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
+    u32 draw_around(Batch_Renderer *r, vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
         f32 x = pos.x * scale;
         f32 y = pos.y * scale;
 
@@ -286,7 +286,7 @@ void Chunk::generate() {
                     tile->initial_count = tile->count;
                     tile->init();
 
-                    glm::ivec2 key = {i, j};
+                    ivec2 key = {i, j};
                     hmput(layer1, key, tile);
                     
                     continue;
@@ -309,7 +309,7 @@ void Chunk::generate() {
                     tile->initial_count = tile->count;
                     tile->init();
 
-                    glm::ivec2 key = {i, j};
+                    ivec2 key = {i, j};
                     hmput(layer1, key, tile);
                     
                     continue;
@@ -332,7 +332,7 @@ void Chunk::generate() {
                     tile->initial_count = tile->count;
                     tile->init();
 
-                    glm::ivec2 key = {i, j};
+                    ivec2 key = {i, j};
                     hmput(layer1, key, tile);
                     
                     continue;
@@ -355,7 +355,7 @@ void Chunk::generate() {
                     tile->initial_count = tile->count;
                     tile->init();
 
-                    glm::ivec2 key = {i, j};
+                    ivec2 key = {i, j};
                     hmput(layer1, key, tile);
                     
                     continue;
@@ -377,7 +377,7 @@ void Chunk::render() {
 
     rnd_pcg_t l0rot = make_rng_for_chunk();
 
-    static constexpr glm::vec2 uvs[4][4] = {
+    static constexpr vec2 uvs[4][4] = {
         { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } },
         { { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } },
         { { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } },

@@ -112,10 +112,10 @@ struct Tile_Chest : public Tile {
         flags |= TILE_FLAG_IS_COLLIDER;
 
         // NOTE: See comment in Tile_Furnace::init about this.
-        glm::vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
         collision_aabb = {
-            wp + glm::vec2(4.0f, 4.0f),
-            wp + glm::vec2(28.0f, 28.0f)
+            wp + vec2(4.0f, 4.0f),
+            wp + vec2(28.0f, 28.0f)
         };
 
         container.init(25);
@@ -165,10 +165,10 @@ struct Tile_Furnace : public Tile {
         // and 14, in order to select the inner 12x12 pixels,
         // with a 2 pixel border on all sides.
         //              - sci4me, 5/15/20
-        glm::vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
         collision_aabb = {
-            wp + glm::vec2(4.0f, 4.0f),
-            wp + glm::vec2(28.0f, 28.0f)
+            wp + vec2(4.0f, 4.0f),
+            wp + vec2(28.0f, 28.0f)
         };
 
         input.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);

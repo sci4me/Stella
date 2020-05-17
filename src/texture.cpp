@@ -54,7 +54,8 @@ void downsample_2x_in_place(u8 *image, u32 size) {
             auto p01 = rgba1_to_linear(rgba255_to_rgba1(*source_pixel_1++));
             auto p11 = rgba1_to_linear(rgba255_to_rgba1(*source_pixel_1++));
 
-            auto c = (p00 + p10 + p01 + p11) / 4.0f;
+            f32 s = 1.0f / 4.0f;
+            auto c = (p00 + p10 + p01 + p11) * s;
 
             *dest_pixel++ = rgba1_to_rgba255(linear_to_rgba1(c));
         }

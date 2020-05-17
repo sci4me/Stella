@@ -7,7 +7,7 @@ struct Player {
     GLFWwindow *window;
 
     World *world;
-    glm::vec2 pos;
+    vec2 pos;
 
     bool tile_hovered = false;
     s32 hovered_tile_x;
@@ -54,7 +54,7 @@ struct Player {
         ImGuiIO& io = ImGui::GetIO(); 
 
         if(!io.WantCaptureKeyboard) {
-            glm::vec2 delta = {0, 0};
+            vec2 delta = {0, 0};
             if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) delta.y = -1.0f;
             if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) delta.y = 1.0f;
             if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) delta.x = -1.0f;
@@ -62,7 +62,7 @@ struct Player {
             
             auto speed = SPEED;
             if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
-            delta = glm::normalize(delta) * speed;
+            delta = normalize(delta) * speed;
             
             move(delta);
 
@@ -89,19 +89,19 @@ struct Player {
             glfwGetCursorPos(window, &mx, &my);
 
             if(mx >= 0 && my >= 0 && mx < window_width && my < window_height) {
-                glm::vec2 mouse_world_pos = {
-                    pos.x + ((mx - (window_width / 2)) / scale),
-                    pos.y + ((my - (window_height / 2)) / scale)
+                vec2 mouse_world_pos = {
+                    pos.x + (f32)((mx - (window_width / 2)) / scale),
+                    pos.y + (f32)((my - (window_height / 2)) / scale)
                 };
 
                 // NOTE: `10 * TILE_SIZE` is the max distance the player can "reach".
-                if(glm::distance(mouse_world_pos, pos) < 10 * TILE_SIZE) {
+                if(distance(mouse_world_pos, pos) < 10 * TILE_SIZE) {
                     hovered_tile_x = floor(mouse_world_pos.x / TILE_SIZE);
                     hovered_tile_y = floor(mouse_world_pos.y / TILE_SIZE);
                     
                     Chunk *chunk = world->get_chunk_containing(hovered_tile_x, hovered_tile_y);
 
-                    glm::ivec2 key = {
+                    ivec2 key = {
                         hovered_tile_x & (Chunk::SIZE - 1),
                         hovered_tile_y & (Chunk::SIZE - 1)
                     };
@@ -202,7 +202,7 @@ struct Player {
                 hovered_tile_y * TILE_SIZE, 
                 TILE_SIZE, 
                 TILE_SIZE, 
-                glm::vec4(1.0f, 1.0f, 1.0f, 0.2f)
+                vec4(1.0f, 1.0f, 1.0f, 0.2f)
             ); 
         }
 
@@ -213,7 +213,7 @@ struct Player {
                     hovered_tile_y * TILE_SIZE, 
                     clampf(mining_progress, 0.0f, 1.0f) * TILE_SIZE,
                     TILE_SIZE,
-                    glm::vec4(1.0f, 0.0f, 0.0f, 0.5f)
+                    vec4(1.0f, 0.0f, 0.0f, 0.5f)
                 );
             } else {
                 r->push_solid_quad(
@@ -221,7 +221,7 @@ struct Player {
                     hovered_tile_y * TILE_SIZE, 
                     TILE_SIZE, 
                     TILE_SIZE, 
-                    glm::vec4(1.0f, 1.0f, 1.0f, 0.2f)
+                    vec4(1.0f, 1.0f, 1.0f, 0.2f)
                 ); 
             }
         }
@@ -250,17 +250,17 @@ private:
         show_inventory = false;
     }
 
-    void move(glm::vec2 delta) {
+    void move(vec2 delta) {
         // NOTE: We'll probably want to tweak these
         // as we go/later on!
         constexpr f32 EPSILON = 0.00001;
         constexpr u32 MAX_ITER = 6;
 
         f32 half_size = 0.5f * SIZE;
-        glm::vec2 v_half_size = { half_size, half_size };
+        vec2 v_half_size = { half_size, half_size };
 
         u32 iteration = 0;
-        while(glm::length(delta) > EPSILON && iteration++ < MAX_ITER) {
+        while(delta.length() > EPSILON && iteration++ < MAX_ITER) {
             auto player_bb = AABB::from_center(pos, v_half_size);
             auto target_bb = AABB::from_center(pos + delta, v_half_size);
             auto broad = player_bb.add(target_bb);
@@ -292,7 +292,7 @@ private:
             if(best.hit) {
                 f32 r = 1.0f - best.h;
                 f32 d = (delta.x * best.n.y + delta.y * best.n.x) * r;
-                delta = glm::vec2(best.n.y, best.n.x) * d;
+                delta = vec2(best.n.y, best.n.x) * d;
             } else {
                 break;
             }
@@ -320,7 +320,7 @@ private:
 
         Chunk *chunk = world->get_chunk_containing(hovered_tile_x, hovered_tile_y);
 
-        glm::ivec2 key = {
+        ivec2 key = {
             hovered_tile_x & (Chunk::SIZE - 1),
             hovered_tile_y & (Chunk::SIZE - 1)
         };

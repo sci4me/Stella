@@ -237,7 +237,7 @@ s32 main(s32 argc, char **argv) {
             t->y = y;
             t->init();
 
-            glm::ivec2 key = {
+            ivec2 key = {
                 t->x & (Chunk::SIZE - 1),
                 t->y & (Chunk::SIZE - 1)
             };
