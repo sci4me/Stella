@@ -91,7 +91,7 @@ bool fast_mining = false;
 bool debug_pause = false;
 
 
-#define COLLISION_DEBUG
+// #define COLLISION_DEBUG
 #ifdef COLLISION_DEBUG
 struct Collision_Debug_Data {
     AABB broad_aabb;

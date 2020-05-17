@@ -59,19 +59,23 @@ struct Player {
         ImGuiIO& io = ImGui::GetIO(); 
 
         if(!io.WantCaptureKeyboard) {
-            glm::vec2 dir = {0, 0};
-            if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) dir.y = -1.0f;
-            if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) dir.y = 1.0f;
-            if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) dir.x = -1.0f;
-            if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) dir.x = 1.0f;
+            glm::vec2 delta = {0, 0};
+            if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) delta.y = -1.0f;
+            if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) delta.y = 1.0f;
+            if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) delta.x = -1.0f;
+            if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) delta.x = 1.0f;
             
             auto speed = SPEED;
             if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
-            dir = glm::normalize(dir) * speed;
+            delta = glm::normalize(delta) * speed;
             
-            if(glm::length(dir) > 0) {
-                auto& delta = dir;
+            // NOTE: We'll probably want to tweak these
+            // as we go/later on!
+            constexpr f32 EPSILON = 0.00001;
+            constexpr u32 MAX_ITER = 6;
 
+            u32 iteration = 0;
+            while(glm::length(delta) > EPSILON && iteration++ < MAX_ITER) {
                 f32 half_size = 0.5f * SIZE;
                 glm::vec2 v_half_size = { half_size, half_size };
                 auto player_bb = AABB::from_center(pos, v_half_size);
@@ -106,7 +110,9 @@ struct Player {
                 if(best.hit) {
                     f32 r = 1.0f - best.h;
                     f32 d = (delta.x * best.n.y + delta.y * best.n.x) * r;
-                    pos += glm::vec2(best.n.y, best.n.x) * d;
+                    delta = glm::vec2(best.n.y, best.n.x) * d;
+                } else {
+                    break;
                 }
             }
 

@@ -13,8 +13,10 @@
 
 #pragma once
 
+// NOTE: Needed since we're building imgui as a static library
 #define GLEW_STATIC
 
+// NOTE TODO: We won't need these once we get rid of glm!
 #include "../../glm/glm/glm.hpp"
 
 #define IM_VEC2_CLASS_EXTRA                                                 \
