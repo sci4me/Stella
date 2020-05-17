@@ -131,14 +131,14 @@ namespace crafting {
 
             if(actively_crafting) {
                 // TODO: Change 32 to SLOT_SIZE
-                if(ImGui::ImageButton((ImTextureID) item_textures[actively_crafting->output.type].id, { 32, 32 })) {
+                if(ImGui::ImageButton((ImTextureID)(u64)item_textures[actively_crafting->output.type].id, { 32, 32 })) {
                     // TODO: cancel the request
                     assert(0);
                 }
             }
 
             for(u32 i = 0; i < arrlen(queue); i++) {
-                if(ImGui::ImageButton((ImTextureID) item_textures[queue[i]->output.type].id, { 32, 32 })) {
+                if(ImGui::ImageButton((ImTextureID)(u64)item_textures[queue[i]->output.type].id, { 32, 32 })) {
                     // TODO: cancel the request
                     assert(0);
                 }   

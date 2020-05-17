@@ -117,7 +117,7 @@ void show_collision_debug_per_frame_data(glm::mat4 view) {
 
     auto txfm = [&](glm::vec2 v) {
         auto t = view * glm::vec4(v, 0.0f, 1.0f);
-        return ImVec2(t.x, t.y);
+        return glm::vec2(t.x, t.y);
     };
 
     auto draw_aabb = [&](AABB const& a, glm::vec4 const& color) {

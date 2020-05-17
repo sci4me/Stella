@@ -14,7 +14,7 @@ namespace ui {
         auto drawlist = ImGui::GetForegroundDrawList();
         
         drawlist->AddImage(
-            (ImTextureID) item_textures[held_item_container->slots[held_item_index].type].id,
+            (ImTextureID)(u64)item_textures[held_item_container->slots[held_item_index].type].id,
             { p.x - half_slot_size, p.y - half_slot_size },
             { p.x + half_slot_size, p.y + half_slot_size }
         );
@@ -46,7 +46,7 @@ namespace ui {
 
         bool clicked;
         if(slot.count && !(held_item_container == container && held_item_index == index)) {
-            clicked = ImGui::ImageButton((ImTextureID) item_textures[slot.type].id, { SLOT_SIZE, SLOT_SIZE });
+            clicked = ImGui::ImageButton((ImTextureID)(u64)item_textures[slot.type].id, { SLOT_SIZE, SLOT_SIZE });
             
             char buf[8];
             snprintf(buf, 8, "%d", slot.count);
@@ -196,7 +196,7 @@ namespace ui {
             for(u32 i = 0; i < arrlen(crafting::recipes); i++) {
                 auto r = crafting::recipes[i];
                 
-                if(ImGui::ImageButton((ImTextureID) item_textures[r->output.type].id, { SLOT_SIZE, SLOT_SIZE })) {
+                if(ImGui::ImageButton((ImTextureID)(u64)item_textures[r->output.type].id, { SLOT_SIZE, SLOT_SIZE })) {
                     // TODO: Handle result?
                     crafting_queue->request(r);
                 }
@@ -214,7 +214,7 @@ namespace ui {
                         auto& input = r->inputs[j];
                         u32 n = inventory->count_type(input.type);
                         
-                        ImGui::Image((ImTextureID) item_textures[input.type].id, { SLOT_SIZE, SLOT_SIZE });
+                        ImGui::Image((ImTextureID)(u64)item_textures[input.type].id, { SLOT_SIZE, SLOT_SIZE });
 
                         char buf[8];
                         snprintf(buf, 8, "%d", input.count);

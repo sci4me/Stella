@@ -95,8 +95,3 @@ Random:
  - imconfig.h
    - ImTextureID
    - ImVec2
- - Investigate whether you can use a templated function without template parameters
-   - In this case, in order to create a _different_ static variable for every callsite
-     - To allow us to create a `debounce` function which is just the standard hacky
-       static bool last state thingy.
-       - Actually it's really an edge detector, not `debounce`.
