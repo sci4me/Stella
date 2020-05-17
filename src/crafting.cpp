@@ -72,58 +72,97 @@ namespace crafting {
     }
 
 
-    struct Queue {
-        Item_Container *inventory;
-        Recipe **queue = nullptr;
+    struct Crafting_Plan {
+        struct Request {
+            Recipe *recipe;
+            u32 count;
+        };
 
-        Recipe *actively_crafting = nullptr;
-        u32 time_left;
+        u32 have[N_ITEM_TYPES];
+        Request *request;
+        bool complete;
+
+        void deinit() {
+            arrfree(request);
+        }
+
+        static Crafting_Plan calculate(Recipe *recipe, Item_Container *player_inventory) {
+            Crafting_Plan result = {};
+            result.complete = !result.calculate(recipe, 1, player_inventory);
+            return result;
+        }
+
+    private:
+        bool calculate(Recipe *recipe, u32 count, Item_Container *player_inventory) {
+            bool missing_something = false;
+
+            for(u32 i = 0; i < recipe->n_inputs; i++) {
+                auto const& input = recipe->inputs[i];
+                Item_Stack needed = { input.type, input.count * count };
+    
+                u32 n = player_inventory->count_type(needed.type);
+                have[needed.type] += min(n, needed.count);
+
+                if(n < needed.count) {
+                    u32 r = needed.count - n;
+                    auto idx = hmgeti(output_type_to_recipe, needed.type);
+                    if(idx == -1) {
+                        missing_something = true;
+                    } else {
+                        missing_something = missing_something || calculate(output_type_to_recipe[idx].value, r, player_inventory);
+                    }
+                }
+            }
+
+            if(!missing_something) {
+                Request req = { recipe, count };
+                arrput(request, req);
+            }
+
+            return missing_something;
+        }
+    };
+
+    struct Queue {
+        Item_Container *player_inventory;
+        Crafting_Plan *queue = nullptr;
+
+        bool actively_crafting = false;
+        u32 request_index;
+        u32 request_count;
+        u32 crafting_time;
+        u32 progress;
+
+        Item_Container crafting_buffer;
 
         bool crafting_paused = false;
 
-        void init(Item_Container *inventory) {
-            this->inventory = inventory;
+        void init(Item_Container *player_inventory) {
+            this->player_inventory = player_inventory;
+            crafting_buffer.init(player_inventory->size);
         }
 
         void deinit() {
             arrfree(queue);
+            crafting_buffer.free();
         }
 
         bool request(Recipe *r) {
-            // TODO: Right now we just check if we have the inputs to the recipe
-            // and craft it with those. Soon, we'll want to be smarter about this.
-            // If the player wants to craft say, I don't know, a mining machine,
-            // and say it takes like 8 iron plates, 8 cobblestone, and 2 iron gears,
-            // but they don't have the gears, they just have enough iron to make them;
-            // we need to request those gears be crafted before the mining machine, 
-            // automatically. This gets more complicated when you consider the cases
-            // where they have _some_ of the intermediaries but not all of them.
-            //
-            // Shouldn't be too hard to "brute-force" this though. I think. inb4.
-            //
-            //                  - sci4me, 5/14/20
+            Crafting_Plan plan = Crafting_Plan::calculate(r, player_inventory);
 
-            //
-            // Okay, so, first go at this. Here's my idea:
-            // We have a function that recursively builds a list of itemstacks that
-            // should be requested in order to craft `r`. This function also builds
-            // a list of itemstacks that are missing.
-            //
-            // Then, if the list of items that are missing is empty, we can request
-            // all of the items in the first list, and ... yeah. return true;
-            //
-            //                  - sci4me, 5/17/20
-            //
+            if(!plan.complete) return false;
 
-            for(u32 i = 0; i < r->n_inputs; i++) {
-                if(!inventory->contains(r->inputs[i])) return false;
+            for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                Item_Stack stack = { (Item_Type) i, plan.have[i] };
+                if(plan.have[i] > 0) {
+                    assert(player_inventory->remove(stack, false));
+                    assert(crafting_buffer.insert(stack, false) == 0);
+                }
             }
+            player_inventory->sort();
+            crafting_buffer.sort();
 
-            for(u32 i = 0; i < r->n_inputs; i++) {
-                assert(inventory->remove(r->inputs[i]));
-            }
-
-            arrput(queue, r);
+            arrput(queue, plan);
             return true;
         }
 
@@ -131,63 +170,97 @@ namespace crafting {
             if(crafting_paused) return;
 
             if(actively_crafting) {
-                if(time_left) {
-                    time_left--;
+                if(progress != crafting_time) {
+                    progress++;
                     return;
                 }
 
-                u32 remaining = inventory->insert(actively_crafting->output);
-                if(remaining) {
-                    // TODO: We need to essentially hold onto the rest of the items to-be-inserted and just insert them whever we can?
-                    // This case can definitely happen, say if the player requests a bunch of stuff to be crafted and then
-                    // mines a bunch of ores or grabs a bunch of stuff from another inventory.
-                    assert(0);
-                } else {
-                    actively_crafting = nullptr;
+                auto const& plan = queue[0];
+                if(request_index < arrlen(plan.request)) {
+                    auto const& req = plan.request[request_index];
+
+                    for(u32 i = 0; i < req.recipe->n_inputs; i++) {
+                        assert(crafting_buffer.remove(req.recipe->inputs[i].type, req.recipe->inputs[i].count, false));
+                    }
+                    if(request_index < arrlen(plan.request) - 1) {
+                        assert(crafting_buffer.insert(req.recipe->output) == 0);
+                    }
+
+                    request_count++;
+                    if(request_count == req.count) {
+                        request_count = 0;
+                        request_index++;
+                        if(request_index < arrlen(plan.request)) {
+                            crafting_time = plan.request[request_index].recipe->time;
+                            progress = 0;
+                        } else {
+                            assert(player_inventory->insert(plan.request[request_index - 1].recipe->output) == 0);
+
+                            arrdel(queue, 0);
+
+                            actively_crafting = arrlen(queue) > 0;
+                            request_index = 0;
+                            request_count = 0;
+                            progress = 0;
+                            if(actively_crafting) crafting_time = queue[0].request[0].recipe->time;
+                        }
+                    } else {
+                        crafting_time = plan.request[request_index].recipe->time;
+                        progress = 0;
+                    }
                 }
             } else if(arrlen(queue) > 0) {
-                actively_crafting = queue[0];
-                time_left = actively_crafting->time;
-
-                arrdel(queue, 0);
+                actively_crafting = true;
+                request_index = 0;
+                request_count = 0;
+                crafting_time = queue[0].request[0].recipe->time;
+                progress = 0;
             }
         }
 
         void draw() {
             ImGui::Begin("Crafting Queue", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
                 
-            ImGui::Text("Queue Count: %d", arrlen(queue) + (actively_crafting ? 1 : 0));
             ImGui::Checkbox("Pause", &crafting_paused);
 
             ImGui::Separator();
 
             f32 crafting_progress = 0.0f;
             if(actively_crafting) {
-                crafting_progress = (f32)(actively_crafting->time - time_left) / (f32)actively_crafting->time;
+                crafting_progress = (f32)progress / (f32)crafting_time;
             }
             ImGui::ProgressBar(crafting_progress, {100, 14});
 
 
             // TODO: This is pretty crappy lol...
-            ImGui::BeginChild("Queue", { 100, 100 });
+            ImGui::BeginChild("Queue", { 100, 200 });
 
             if(actively_crafting) {
-                // TODO: Change 32 to SLOT_SIZE
-                if(ImGui::ImageButton((ImTextureID)(u64)item_textures[actively_crafting->output.type].id, { 32, 32 })) {
-                    // TODO: cancel the request
-                    assert(0);
+                for(u32 i = 0; i < arrlen(queue); i++) {
+                    auto const& plan = queue[i];
+
+                    u32 start;
+                    if(i == 0) start = request_index;
+                    else start = 0;
+
+                    for(u32 k = start; k < arrlen(plan.request); k++) {
+                        auto const& req = plan.request[k];
+
+                        u32 end;
+                        if(i == 0 && k == start) end = req.count - request_count;
+                        else end = req.count;
+
+                        for(u32 j = 0; j < end; j++) {
+                            if(ImGui::ImageButton((ImTextureID)(u64)item_textures[req.recipe->output.type].id, { 32, 32 })) {
+                                // TODO: cancel the request
+                                assert(0);
+                            }
+                        } 
+                    }
                 }
             }
 
-            for(u32 i = 0; i < arrlen(queue); i++) {
-                if(ImGui::ImageButton((ImTextureID)(u64)item_textures[queue[i]->output.type].id, { 32, 32 })) {
-                    // TODO: cancel the request
-                    assert(0);
-                }   
-            }
-
             ImGui::EndChild();
-
 
             ImGui::End();
         }

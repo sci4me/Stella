@@ -154,6 +154,7 @@ struct mat4 {
 
 // TODO: templatize these!
 inline f32 min(f32 a, f32 b) { return a < b ? a : b; }
+inline u32 min(u32 a, u32 b) { return a < b ? a : b; }
 inline f32 max(f32 a, f32 b) { return a > b ? a : b; }
 inline f32 square(f32 x) { return x * x; }
 inline f32 sign(f32 x) { return x < 0 ? -1 : 1; }

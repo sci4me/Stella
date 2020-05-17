@@ -18,6 +18,7 @@ Features:
  - Particle Systems
 
 Code/Dev Features/Quality:
+ - Make our own String type
  - Rename Tile to Tile_Entity
  - Consider switching away from stb_ds.h
    - It's a great library! But .. eh.
@@ -59,6 +60,16 @@ Code/Dev Features/Quality:
  - Better Build System
 
 Quality:
+ - Time Step Handling
+   - Currently we aren't doing _anything_
+     - We're just updating and rendering in a loop
+   - We _at least_ want to do something like "semi-fixed timestep"
+     - Not perfect...
+     - The "best" option is to use interpolation for remaining
+       time. But, this is a fair amount of overhead (on the programmer!)
+       especially once we consider things like tiles that are doing their
+       update logic, etc.
+       I find it hard to believe that I'll actually do this.
  - Key/Mouse Event Dispatch / Handling
    - Instead of having to like, hackily debounce keys with a static bool...
  - Shift clicking in inventories!

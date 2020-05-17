@@ -223,6 +223,7 @@ s32 main(s32 argc, char **argv) {
         player.inventory.insert({ ITEM_IRON_ORE, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_GOLD_ORE, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_COAL_ORE, MAX_ITEM_SLOT_SIZE });
+        player.inventory.insert({ ITEM_IRON_PLATE, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_MINING_MACHINE, MAX_ITEM_SLOT_SIZE });

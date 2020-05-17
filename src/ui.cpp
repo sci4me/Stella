@@ -208,7 +208,7 @@ namespace ui {
         if(ImGui::Begin("Inventory", open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             // NOTE TODO: hardcoded bs code for days
 
-            auto inventory = crafting_queue->inventory;            
+            auto inventory = crafting_queue->player_inventory;      
             container(inventory, 4, 4);
 
             ImGui::Separator();

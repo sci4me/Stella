@@ -50,6 +50,8 @@ void init_items() {
 struct Item_Stack {
     Item_Type type;
     u32 count;
+
+    Item_Stack(Item_Type _type, u32 _count) : type(_type), count(_count) {}
 };
 
 
@@ -139,7 +141,7 @@ struct Item_Container {
         return true;
     }
 
-    u32 insert(Item_Stack stack) {
+    u32 insert(Item_Stack const& stack, bool resort = true) {
         if(!accepts_item_type(stack.type)) return stack.count;
 
         u32 remaining = stack.count;
@@ -177,7 +179,7 @@ struct Item_Container {
                 }
             }
 
-            if(needs_sort) sort();
+            if(needs_sort && resort) sort();
         }
 
         return remaining;
@@ -190,7 +192,11 @@ struct Item_Container {
         sort();
     }
 
-    bool remove(Item_Stack s) {
+    bool remove(Item_Type type, u32 count, bool resort = true) {
+        return remove(Item_Stack(type, count), resort);
+    }
+
+    bool remove(Item_Stack const& s, bool resort = true) {
         if(!contains(s)) return false;
 
         u32 remaining = s.count;
@@ -209,7 +215,7 @@ struct Item_Container {
         // NOTE: There are definitely cases where this isn't necessary.
         // But it's easier, for now _at least_, to just ignore that and
         // re-sort every time.
-        sort();
+        if(resort) sort();
 
         return true;
     }
@@ -222,7 +228,7 @@ struct Item_Container {
         return count;
     }
 
-    bool contains(Item_Stack s) {
+    bool contains(Item_Stack const& s) {
         return count_type(s.type) >= s.count;
     }
 };
