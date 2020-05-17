@@ -20,11 +20,6 @@ struct vec2 {
     vec2(ImVec2 const& v) : x(v.x), y(v.y) {}
     operator ImVec2() const { return ImVec2(x, y); }
 
-    // NOTE TODO: Remove these once we've converted
-    // the code to use our math types.
-    vec2(glm::vec2 const& v) : x(v.x), y(v.y) {}
-    operator glm::vec2() const { return glm::vec2(x, y); }
-
     f32 length_squared() { return x*x + y*y; }
     f32 length() { return sqrtf(length_squared()); }
 
@@ -65,10 +60,8 @@ struct vec4 {
     constexpr vec4() : x(0), y(0), z(0), w(0) {}
     constexpr vec4(f32 _x, f32 _y, f32 _z, f32 _w) : x(_x), y(_y), z(_z), w(_w) {}
 
-    // NOTE TODO: Remove these once we've converted
-    // the code to use our math types.
-    vec4(glm::vec4 const& v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
-    operator glm::vec4() const { return glm::vec4(x, y, z, w); }
+    vec4(ImVec4 const& v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
+    operator ImVec4() const { return ImVec4(x, y, z, w); }
 
     f32 length_squared() { return x*x + y*y + z*z + w*w; }
     f32 length() { return sqrtf(length_squared()); }
@@ -94,6 +87,69 @@ vec4 operator+(vec4 const& a, vec4 const& b) { return { a.x + b.x, a.y + b.y, a.
 vec4 operator-(vec4 const& a, vec4 const& b) { return { a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w }; }
 vec4 operator*(vec4 const& a, f32 b) { return { a.x * b, a.y * b, a.z * b, a.w * b }; }
 vec4 operator*(f32 b, vec4 const& a) { return a * b; }
+
+
+struct mat4 {
+    f32 m[4][4];
+
+    mat4() {
+        m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
+        m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = 0.0f;
+        m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = 0.0f;
+        m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
+    }
+
+    mat4 operator*(mat4 const& b) {
+        // NOTE TODO: We may want to optimize this eventually.
+        mat4 r;
+        memset(&r, 0, sizeof(mat4));
+
+        for(int i = 0; i < 4; i++) {
+            for(int j = 0; j < 4; j++) {
+                for(int k = 0; k < 4; k++) {
+                    r.m[i][j] += m[i][k] * b.m[k][j];
+                }
+            }    
+        }
+
+        return r;
+    }
+
+    f32* value_ptr() {
+        return &m[0][0];
+    }
+
+    static mat4 ortho(f32 left, f32 right, f32 bottom, f32 top, f32 z_near, f32 z_far) {
+        f32 w = right - left;
+        f32 h = top - bottom;
+        f32 d = z_far - z_near;
+
+        mat4 r = {};
+        r.m[0][0] = 2.0f / w;
+        r.m[1][1] = 2.0f / h; 
+        r.m[2][2] = 2.0f / d;
+        r.m[3][0] = -(right + left) / w;
+        r.m[3][1] = -(top + bottom) / h;
+        r.m[3][2] = -z_near / d;       
+        return r;
+    }
+
+    static mat4 translate(f32 x, f32 y, f32 z) {
+        mat4 r = {};
+        r.m[3][0] = x;
+        r.m[3][1] = y;
+        r.m[3][2] = z;
+        return r;
+    }
+
+    static mat4 scale(f32 x, f32 y, f32 z) {
+        mat4 r = {};
+        r.m[0][0] = x;
+        r.m[1][1] = y;
+        r.m[2][2] = z;
+        return r;
+    }
+};
 
 
 // TODO: templatize these!

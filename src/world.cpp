@@ -84,8 +84,8 @@ struct World {
         hmfree(chunks);
     }
 
-    void set_projection(glm::mat4 proj) {
-        glProgramUniformMatrix4fv(chunk_shader, u_proj, 1, GL_FALSE, glm::value_ptr(proj));
+    void set_projection(mat4 proj) {
+        glProgramUniformMatrix4fv(chunk_shader, u_proj, 1, GL_FALSE, proj.value_ptr());
     }
 
     Chunk* get_chunk(s32 x, s32 y) {
@@ -132,7 +132,7 @@ struct World {
         }
     }
 
-    u32 draw_around(Batch_Renderer *r, vec2 pos, f32 scale, s32 window_width, s32 window_height, glm::mat4 view) {
+    u32 draw_around(Batch_Renderer *r, vec2 pos, f32 scale, s32 window_width, s32 window_height, mat4 view) {
         f32 x = pos.x * scale;
         f32 y = pos.y * scale;
 
@@ -150,7 +150,7 @@ struct World {
         s32 vp_max_cy = (s32) ceil((f32)vp_max_y / (f32)Chunk::SIZE);
 
         // TODO: instead of taking `view` as a parameter, we could technically just get it from Batch_Renderer?
-        glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, glm::value_ptr(view));
+        glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, view.value_ptr());
 
 
         glUseProgram(chunk_shader);

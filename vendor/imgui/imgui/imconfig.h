@@ -15,14 +15,3 @@
 
 // NOTE: Needed since we're building imgui as a static library
 #define GLEW_STATIC
-
-// NOTE TODO: We won't need these once we get rid of glm!
-#include "../../glm/glm/glm.hpp"
-
-#define IM_VEC2_CLASS_EXTRA                                                 \
-        ImVec2(const glm::vec2& f) { x = f.x; y = f.y; }                       \
-        operator glm::vec2() const { return glm::vec2(x,y); }
-
-#define IM_VEC4_CLASS_EXTRA                                                 \
-        ImVec4(const glm::vec4& f) { x = f.x; y = f.y; z = f.z; w = f.w; }     \
-        operator glm::vec4() const { return glm::vec4(x,y,z,w); }

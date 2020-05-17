@@ -82,8 +82,8 @@ public:
         ibo.free();
     }
 
-    void set_projection(glm::mat4 proj) {
-        glProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, glm::value_ptr(proj));
+    void set_projection(mat4 proj) {
+        glProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, proj.value_ptr());
     }
 
     void flush() {
@@ -121,8 +121,8 @@ public:
         if(vertices.count + v > MAX_VERTICES || indices.count + i > MAX_INDICES) flush();
     }
 
-    void begin(glm::mat4 view_matrix) {
-        glProgramUniformMatrix4fv(shader, u_view, 1, GL_FALSE, glm::value_ptr(view_matrix));
+    void begin(mat4 view_matrix) {
+        glProgramUniformMatrix4fv(shader, u_view, 1, GL_FALSE, view_matrix.value_ptr());
         begin();
     }
 

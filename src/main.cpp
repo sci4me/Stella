@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #define SCI_H_IMPL
 #define SCI_H_TEMP_STORAGE_ASSERT_NO_OVERRUN
@@ -9,9 +10,6 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
-
-#include "glm/glm.hpp"
-#include "glm/ext.hpp"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
@@ -204,7 +202,7 @@ s32 main(s32 argc, char **argv) {
     crafting::init();
 
 
-    glm::mat4 projection_matrix;
+    mat4 projection_matrix;
 
 
     World world;
@@ -263,7 +261,7 @@ s32 main(s32 argc, char **argv) {
 
             glViewport(0, 0, window_width, window_height);
             
-            projection_matrix = glm::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
+            projection_matrix = mat4::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
 
             r->set_projection(projection_matrix);
             world.set_projection(projection_matrix);
@@ -315,14 +313,10 @@ s32 main(s32 argc, char **argv) {
 
         imgui_begin_frame();
 
-        auto view = glm::translate(
-            glm::scale(
-                glm::mat4(1.0f),
-                glm::vec3(scale, scale, 1.0f)
-            ),
-            glm::vec3((window_width / 2 / scale) - player.pos.x, (window_height / 2 / scale) - player.pos.y, 0.0f)
-        );
 
+        auto s = mat4::scale(scale, scale, 1.0f);
+        auto t = mat4::translate((window_width / 2 / scale) - player.pos.x, (window_height / 2 / scale) - player.pos.y, 0.0f);
+        auto view = t * s;
         r->begin(view);
         {
             // NOTE: We render the world from within the Batch_Renderer frame since
