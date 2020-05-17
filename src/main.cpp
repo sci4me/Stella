@@ -91,81 +91,6 @@ bool fast_mining = false;
 bool debug_pause = false;
 
 
-// #define COLLISION_DEBUG
-#ifdef COLLISION_DEBUG
-struct Collision_Debug_Data {
-    AABB broad_aabb;
-    AABB collider_aabb;
-    AABB player_aabb;
-    AABB::Hit h;
-
-    bool broad_aabb_selected;
-    bool collider_aabb_selected;
-    bool player_aabb_selected;
-    bool h_selected;
-};
-
-Collision_Debug_Data *collision_debug_data_this_frame = nullptr;
-
-void show_collision_debug_per_frame_data(glm::mat4 view) {
-    auto dl = ImGui::GetForegroundDrawList();
-
-    auto txfm = [&](glm::vec2 v) {
-        auto t = view * glm::vec4(v, 0.0f, 1.0f);
-        return glm::vec2(t.x, t.y);
-    };
-
-    auto draw_aabb = [&](AABB const& a, glm::vec4 const& color) {
-        auto min = txfm(a.min);
-        auto max = txfm(a.max);
-        dl->AddRect(min, max, rgba1_to_rgba255(color));
-    };
-
-    for(u32 i = 0; i < arrlen(collision_debug_data_this_frame); i++) {
-        auto& c = collision_debug_data_this_frame[i];
-
-        ImGui::PushID(i);
-        if(ImGui::TreeNodeEx("Collision_Debug_Data", 0, "Collision #%d", i)) {
-            ImGui::PushID("player_aabb_selected");
-                ImGui::Selectable("", &c.player_aabb_selected);
-                ImGui::SameLine();
-                ImGui::Text("Player: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", c.player_aabb.min.x, c.player_aabb.min.y, c.player_aabb.max.x, c.player_aabb.max.y);
-            ImGui::PopID();
-
-            ImGui::PushID("broad_aabb_selected");
-                ImGui::Selectable("", &c.broad_aabb_selected);
-                ImGui::SameLine();
-                ImGui::Text("Broad: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", c.broad_aabb.min.x, c.broad_aabb.min.y, c.broad_aabb.max.x, c.broad_aabb.max.y);
-            ImGui::PopID();
-
-            ImGui::PushID("collider_aabb_selected");
-                ImGui::Selectable("", &c.collider_aabb_selected);
-                ImGui::SameLine();
-                ImGui::Text("Collider: (%0.3f, %0.3f) -> (%0.3f, %0.3f)", c.collider_aabb.min.x, c.collider_aabb.min.y, c.collider_aabb.max.x, c.collider_aabb.max.y);
-            ImGui::PopID();
-
-            ImGui::PushID("h_selected");
-                ImGui::Selectable("", &c.h_selected);
-                ImGui::SameLine();
-                ImGui::Text("Hit: %s, h: %0.9f, N: (%0.1f, %0.1f)", c.h.hit ? "true" : "false", c.h.h, c.h.n.x, c.h.n.y);
-            ImGui::PopID();
-
-            ImGui::Text("Collider ^ Player: %s", c.collider_aabb.intersects(c.player_aabb) ? "true" : "false");
-            ImGui::Text("Collider ^ Broad: %s", c.collider_aabb.intersects(c.broad_aabb) ? "true" : "false");
-
-            if(c.player_aabb_selected) draw_aabb(c.player_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
-            if(c.broad_aabb_selected) draw_aabb(c.broad_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
-            if(c.collider_aabb_selected) draw_aabb(c.collider_aabb, { 0.0f, 0.0f, 1.0f, 1.0f });
-            if(c.h_selected) assert(0); // TODO
-
-            ImGui::TreePop();
-        }
-        ImGui::PopID();
-    }
-}
-#endif
-
-
 // TODO: Move this up with the rest of the includes!
 // We probably want to create a struct to hold things
 // like `window_width`, etc. before doing so...
@@ -423,11 +348,6 @@ s32 main(s32 argc, char **argv) {
                 if(ImGui::CollapsingHeader("Player")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
                     ImGui::Text("Tile Position: (%d, %d)", (s32) floor(player.pos.x / TILE_SIZE), (s32) floor(player.pos.y / TILE_SIZE));
-
-#ifdef COLLISION_DEBUG
-                    ImGui::Separator();
-                    show_collision_debug_per_frame_data(view);
-#endif
                 }
 
                 if(ImGui::CollapsingHeader("World")) {

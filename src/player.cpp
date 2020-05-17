@@ -51,11 +51,6 @@ struct Player {
         is_mining = false;
 
 
-        #ifdef COLLISION_DEBUG
-            arrsetlen(collision_debug_data_this_frame, 0);
-        #endif
-
-
         ImGuiIO& io = ImGui::GetIO(); 
 
         if(!io.WantCaptureKeyboard) {
@@ -91,17 +86,12 @@ struct Player {
                     auto tile = chunk->layer2[i].value;
                     if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
-                    auto& tile_bb = tile->collision_aabb;
+                    auto const& tile_bb = tile->collision_aabb;
                     if(tile_bb.intersects(broad)) {
                         auto hit = AABB::sweep(player_bb, tile_bb, delta);
                         if(hit.hit && hit.h < best.h) {
                             best = hit;
                         }
-
-                        #ifdef COLLISION_DEBUG
-                            Collision_Debug_Data _b = { broad, tile_bb, player_bb, hit };
-                            arrput(collision_debug_data_this_frame, _b);
-                        #endif
                     }
                 }
 
