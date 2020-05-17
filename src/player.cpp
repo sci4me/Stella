@@ -1,7 +1,7 @@
 struct Player {
     // TOOD: Probably pick slightly better
     // names for these constants.
-    static constexpr f32 SPEED = 150.0f;
+    static constexpr f32 SPEED = 3.0f;
     static constexpr f32 SIZE = 10.0f;
 
     GLFWwindow *window;
