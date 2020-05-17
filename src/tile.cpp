@@ -283,13 +283,11 @@ struct Tile_Mining_Machine : public Tile {
 };
 
 
-namespace {
-    template<typename T>
-    Tile* make_tile() {
-        auto mem = malloc(sizeof(T));
-        T *tile = new(mem) T;
-        return (Tile*)tile;
-    }
+template<typename T>
+Tile* make_tile() {
+    auto mem = malloc(sizeof(T));
+    T *tile = new(mem) T;
+    return (Tile*)tile;
 }
 
 Tile* make_tile(Tile_Type type) {
