@@ -6,6 +6,28 @@ namespace crafting {
         u32 time; // in ticks
     };
 
+    // NOTE: Currently we store Recipes as an output itemstack and
+    // a list of input itemstacks.
+    // This means that when we want to iterate over the entire tree
+    // of a recipe (i.e. a recipe that has intermediate recipes)
+    // we must do some kind of indirect lookup, to go from the input
+    // itemstack to the recipe for crafting that item stack.
+    // Maybe this is fine, maybe we don't care. Hash tables are fast TM.
+    // But, if we wanted to have a homogenous structure for this, what we
+    // could do is this: instead of Recipe containing a list of itemstacks
+    // as inputs, it would just contain a list of recipes and a count for each
+    // recipe. Then, to represent "base items" (items that don't need to be
+    // crafted with a recipe (iron ore, iron plate, etc.)) we just have a Recipe
+    // whose only input is that item itself and whose output is also that item;
+    // a no-op Recipe.
+    //
+    // Not sure if we'll ever have any reason to do this really. But hey, it's a
+    // possible thing. So. Yeet. Me into a grave.
+    //
+    //                  - sci4me, 5/17/20
+    //
+
+
     // TODO: Whenever I get around to making the Arena in sci.h
     // have a configurable block size, consider using that here
     // instead of malloc.

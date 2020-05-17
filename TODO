@@ -17,7 +17,8 @@ Features:
      - Ability to play short sound effects
  - Particle Systems
 
-Code/Dev Features:
+Code/Dev Features/Quality:
+ - Rename Tile to Tile_Entity
  - Consider switching away from stb_ds.h
    - It's a great library! But .. eh.
      - Fewer Libraries = Better
