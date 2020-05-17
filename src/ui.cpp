@@ -230,6 +230,22 @@ namespace ui {
                     auto font_size = ImGui::GetFontSize();
                     auto drawlist = ImGui::GetForegroundDrawList();
 
+                    // NOTE TODO: Since we are doing the Factorio-style crafting,
+                    // we should probably actually show the _raw_ inputs required for
+                    // this recipe, rather than the "final" inputs for the recipe.
+                    //
+                    // If we show the inputs as we are now, if the player is missing
+                    // an item that itself has a recipe (which could have sub-recipes, etc.)
+                    // we aren't really telling the player what they're missing; they would
+                    // have to go check the recipe for that item and see what components
+                    // for that recipe they are missing.
+                    //
+                    // Therefore, we ought to show the leaf-nodes in the flattened version
+                    // of the recipe tree for this recipe, rather than the child nodes of the
+                    // root of that tree.
+                    //
+                    //                      - sci4me, 5/17/20
+                    //
                     for(u32 j = 0; j < r->n_inputs; j++) {
                         auto& input = r->inputs[j];
                         u32 n = inventory->count_type(input.type);
