@@ -8,7 +8,6 @@ struct Player {
 
     World *world;
     glm::vec2 pos;
-    glm::vec2 vel;
 
     bool tile_hovered = false;
     s32 hovered_tile_x;
@@ -43,7 +42,7 @@ struct Player {
         crafting_queue.deinit();
     }
 
-    void update(f64 dt) {
+    void update() {
         crafting_queue.update();
 
         // NOTE: We set these, if necessary, every update.
@@ -68,10 +67,10 @@ struct Player {
             
             auto speed = SPEED;
             if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
-            vel = glm::normalize(dir) * speed;
+            dir = glm::normalize(dir) * speed;
             
-            if(glm::length(vel) > 0) {
-                auto delta = vel * (f32)dt; // ?
+            if(glm::length(dir) > 0) {
+                auto& delta = dir;
 
                 f32 half_size = 0.5f * SIZE;
                 glm::vec2 v_half_size = { half_size, half_size };
@@ -102,15 +101,13 @@ struct Player {
                     }
                 }
 
-                pos += vel * best.h * (f32)dt;
+                pos += delta * best.h;
                 
                 if(best.hit) {
                     f32 r = 1.0f - best.h;
                     f32 d = (delta.x * best.n.y + delta.y * best.n.x) * r;
                     pos += glm::vec2(best.n.y, best.n.x) * d;
                 }
-            } else {
-                vel = { 0.0f, 0.0f };
             }
 
 

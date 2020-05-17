@@ -332,16 +332,10 @@ s32 main(s32 argc, char **argv) {
 
 
     f64 last_time = glfwGetTime();
-    f64 dt = 0.0;
 
     u32 chunk_draw_calls = 0;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
-
-
-        f64 now = glfwGetTime();
-        dt = now - last_time;
-        last_time = now;
 
 
         if(window_resized) {
@@ -395,7 +389,7 @@ s32 main(s32 argc, char **argv) {
 
         if(!debug_pause) {
             world.update();
-            player.update(dt);
+            player.update();
         }
 
 
@@ -424,18 +418,16 @@ s32 main(s32 argc, char **argv) {
 
         if(show_debug_window) {
             if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
-                ImGui::Dummy(ImVec2(130, 0));
+                ImGui::Dummy({ 130, 0 });
 
                 if(ImGui::CollapsingHeader("Misc.")) {
                     ImGui::Text("FPS: %.1f", io.Framerate);
                     ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
-                    ImGui::Text("dt: %llf", dt); // NOTE: io.Framerate is probably equivalent to dt; using dt defensively.
                 }
 
                 if(ImGui::CollapsingHeader("Player")) {
                     ImGui::Text("Position: (%0.3f, %0.3f)", player.pos.x, player.pos.y);
                     ImGui::Text("Tile Position: (%d, %d)", (s32) floor(player.pos.x / TILE_SIZE), (s32) floor(player.pos.y / TILE_SIZE));
-                    ImGui::Text("Velocity: (%0.3f, %0.3f)", player.vel.x, player.vel.y);
 
 #ifdef COLLISION_DEBUG
                     ImGui::Separator();
