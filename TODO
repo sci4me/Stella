@@ -90,8 +90,3 @@ Quality:
    - So, yeah uhm, maybe don't combine them? I don't even know.
    - Although... if I eventually want the ability to tint chunk tiles anyway,
      then the shaders become equivalent, so, yes.
-
-Random:
- - imconfig.h
-   - ImTextureID
-   - ImVec2
