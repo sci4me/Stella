@@ -13,6 +13,7 @@ enum Item_Type : u8 {
 
     ITEM_CHEST,
     ITEM_FURNACE,
+    ITEM_MINING_MACHINE,
 
     N_ITEM_TYPES
 };
@@ -31,6 +32,7 @@ void init_items() {
     item_textures[ITEM_IRON_GEAR]       = assets::textures::iron_gear;
     item_textures[ITEM_CHEST]           = assets::textures::chest;
     item_textures[ITEM_FURNACE]         = assets::textures::furnace;
+    item_textures[ITEM_MINING_MACHINE]  = assets::textures::mining_machine;
 
     item_names[ITEM_COBBLESTONE]        = "Cobblestone";
     item_names[ITEM_COAL_ORE]           = "Coal Ore";
@@ -41,6 +43,7 @@ void init_items() {
     item_names[ITEM_IRON_GEAR]          = "Iron Gear";
     item_names[ITEM_CHEST]              = "Chest";
     item_names[ITEM_FURNACE]            = "Furnace";
+    item_names[ITEM_MINING_MACHINE]     = "Mining Machine";
 }
 
 

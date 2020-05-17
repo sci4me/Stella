@@ -11,6 +11,10 @@ namespace crafting {
     // instead of malloc.
     //              - sci4me, 5/14/20
     Recipe **recipes = nullptr;
+    struct {
+        Item_Type key;
+        Recipe *value;
+    } *output_type_to_recipe = nullptr;
 
     void register_recipe(Item_Stack output, u32 time, std::initializer_list<Item_Stack> inputs) {
         auto r = (Recipe*) malloc(sizeof(Recipe) + sizeof(Item_Stack) * inputs.size());
@@ -26,12 +30,14 @@ namespace crafting {
         }
 
         arrput(recipes, r);
+        hmput(output_type_to_recipe, output.type, r);
     }
 
     void init() {
-        register_recipe({ ITEM_FURNACE, 1 },    100, { { ITEM_COBBLESTONE, 8 } });
-        register_recipe({ ITEM_CHEST, 1 },      100, { { ITEM_COBBLESTONE, 8 }, { ITEM_IRON_PLATE, 4 } });
-        register_recipe({ ITEM_IRON_GEAR, 1 },  100, { { ITEM_IRON_PLATE, 6 } });
+        register_recipe({ ITEM_FURNACE, 1 },        100, { { ITEM_COBBLESTONE, 8 } });
+        register_recipe({ ITEM_CHEST, 1 },          100, { { ITEM_COBBLESTONE, 8 }, { ITEM_IRON_PLATE, 4 } });
+        register_recipe({ ITEM_IRON_GEAR, 1 },      100, { { ITEM_IRON_PLATE, 6 } });
+        register_recipe({ ITEM_MINING_MACHINE, 1 }, 100, { { ITEM_COBBLESTONE, 16 }, { ITEM_IRON_PLATE, 8 }, { ITEM_IRON_GEAR, 4 } });
     }
 
     void free() {
@@ -39,6 +45,8 @@ namespace crafting {
             ::free(recipes[i]);
         }
         arrfree(recipes);
+
+        hmfree(output_type_to_recipe);
     }
 
 

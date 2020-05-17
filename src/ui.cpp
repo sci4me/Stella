@@ -159,6 +159,16 @@ namespace ui {
         if(!open) *tile_ref = nullptr;
     }
 
+    void mining_machine_ui(Item_Container *player_inventory, Tile_Mining_Machine *m, Tile **tile_ref) {
+        bool open = true;
+        if(ImGui::Begin("Mining Machine", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
+            // TODO
+        }
+        ImGui::End();
+
+        if(!open) *tile_ref = false;
+    }
+
     void tile_ui(Item_Container *player_inventory, Tile **tile_ref) {
         Tile *tile = *tile_ref;
         if(tile) {
@@ -171,6 +181,11 @@ namespace ui {
                 case TILE_FURNACE: {
                     Tile_Furnace *f = (Tile_Furnace*) tile;
                     furnace_ui(player_inventory, f, tile_ref);
+                    break;
+                }
+                case TILE_MINING_MACHINE: {
+                    Tile_Mining_Machine *m = (Tile_Mining_Machine*) tile;
+                    mining_machine_ui(player_inventory, m, tile_ref);
                     break;
                 }
                 default: {

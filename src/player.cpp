@@ -120,18 +120,11 @@ struct Player {
                             if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
                                 Tile *tile;
 
-                                if(held_stack->type == ITEM_CHEST) {
-                                    auto tile_mem = malloc(sizeof(Tile_Chest));
-                                    Tile_Chest *chest = new(tile_mem) Tile_Chest;
-                                    chest->type = TILE_CHEST;
-                                    tile = chest;
-                                } else if(held_stack->type == ITEM_FURNACE) {
-                                    auto tile_mem = malloc(sizeof(Tile_Furnace));
-                                    Tile_Furnace *furnace = new(tile_mem) Tile_Furnace;
-                                    furnace->type = TILE_FURNACE;
-                                    tile = furnace;
-                                } else {
-                                    assert(0);
+                                switch(held_stack->type) {
+                                    case ITEM_CHEST: tile = make_tile(TILE_CHEST); break;
+                                    case ITEM_FURNACE: tile = make_tile(TILE_FURNACE); break;
+                                    case ITEM_MINING_MACHINE: tile = make_tile(TILE_MINING_MACHINE); break;
+                                    default: assert(0); break;
                                 }
 
                                 tile->x = hovered_tile_x;
@@ -176,10 +169,11 @@ struct Player {
                                 switch(tile->type) {
                                     case TILE_CHEST:
                                     case TILE_FURNACE:
+                                    case TILE_MINING_MACHINE:
                                         open_tile_ui(tile);
                                         break;
                                     default:
-                                        assert(0);
+                                        // assert(0);
                                         break;
                                 }
                             } else {

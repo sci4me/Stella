@@ -225,6 +225,7 @@ s32 main(s32 argc, char **argv) {
         player.inventory.insert({ ITEM_COAL_ORE, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
         player.inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
+        player.inventory.insert({ ITEM_MINING_MACHINE, MAX_ITEM_SLOT_SIZE });
 
         auto f = [&](s32 x, s32 y) {
             auto c = world.get_chunk_containing(x, y);

@@ -13,6 +13,7 @@ enum Tile_Type : u8 {
 
     TILE_CHEST,
     TILE_FURNACE,
+    TILE_MINING_MACHINE,
 
     N_TILE_TYPES
 };
@@ -29,6 +30,7 @@ void init_tiles() {
     tile_textures[TILE_GOLD_ORE] = assets::textures::gold_ore[array_length(assets::textures::gold_ore) - 1];
     tile_textures[TILE_CHEST] = assets::textures::chest;
     tile_textures[TILE_FURNACE] = assets::textures::furnace;
+    tile_textures[TILE_MINING_MACHINE] = assets::textures::mining_machine;
 }
 
 
@@ -193,6 +195,9 @@ struct Tile_Furnace : public Tile {
     }
 
     virtual void update() override {
+        // TODO: Only consume an item from the input slot
+        // if we have fuel!
+
         if(input.slots[0].count && !is_smelting) {
             input.slots[0].count--;
             is_smelting = true;
@@ -243,3 +248,60 @@ struct Tile_Furnace : public Tile {
         }
     }
 };
+
+
+struct Tile_Mining_Machine : public Tile {
+    Item_Container fuel;
+    Item_Container output;
+
+    virtual void init() override {
+        Tile::init();
+        flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
+        flags |= TILE_FLAG_IS_COLLIDER;
+
+        // NOTE: See comment in Tile_Furnace::init about this.
+        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        collision_aabb = {
+            wp + vec2(4.0f, 4.0f),
+            wp + vec2(28.0f, 28.0f)
+        };
+
+        fuel.init(1);
+        output.init(9);
+    }
+
+    virtual void free() override {
+        Tile::free();
+
+        fuel.free();
+        output.free();
+    }
+
+    virtual void update() override {
+        // TODO
+    }
+};
+
+
+namespace {
+    template<typename T>
+    Tile* make_tile() {
+        auto mem = malloc(sizeof(T));
+        T *tile = new(mem) T;
+        return (Tile*)tile;
+    }
+}
+
+Tile* make_tile(Tile_Type type) {
+    Tile *result;
+
+    switch(type) {
+        case TILE_CHEST: result = make_tile<Tile_Chest>(); break;
+        case TILE_FURNACE: result = make_tile<Tile_Furnace>(); break;
+        case TILE_MINING_MACHINE: result = make_tile<Tile_Mining_Machine>(); break;
+        default: assert(0); break;
+    }
+    result->type = type;
+
+    return result;
+}
