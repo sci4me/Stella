@@ -53,14 +53,6 @@ Code/Dev Features:
    - File Logging
    - printf style API
  - Better Build System
- - Remove glm
-   - It's a great library and all, but... run `tokei` on it...
-     - 62,360 total lines. That's not insignificant!
-     - It's the largest library we have in `/vendor`
-     - Second largest is imgui at 34,207
-     - Third largest is GLEW at 29,526
-   - Removing as much of this library code as possible
-     would likely improve build time. (inb4...)
 
 Quality:
  - Key/Mouse Event Dispatch / Handling
