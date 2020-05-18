@@ -82,7 +82,6 @@ namespace crafting {
             bool inputs_available;
             u32 have[N_ITEM_TYPES];
             Request *request;
-            bool started = false;
             u32 request_index;
             u32 request_count;
             u32 crafting_time;
@@ -132,6 +131,21 @@ namespace crafting {
 
                     return true;
                 }
+            }
+
+            void start(Item_Container *player_inventory) {
+                for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                    Item_Stack stack = { (Item_Type) i, have[i] };
+                    if(have[i] > 0) {
+                        assert(player_inventory->remove(stack, false));
+                    }
+                }
+                player_inventory->sort();
+
+                request_index = 0;
+                request_count = 0;
+                crafting_time = request[0].recipe->time;
+                progress = 0;
             }
 
             static Job calculate(Recipe *recipe, Item_Container *player_inventory) {
@@ -188,24 +202,12 @@ namespace crafting {
         bool request(Recipe *r) {
             Job job = Job::calculate(r, player_inventory);
 
-            for(u32 i = 0; i < N_ITEM_TYPES; i++) {
-                if(job.have[i] > 0) {
-                    assert(player_inventory->count_type((Item_Type) i) >= job.have[i]);
-                }
-            }
-            
             if(!job.inputs_available) {
                 job.deinit();
                 return false;
             }
 
-            for(u32 i = 0; i < N_ITEM_TYPES; i++) {
-                Item_Stack stack = { (Item_Type) i, job.have[i] };
-                if(job.have[i] > 0) {
-                    assert(player_inventory->remove(stack, false));
-                }
-            }
-            player_inventory->sort();
+            job.start(player_inventory);
 
             arrput(queue, job);
             return true;
@@ -218,19 +220,6 @@ namespace crafting {
             
             if(arrlen(queue) > 0) {
                 auto& job = queue[0];
-
-                if(!job.started) {
-                    // NOTE: This is the first time we've worked on
-                    // this Job; initialize it so we can work with it
-                    // over multiple calls to `update`.
-
-                    job.started = true;
-                    job.request_index = 0;
-                    job.request_count = 0;
-                    job.crafting_time = job.request[0].recipe->time;
-                    job.progress = 0;
-                }
-
                 auto& req = job.current();
 
                 if(job.craft()) {
