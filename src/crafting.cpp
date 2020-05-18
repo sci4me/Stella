@@ -188,7 +188,6 @@ namespace crafting {
         Item_Container *player_inventory;
         Job *queue = nullptr;
 
-        bool actively_crafting = false;
         bool crafting_paused = false;
 
         void init(Item_Container *player_inventory) {
@@ -214,52 +213,49 @@ namespace crafting {
         }
 
         void update() {
-            actively_crafting = arrlen(queue) > 0;
             if(crafting_paused) return;
-            if(!actively_crafting) return;
+            if(arrlen(queue) == 0) return;
             
-            if(arrlen(queue) > 0) {
-                auto& job = queue[0];
-                auto& req = job.current();
+            auto& job = queue[0];
+            auto& req = job.current();
 
-                if(!job.craft()) {
-                    // NOTE: We have not finished processing "1/`count`"
-                    // of the current Request. Aka progress < crafting_time.
-                    return;
-                }
-
-                // NOTE: We finished processing "1/`count`" of the current Request.
-                // (progress == crafting_time)
-
-                if(job.next()) {
-                    // NOTE: We have processed <`count` of the current Request.
-                    return;
-                }
-
-                // NOTE: We have processed `count` of the current Request.
-                // Try to move on to the next Request.
-
-                if(job.next_request()) {
-                    // NOTE: There is a next request. Continue processing as normal.
-                    return;
-                }
-
-                // NOTE: We finished processing the Job! Transfer the items 
-                // to the `player_inventory` and remove the Job from the queue.
-
-                for(u32 i = 0; i < N_ITEM_TYPES; i++) {
-                    auto type = (Item_Type) i;
-                    if(type == req.recipe->output.type) {
-                        assert(job.have[type] == req.recipe->output.count);
-                        assert(player_inventory->insert(Item_Stack(type, job.have[type])) == 0); // TODO: Handle this case!
-                    } else {
-                        assert(job.have[i] == 0);
-                    }
-                }
-
-                queue[0].deinit();
-                arrdel(queue, 0);
+            if(!job.craft()) {
+                // NOTE: We have not finished processing "1/`count`"
+                // of the current Request. Aka progress < crafting_time.
+                return;
             }
+
+            // NOTE: We finished processing "1/`count`" of the current Request.
+            // (progress == crafting_time)
+
+            if(job.next()) {
+                // NOTE: We have processed <`count` of the current Request.
+                return;
+            }
+
+            // NOTE: We have processed `count` of the current Request.
+            // Try to move on to the next Request.
+
+            if(job.next_request()) {
+                // NOTE: There is a next request. Continue processing as normal.
+                return;
+            }
+
+            // NOTE: We finished processing the Job! Transfer the items 
+            // to the `player_inventory` and remove the Job from the queue.
+
+            for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                auto type = (Item_Type) i;
+                if(type == req.recipe->output.type) {
+                    assert(job.have[type] == req.recipe->output.count);
+                    assert(player_inventory->insert(Item_Stack(type, job.have[type])) == 0); // TODO: Handle this case!
+                } else {
+                    assert(job.have[i] == 0);
+                }
+            }
+
+            queue[0].deinit();
+            arrdel(queue, 0);
         }
 
         void draw() {
@@ -269,8 +265,9 @@ namespace crafting {
 
             ImGui::Separator();
 
+            auto queue_len = arrlen(queue);
             f32 crafting_progress = 0.0f;
-            if(actively_crafting) {
+            if(queue_len) {
                 crafting_progress = (f32)queue[0].progress / (f32)queue[0].crafting_time;
             }
             ImGui::ProgressBar(crafting_progress, {100, 14});
@@ -279,42 +276,39 @@ namespace crafting {
             // TODO: This is pretty crappy lol...
             ImGui::BeginChild("Queue", { 100, 200 });
 
-            // TODO: Remove this if statement!
-            if(actively_crafting) {
-                for(u32 i = 0; i < arrlen(queue); i++) {
-                    auto const& job = queue[i];
+            for(u32 i = 0; i < queue_len; i++) {
+                auto const& job = queue[i];
 
-                    u32 start;
-                    if(i == 0) start = job.request_index;
-                    else start = 0;
+                u32 start;
+                if(i == 0) start = job.request_index;
+                else start = 0;
 
-                    for(u32 k = start; k < arrlen(job.request); k++) {
-                        auto const& req = job.request[k];
+                for(u32 k = start; k < arrlen(job.request); k++) {
+                    auto const& req = job.request[k];
 
-                        u32 end;
-                        if(i == 0 && k == start) end = req.count - job.request_count;
-                        else end = req.count;
+                    u32 end;
+                    if(i == 0 && k == start) end = req.count - job.request_count;
+                    else end = req.count;
 
-                        // TODO: Instead of _just_ looping here, count how many of these,
-                        // consequitively, are the same recipe being requested, and display
-                        // that count instead of that many of the recipe output, separately.
-                        for(u32 j = 0; j < end; j++) {
-                            ImGui::PushID(i); // TODO: This is silly.
-                            ImGui::PushID(k);
-                            ImGui::PushID(j);
-                            if(ImGui::ImageButton((ImTextureID)(u64)item_textures[req.recipe->output.type].id, { 32, 32 })) {
-                                cancel_job(i);
-                                
-                                ImGui::PopID();
-                                ImGui::PopID();
-                                ImGui::PopID();
-                                goto early_out; // TODO: Remove this! Bad sci4me! Bad! Down boy!
-                            }
+                    // TODO: Instead of _just_ looping here, count how many of these,
+                    // consequitively, are the same recipe being requested, and display
+                    // that count instead of that many of the recipe output, separately.
+                    for(u32 j = 0; j < end; j++) {
+                        ImGui::PushID(i); // TODO: This is silly.
+                        ImGui::PushID(k);
+                        ImGui::PushID(j);
+                        if(ImGui::ImageButton((ImTextureID)(u64)item_textures[req.recipe->output.type].id, { 32, 32 })) {
+                            cancel_job(i);
+                            
                             ImGui::PopID();
                             ImGui::PopID();
                             ImGui::PopID();
-                        } 
-                    }
+                            goto early_out; // TODO: Remove this! Bad sci4me! Bad! Down boy!
+                        }
+                        ImGui::PopID();
+                        ImGui::PopID();
+                        ImGui::PopID();
+                    } 
                 }
             }
 
