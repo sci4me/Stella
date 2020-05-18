@@ -79,7 +79,7 @@ namespace ui {
                     if(remaining) {
                         held_item_container->slots[held_item_index].count = remaining;
                     } else {
-                        held_item_container->remove(held_item_index);
+                        held_item_container->clear_slot(held_item_index);
                         held_item_container = nullptr;
                     }
                 }

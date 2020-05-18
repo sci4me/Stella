@@ -18,6 +18,8 @@ Features:
  - Particle Systems
 
 Code/Dev Features/Quality:
+ - In-Game Profiler
+   - Instrumentation; use it
  - Make our own String type
  - Rename Tile to Tile_Entity
  - Consider switching away from stb_ds.h

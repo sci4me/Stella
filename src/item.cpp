@@ -185,7 +185,7 @@ struct Item_Container {
         return remaining;
     }
 
-    void remove(u32 index) {
+    void clear_slot(u32 index) {
         assert(index < size);
 
         memset(&slots[index], 0, sizeof(Item_Stack));

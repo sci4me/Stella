@@ -2,7 +2,6 @@ constexpr f32 TILE_SIZE = 32.0f;
 
 
 enum Tile_Type : u8 {
-    TILE_NONE,
     TILE_STONE,
     TILE_GRASS,
 

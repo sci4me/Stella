@@ -72,60 +72,60 @@ namespace crafting {
     }
 
 
-    struct Crafting_Plan {
-        struct Request {
-            Recipe *recipe;
-            u32 count;
-        };
+    struct Queue {
+        struct Job {
+            struct Request {
+                Recipe *recipe;
+                u32 count;
+            };
 
-        u32 have[N_ITEM_TYPES];
-        Request *request;
-        bool complete;
+            u32 have[N_ITEM_TYPES];
+            Request *request;
+            bool complete;
 
-        void deinit() {
-            arrfree(request);
-        }
+            void deinit() {
+                arrfree(request);
+            }
 
-        static Crafting_Plan calculate(Recipe *recipe, Item_Container *player_inventory) {
-            Crafting_Plan result = {};
-            result.complete = !result.calculate(recipe, 1, player_inventory);
-            return result;
-        }
+            static Job calculate(Recipe *recipe, Item_Container *player_inventory) {
+                Job result = {};
+                result.complete = !result.calculate(recipe, 1, player_inventory);
+                return result;
+            }
 
-    private:
-        bool calculate(Recipe *recipe, u32 count, Item_Container *player_inventory) {
-            bool missing_something = false;
+        private:
+            bool calculate(Recipe *recipe, u32 count, Item_Container *player_inventory) {
+                bool missing_something = false;
 
-            for(u32 i = 0; i < recipe->n_inputs; i++) {
-                auto const& input = recipe->inputs[i];
-                Item_Stack needed = { input.type, input.count * count };
-    
-                u32 n = player_inventory->count_type(needed.type);
-                have[needed.type] += min(n, needed.count);
+                for(u32 i = 0; i < recipe->n_inputs; i++) {
+                    auto const& input = recipe->inputs[i];
+                    Item_Stack needed = { input.type, input.count * count };
+        
+                    u32 n = player_inventory->count_type(needed.type);
+                    have[needed.type] += min(n, needed.count);
 
-                if(n < needed.count) {
-                    u32 r = needed.count - n;
-                    auto idx = hmgeti(output_type_to_recipe, needed.type);
-                    if(idx == -1) {
-                        missing_something = true;
-                    } else {
-                        missing_something = missing_something || calculate(output_type_to_recipe[idx].value, r, player_inventory);
+                    if(n < needed.count) {
+                        u32 r = needed.count - n;
+                        auto idx = hmgeti(output_type_to_recipe, needed.type);
+                        if(idx == -1) {
+                            missing_something = true;
+                        } else {
+                            missing_something = missing_something || calculate(output_type_to_recipe[idx].value, r, player_inventory);
+                        }
                     }
                 }
+
+                if(!missing_something) {
+                    Request req = { recipe, count };
+                    arrput(request, req);
+                }
+
+                return missing_something;
             }
+        };
 
-            if(!missing_something) {
-                Request req = { recipe, count };
-                arrput(request, req);
-            }
-
-            return missing_something;
-        }
-    };
-
-    struct Queue {
         Item_Container *player_inventory;
-        Crafting_Plan *queue = nullptr;
+        Job *queue = nullptr;
 
         bool actively_crafting = false;
         u32 request_index;
@@ -148,16 +148,16 @@ namespace crafting {
         }
 
         bool request(Recipe *r) {
-            Crafting_Plan plan = Crafting_Plan::calculate(r, player_inventory);
+            Job job = Job::calculate(r, player_inventory);
             
-            if(!plan.complete) {
-                plan.deinit();
+            if(!job.complete) {
+                job.deinit();
                 return false;
             }
 
             for(u32 i = 0; i < N_ITEM_TYPES; i++) {
-                Item_Stack stack = { (Item_Type) i, plan.have[i] };
-                if(plan.have[i] > 0) {
+                Item_Stack stack = { (Item_Type) i, job.have[i] };
+                if(job.have[i] > 0) {
                     assert(player_inventory->remove(stack, false));
                     assert(crafting_buffer.insert(stack, false) == 0);
                 }
@@ -165,7 +165,7 @@ namespace crafting {
             player_inventory->sort();
             crafting_buffer.sort();
 
-            arrput(queue, plan);
+            arrput(queue, job);
             return true;
         }
 
@@ -178,14 +178,14 @@ namespace crafting {
                     return;
                 }
 
-                auto const& plan = queue[0];
-                if(request_index < arrlen(plan.request)) {
-                    auto const& req = plan.request[request_index];
+                auto const& job = queue[0];
+                if(request_index < arrlen(job.request)) {
+                    auto const& req = job.request[request_index];
 
                     for(u32 i = 0; i < req.recipe->n_inputs; i++) {
                         assert(crafting_buffer.remove(req.recipe->inputs[i].type, req.recipe->inputs[i].count, false));
                     }
-                    if(request_index < arrlen(plan.request) - 1) {
+                    if(request_index < arrlen(job.request) - 1) {
                         assert(crafting_buffer.insert(req.recipe->output) == 0);
                     }
 
@@ -193,11 +193,11 @@ namespace crafting {
                     if(request_count == req.count) {
                         request_count = 0;
                         request_index++;
-                        if(request_index < arrlen(plan.request)) {
-                            crafting_time = plan.request[request_index].recipe->time;
+                        if(request_index < arrlen(job.request)) {
+                            crafting_time = job.request[request_index].recipe->time;
                             progress = 0;
                         } else {
-                            assert(player_inventory->insert(plan.request[request_index - 1].recipe->output) == 0);
+                            assert(player_inventory->insert(job.request[request_index - 1].recipe->output) == 0);
 
                             queue[0].deinit();
                             arrdel(queue, 0);
@@ -210,7 +210,7 @@ namespace crafting {
                             else assert(crafting_buffer.total_count() == 0);
                         }
                     } else {
-                        crafting_time = plan.request[request_index].recipe->time;
+                        crafting_time = job.request[request_index].recipe->time;
                         progress = 0;
                     }
                 }
@@ -242,19 +242,22 @@ namespace crafting {
 
             if(actively_crafting) {
                 for(u32 i = 0; i < arrlen(queue); i++) {
-                    auto const& plan = queue[i];
+                    auto const& job = queue[i];
 
                     u32 start;
                     if(i == 0) start = request_index;
                     else start = 0;
 
-                    for(u32 k = start; k < arrlen(plan.request); k++) {
-                        auto const& req = plan.request[k];
+                    for(u32 k = start; k < arrlen(job.request); k++) {
+                        auto const& req = job.request[k];
 
                         u32 end;
                         if(i == 0 && k == start) end = req.count - request_count;
                         else end = req.count;
 
+                        // TODO: Instead of _just_ looping here, count how many of these,
+                        // consequitively, are the same recipe being requested, and display
+                        // that count instead of that many of the recipe output, separately.
                         for(u32 j = 0; j < end; j++) {
                             if(ImGui::ImageButton((ImTextureID)(u64)item_textures[req.recipe->output.type].id, { 32, 32 })) {
                                 // TODO: cancel the request
