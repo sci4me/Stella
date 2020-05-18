@@ -92,6 +92,8 @@ Quality:
        child struct. So. F.
    - Not 100% convinced about this yet, so we'll push it off
      - But probably, we want to do this?... ..er.. yeah.
+   - Okay yeah, update on this one: ctors/dtors are evil! Find a way
+     to avoid them at all costs!
  - Organization
    - Probably only want one level of subdirectory in `src`
    - Namespaces! structs! etc.

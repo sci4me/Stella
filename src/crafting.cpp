@@ -133,18 +133,17 @@ namespace crafting {
         u32 crafting_time;
         u32 progress;
 
-        Item_Container crafting_buffer;
+        Dynamic_Item_Container crafting_buffer;
 
         bool crafting_paused = false;
 
         void init(Item_Container *player_inventory) {
             this->player_inventory = player_inventory;
-            crafting_buffer.init(player_inventory->size);
         }
 
         void deinit() {
             arrfree(queue);
-            crafting_buffer.free();
+            crafting_buffer.deinit();
         }
 
         bool request(Recipe *r) {
@@ -159,11 +158,10 @@ namespace crafting {
                 Item_Stack stack = { (Item_Type) i, job.have[i] };
                 if(job.have[i] > 0) {
                     assert(player_inventory->remove(stack, false));
-                    assert(crafting_buffer.insert(stack, false) == 0);
+                    crafting_buffer.insert(stack);
                 }
             }
             player_inventory->sort();
-            crafting_buffer.sort();
 
             arrput(queue, job);
             return true;
@@ -183,11 +181,9 @@ namespace crafting {
                     auto const& req = job.request[request_index];
 
                     for(u32 i = 0; i < req.recipe->n_inputs; i++) {
-                        assert(crafting_buffer.remove(req.recipe->inputs[i].type, req.recipe->inputs[i].count, false));
+                        assert(crafting_buffer.remove(req.recipe->inputs[i].type, req.recipe->inputs[i].count));
                     }
-                    if(request_index < arrlen(job.request) - 1) {
-                        assert(crafting_buffer.insert(req.recipe->output) == 0);
-                    }
+                    if(request_index < arrlen(job.request) - 1) crafting_buffer.insert(req.recipe->output);
 
                     request_count++;
                     if(request_count == req.count) {

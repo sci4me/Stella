@@ -52,6 +52,10 @@ struct Item_Stack {
     u32 count;
 
     Item_Stack(Item_Type _type, u32 _count) : type(_type), count(_count) {}
+
+    bool is_valid() const {
+        return type < N_ITEM_TYPES && count > 0;
+    }
 };
 
 
@@ -141,15 +145,17 @@ struct Item_Container {
         return true;
     }
 
-    u32 insert(Item_Stack const& stack, bool resort = true) {
-        if(!accepts_item_type(stack.type)) return stack.count;
+    u32 insert(Item_Stack const& s, bool resort = true) {
+        assert(s.is_valid());
 
-        u32 remaining = stack.count;
+        if(!accepts_item_type(s.type)) return s.count;
+
+        u32 remaining = s.count;
 
         // First try to insert into slots that 
         // already contain this item type.
         for(u32 i = 0; i < size; i++) {
-            if(slots[i].count > 0 && slots[i].type == stack.type) {
+            if(slots[i].count > 0 && slots[i].type == s.type) {
                 u32 available = MAX_ITEM_SLOT_SIZE - slots[i].count;
                 if(available) {
                     u32 n = min(remaining, available);
@@ -171,7 +177,7 @@ struct Item_Container {
                     needs_sort = true;
 
                     u32 n = min(remaining, MAX_ITEM_SLOT_SIZE);
-                    slots[i].type = stack.type;
+                    slots[i].type = s.type;
                     slots[i].count = n;
                     remaining -= n;
 
@@ -197,6 +203,8 @@ struct Item_Container {
     }
 
     bool remove(Item_Stack const& s, bool resort = true) {
+        assert(s.is_valid());
+
         if(!contains(s)) return false;
 
         u32 remaining = s.count;
@@ -220,14 +228,6 @@ struct Item_Container {
         return true;
     }
 
-    u32 count_type(Item_Type type) {
-        u32 count = 0;
-        for(u32 i = 0; i < size; i++) {
-            if(slots[i].type == type) count += slots[i].count;
-        }
-        return count;
-    }
-
     u32 total_count() {
         u32 count = 0;
         for(u32 i = 0; i < size; i++) {
@@ -236,7 +236,87 @@ struct Item_Container {
         return count;
     }
 
+    u32 count_type(Item_Type type) {
+        u32 count = 0;
+        for(u32 i = 0; i < size; i++) {
+            if(slots[i].type == type) count += slots[i].count;
+        }
+        return count;
+    }
+
     bool contains(Item_Stack const& s) {
+        return count_type(s.type) >= s.count;
+    }
+};
+
+
+// NOTE: Dynamic_Item_Container is similar to
+// Item_Container in that we use it for Item_Stack storage.
+// Other than that, the implementation is completely different.
+// We simply store its contents as a hash table mapping
+// Item_Types to a (u32) count. Thus, this is an unordered
+// structure. (If Item_Stack ever contains more than type and
+// count, this will have to change!)
+// Currently it's only used in the Crafting_Queue.
+//                  - sci4me, 5/18/20
+struct Dynamic_Item_Container {
+    struct {
+        Item_Type key;
+        u32 value;
+    } *entries = nullptr;
+
+    void deinit() {
+        hmfree(entries);
+    }
+
+    void insert(Item_Stack const& s) {
+        assert(s.is_valid());
+
+        auto i = hmgeti(entries, s.type);
+        if(i == -1) {
+            hmput(entries, s.type, s.count);
+        } else {
+            entries[i].value += s.count;
+        }
+    }
+
+    bool remove(Item_Type type, u32 count) {
+        return remove(Item_Stack(type, count));
+    }
+
+    bool remove(Item_Stack const& s) {
+        assert(s.is_valid());
+
+        auto i = hmgeti(entries, s.type);
+        if(i == -1) return false;
+
+        if(entries[i].value < s.count) {
+            return false;
+        } else if(entries[i].value == s.count) {
+            hmdel(entries, s.type);
+        } else {
+            entries[i].value -= s.count;
+        }
+
+        return true;
+    }
+
+    u32 total_count() {
+        u32 count = 0;
+        for(u32 i = 0; i < hmlen(entries); i++) {
+            count += entries[i].value;
+        }
+        return count;
+    }
+
+    u32 count_type(Item_Type type) {
+        auto i = hmgeti(entries, type);
+        if(i == -1) return 0;
+        return entries[i].value;
+    }
+
+    bool contains(Item_Stack const& s) {
+        assert(s.is_valid());
         return count_type(s.type) >= s.count;
     }
 };
