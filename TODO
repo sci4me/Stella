@@ -82,6 +82,18 @@ Code/Dev Features/Quality:
  - Better Build System
 
 Quality/Optimization:
+ - Verify that we only have _one_ copy of GLEW being build
+   into our executable! I _think_ this is the case.. but..
+   - I'm really not sure if .. like..
+     We're not explicitly linking GLEW into the static lib for
+     imgui, so... presumably it assumes that it will be linked
+     in at a later stage, as it is in our main build?
+     - Is this how linking works though? Can you do this?
+       - Build a static library that must be linked into something else,
+         _alongside_ another static library
+   - Also, tbh, I don't know ... if/how our imgui build is working;
+     It's including <GLEW/*> rather than "glew/*" so, is it using
+     headers _outside of /vendor? It would have to be???
  - Instead of using N textures for ores that are diminishing,
    just render them differently by using different UVs!
  - Tests

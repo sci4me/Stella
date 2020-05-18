@@ -72,12 +72,6 @@ namespace crafting {
     }
 
 
-    // NOTE TODO: Some ideas on how we can fix Queue:
-    //  - Move most of its state into Queue::Job
-    //    request_index, request_count, crafting_time, progress
-    //  - Instead of using Dynamic_Item_Container, we could just
-    //    use Job::have! Right?!
-    //              - sci4me, 5/18/20
     struct Queue {
         struct Job {
             struct Request {
@@ -96,6 +90,48 @@ namespace crafting {
 
             void deinit() {
                 arrfree(request);
+            }
+
+            bool next_request() {
+                request_index++;
+                request_count = 0;
+                progress = 0;
+
+                bool result = request_index < arrlen(request);
+                if(result) crafting_time = request[request_index].recipe->time;
+                return result;
+            }
+
+            bool next() {
+                request_count++;
+                progress = 0;
+                return request_count < request[request_index].count;
+            }
+
+            Request& current() {
+                return request[request_index];
+            }
+
+            bool craft() {
+                if(progress < crafting_time) {
+                    progress++;
+                    return false;
+                } else {
+                    auto req = current();
+                    for(u32 i = 0; i < req.recipe->n_inputs; i++) {
+                        auto const& input = req.recipe->inputs[i];
+                        for(u32 j = 0; j < N_ITEM_TYPES; j++) {
+                            auto type = (Item_Type) j;
+                            if(input.type != type) continue;
+
+                            assert(have[type] >= input.count);
+                            have[type] -= input.count;
+                        }
+                    }
+                    have[req.recipe->output.type] += req.recipe->output.count;
+
+                    return true;
+                }
             }
 
             static Job calculate(Recipe *recipe, Item_Container *player_inventory) {
@@ -151,6 +187,12 @@ namespace crafting {
 
         bool request(Recipe *r) {
             Job job = Job::calculate(r, player_inventory);
+
+            for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                if(job.have[i] > 0) {
+                    assert(player_inventory->count_type((Item_Type) i) >= job.have[i]);
+                }
+            }
             
             if(!job.inputs_available) {
                 job.deinit();
@@ -159,7 +201,11 @@ namespace crafting {
 
             for(u32 i = 0; i < N_ITEM_TYPES; i++) {
                 Item_Stack stack = { (Item_Type) i, job.have[i] };
-                if(job.have[i] > 0) assert(player_inventory->remove(stack, false));
+                if(job.have[i] > 0) {
+                    auto n = job.have[i];
+                    auto h = player_inventory->count_type(stack.type);
+                    assert(player_inventory->remove(stack, false));
+                }
             }
             player_inventory->sort();
 
@@ -167,130 +213,60 @@ namespace crafting {
             return true;
         }
 
-        // NOTE TODO: Okay, going to try to think through how we can
-        // re-structure this code so that `update` always leaves the Job
-        // in a _valid_ state.
-        //
-        // Let's just "talk" through the process we are trying to perform here:
-        //   - Process each Job in `queue`
-        //     - Process each Request in current Job
-        //       - Process each "1/`count`" in the current Request
-        //       - When we've processed the current Request `count` times,
-        //         we move on to the next Request, if there is one. Otherwise
-        //         we need to finish processing this Job.
-        //     - Once we've finished processing every Request in the current Job,
-        //       we need to finish processing the job by removing/clearing the `have`
-        //       list, and adding the output items to the `player_inventory`.
-        //     - Then, if there are more jobs in the queue, process the next job.
-        //
-        // Currently, we are doing this is a bit of a state machine. We have discrete
-        // transitions between processing the current request and processing the next
-        // request, which require their own call to `update`. Thus, the `Job` ends up
-        // in _invalid_ states during these transitions. We would like `update` to always
-        // begin and end with the `Job` in a valid state.
-        //
-        // In practice, this means that we don't want to do what we're doing currently, regarding
-        // the if statements that bail out by returning from the function.
-        // They are essentially saying that they want the next call up `update` to, potentially, do
-        // some work that they probably should have been able to handle themselves.
-        //
-        // What we need to do is this: the `update` method must run _until either the queue is empty
-        // or it has successfully processed "1/`count`" of a reques. It obviously must handle 
-        // any updating that must happen in that call. We can't be deferring things to the next 
-        // frame; that just causes trouble in general.
-        // 
-        //                  - sci4me, 5/18/20
-        //
-
         void update() {
             actively_crafting = arrlen(queue) > 0;
             if(crafting_paused) return;
             if(!actively_crafting) return;
             
-            auto& job = queue[0];
-            auto const& req = job.request[job.request_index];
+            if(arrlen(queue) > 0) {
+                auto& job = queue[0];
 
-            if(!job.started) {
-                // NOTE: This is the initial state before
-                // we begin to process a Request. We must
-                // initialize the crafting_time from the
-                // recipe of this Request. We also reset
-                // progress to 0. And of course, set started.
+                if(!job.started) {
+                    // NOTE: This is the first time we've worked on
+                    // this Job; initialize it so we can work with it
+                    // over multiple calls to `update`.
 
-                job.started = true;
-                job.request_count = 0;
-                job.crafting_time = req.recipe->time;
-                job.progress = 0;
-                return;
-            }
-
-            // NOTE: If we get this far, we have an active Request.
-
-            if(job.progress < job.crafting_time) {
-                // NOTE: In this case, we are currently "crafting"
-                // a single instance of a Recipe; 1 out of `count`.
-
-                job.progress++;
-                return;
-            }
-
-            // NOTE: If we get this far, we have just completed "crafting"
-            // a single 1/`count` of the active Request.
-            job.request_count++;
-
-            // NOTE: This is basically uh.. yknow.. O(n*m).. but n and m
-            // are always going to be pretty small. So. We should be fine.
-            // ... Well, actually, it's O(n*N_ITEM_TYPES), so, if we ever
-            // have tons of different item types, this might add up. But.
-            // Yeeeh.
-            for(u32 i = 0; i < req.recipe->n_inputs; i++) {
-                auto const& input = req.recipe->inputs[i];
-                for(u32 j = 0; j < N_ITEM_TYPES; j++) {
-                    auto type = (Item_Type) j;
-                    if(input.type != type) continue;
-
-                    assert(job.have[type] >= input.count);
-                    job.have[type] -= input.count;
+                    job.started = true;
+                    job.request_index = 0;
+                    job.request_count = 0;
+                    job.crafting_time = job.request[0].recipe->time;
+                    job.progress = 0;
                 }
-            }
-            job.have[req.recipe->output.type] += req.recipe->output.count;
-            printf("Crafted %s\n", item_names[req.recipe->output.type]);
 
-            if(job.request_count < req.count) {
-                // NOTE: In this case, we have crafted <req.count;
-                // keep going!
+                auto& req = job.current();
 
-                job.progress = 0;
-                return;
-            }
+                if(job.craft()) {
+                    // NOTE: We finished processing "1/`count`" of the current Request.
 
-            // NOTE: If we made it this far, we have crafted
-            // an entire Request! So, increment request_index
-            // to move on to the next one...
-
-            job.request_index++;
-
-            if(job.request_index < arrlen(job.request)) {
-                // NOTE: In this case, there are more Requests to process in
-                // this Job. Set started to false in order to re-init the
-                // Job with the current Request.
-
-                job.started = false;
-            } else {
-                // NOTE: In this case, we finished the Job!
-
-                for(u32 i = 0; i < N_ITEM_TYPES; i++) {
-                    auto type = (Item_Type) i;
-                    if(type == req.recipe->output.type) {
-                        assert(job.have[type] == req.recipe->output.count);
-                        player_inventory->insert(Item_Stack(type, job.have[type]));
+                    if(job.next()) {
+                        // NOTE: We have processed <`count` of the current Request.
+                        return;
                     } else {
-                        assert(job.have[i] == 0);
+                        // NOTE: We have processed `count` of the current Request.
+                        // Try to move on to the next Request.
+
+                        if(job.next_request()) {
+                            // NOTE: There is a next request. Continue processing as normal.
+                            return;
+                        } else {
+                            // NOTE: We finished processing the Job! Transfer the items 
+                            // to the `player_inventory` and remove the Job from the queue.
+
+                            for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                                auto type = (Item_Type) i;
+                                if(type == req.recipe->output.type) {
+                                    assert(job.have[type] == req.recipe->output.count);
+                                    assert(player_inventory->insert(Item_Stack(type, job.have[type])) == 0); // TODO: Handle this case!
+                                } else {
+                                    assert(job.have[i] == 0);
+                                }
+                            }
+
+                            queue[0].deinit();
+                            arrdel(queue, 0);
+                        }
                     }
                 }
-
-                queue[0].deinit();
-                arrdel(queue, 0);
             }
         }
 
@@ -315,16 +291,6 @@ namespace crafting {
             if(actively_crafting) {
                 for(u32 i = 0; i < arrlen(queue); i++) {
                     auto const& job = queue[i];
-
-                    // NOTE TODO: This is kind of a hack.
-                    // Because of this, there will be 1 frame
-                    // in which the queue is not displayed.
-                    // You can observe this as a flash between
-                    // one Request and the next.
-                    // Ideally, we'd just guarantee that update
-                    // always leaves us in a valid state...
-                    //              - sci4me, 5/18/20
-                    if(!job.started) break;
 
                     u32 start;
                     if(i == 0) start = job.request_index;
