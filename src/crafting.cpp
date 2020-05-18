@@ -149,8 +149,11 @@ namespace crafting {
 
         bool request(Recipe *r) {
             Crafting_Plan plan = Crafting_Plan::calculate(r, player_inventory);
-
-            if(!plan.complete) return false;
+            
+            if(!plan.complete) {
+                plan.deinit();
+                return false;
+            }
 
             for(u32 i = 0; i < N_ITEM_TYPES; i++) {
                 Item_Stack stack = { (Item_Type) i, plan.have[i] };
@@ -196,6 +199,7 @@ namespace crafting {
                         } else {
                             assert(player_inventory->insert(plan.request[request_index - 1].recipe->output) == 0);
 
+                            queue[0].deinit();
                             arrdel(queue, 0);
 
                             actively_crafting = arrlen(queue) > 0;
@@ -203,6 +207,7 @@ namespace crafting {
                             request_count = 0;
                             progress = 0;
                             if(actively_crafting) crafting_time = queue[0].request[0].recipe->time;
+                            else assert(crafting_buffer.total_count() == 0);
                         }
                     } else {
                         crafting_time = plan.request[request_index].recipe->time;

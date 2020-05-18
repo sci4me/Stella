@@ -228,6 +228,14 @@ struct Item_Container {
         return count;
     }
 
+    u32 total_count() {
+        u32 count = 0;
+        for(u32 i = 0; i < size; i++) {
+            count += slots[i].count;
+        }
+        return count;
+    }
+
     bool contains(Item_Stack const& s) {
         return count_type(s.type) >= s.count;
     }
