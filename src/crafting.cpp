@@ -222,9 +222,14 @@ namespace crafting {
                 auto& job = queue[0];
                 auto& req = job.current();
 
-                if(!job.craft()) return;
+                if(!job.craft()) {
+                    // NOTE: We have not finished processing "1/`count`"
+                    // of the current Request. Aka progress < crafting_time.
+                    return;
+                }
 
                 // NOTE: We finished processing "1/`count`" of the current Request.
+                // (progress == crafting_time)
 
                 if(job.next()) {
                     // NOTE: We have processed <`count` of the current Request.
