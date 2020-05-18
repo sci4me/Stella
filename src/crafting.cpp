@@ -167,6 +167,41 @@ namespace crafting {
             return true;
         }
 
+        // NOTE TODO: Okay, going to try to think through how we can
+        // re-structure this code so that `update` always leaves the Job
+        // in a _valid_ state.
+        //
+        // Let's just "talk" through the process we are trying to perform here:
+        //   - Process each Job in `queue`
+        //     - Process each Request in current Job
+        //       - Process each "1/`count`" in the current Request
+        //       - When we've processed the current Request `count` times,
+        //         we move on to the next Request, if there is one. Otherwise
+        //         we need to finish processing this Job.
+        //     - Once we've finished processing every Request in the current Job,
+        //       we need to finish processing the job by removing/clearing the `have`
+        //       list, and adding the output items to the `player_inventory`.
+        //     - Then, if there are more jobs in the queue, process the next job.
+        //
+        // Currently, we are doing this is a bit of a state machine. We have discrete
+        // transitions between processing the current request and processing the next
+        // request, which require their own call to `update`. Thus, the `Job` ends up
+        // in _invalid_ states during these transitions. We would like `update` to always
+        // begin and end with the `Job` in a valid state.
+        //
+        // In practice, this means that we don't want to do what we're doing currently, regarding
+        // the if statements that bail out by returning from the function.
+        // They are essentially saying that they want the next call up `update` to, potentially, do
+        // some work that they probably should have been able to handle themselves.
+        //
+        // What we need to do is this: the `update` method must run _until either the queue is empty
+        // or it has successfully processed "1/`count`" of a reques. It obviously must handle 
+        // any updating that must happen in that call. We can't be deferring things to the next 
+        // frame; that just causes trouble in general.
+        // 
+        //                  - sci4me, 5/18/20
+        //
+
         void update() {
             actively_crafting = arrlen(queue) > 0;
             if(crafting_paused) return;
