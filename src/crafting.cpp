@@ -236,6 +236,7 @@ namespace crafting {
             // TODO: This is pretty crappy lol...
             ImGui::BeginChild("Queue", { 100, 200 });
 
+            // TODO: Remove this if statement!
             if(actively_crafting) {
                 for(u32 i = 0; i < arrlen(queue); i++) {
                     auto const& job = queue[i];
@@ -255,18 +256,67 @@ namespace crafting {
                         // consequitively, are the same recipe being requested, and display
                         // that count instead of that many of the recipe output, separately.
                         for(u32 j = 0; j < end; j++) {
+                            ImGui::PushID(i); // TODO: This is silly.
+                            ImGui::PushID(k);
+                            ImGui::PushID(j);
                             if(ImGui::ImageButton((ImTextureID)(u64)item_textures[req.recipe->output.type].id, { 32, 32 })) {
-                                // TODO: cancel the request
-                                assert(0);
+                                cancel_job(i);
+                                
+                                ImGui::PopID();
+                                ImGui::PopID();
+                                ImGui::PopID();
+                                goto early_out; // TODO: Remove this! Bad sci4me! Bad! Down boy!
                             }
+                            ImGui::PopID();
+                            ImGui::PopID();
+                            ImGui::PopID();
                         } 
                     }
                 }
             }
 
+            early_out:
             ImGui::EndChild();
 
             ImGui::End();
+        }
+
+    private:
+        void cancel_job(u32 job_index) {
+            if(job_index == 0) {
+                // NOTE: We cancelled the job we're working on;
+                // transfer the items from crafting_buffer to
+                // player_inventory.
+
+                // NOTE TODO: Is it actually safe to do this?
+                // In Java this would be akin to ConcurrentModificationException...
+                // *shrugs* it seems to work rn... so... ???
+                auto len = hmlen(crafting_buffer.entries);
+                for(u32 i = 0; i < len; i++) {
+                    auto const& entry = crafting_buffer.entries[i];
+
+                    // NOTE: I explicitly do this before the hmdel;
+                    // not sure / don't care if this is needed, 
+                    // just being defensive!
+                    assert(player_inventory->insert(Item_Stack(entry.key, entry.value)) == 0); // TODO: handle this failure!
+                    hmdel(crafting_buffer.entries, entry.key);
+                }
+                assert(crafting_buffer.total_count() == 0);
+            } else {
+                // NOTE: We cancelled a job that we haven't
+                // started working on yet; just give them back
+                // the items in job.have.
+
+                auto const& job = queue[job_index];
+                for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                    if(job.have[i] > 0) {
+                        assert(player_inventory->insert(Item_Stack((Item_Type) i, job.have[i])) == 0); // TODO: Handle this failure!
+                    }
+                }
+            }
+
+            arrdel(queue, job_index);
+            actively_crafting = false;
         }
     };
 }

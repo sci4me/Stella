@@ -54,6 +54,11 @@ struct Item_Stack {
     Item_Stack(Item_Type _type, u32 _count) : type(_type), count(_count) {}
 
     bool is_valid() const {
+        // NOTE: This does not check if count < MAX_ITEM_SLOT_SIZE on purpose!
+        // We want to be able to do things like say 
+        // inv->insert(Item_Stack(type, some_count_that_is_above_max_slot_size))
+        // in order to just insert into multiple slots.
+        //                  - sci4me, 5/18/20
         return type < N_ITEM_TYPES && count > 0;
     }
 };
@@ -320,3 +325,12 @@ struct Dynamic_Item_Container {
         return count_type(s.type) >= s.count;
     }
 };
+
+
+// TODO: Create some general `transfer` method that just takes two inventories,
+// a source and a destination, and an Item_Stack, and returns true if it succeeds
+// and false otherwise. It should work with Item_Container and Dynamic_Item_Container;
+// we may want to create an interface for these Item_Containers... er...
+// And maybe rename Item_Container to Static_Item_Container. Kinda blegh but...
+// Idk.
+//                      - sci4me, 5/18/20

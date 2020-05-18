@@ -16,6 +16,24 @@ Features:
      - Ability to play music; streaming audio
      - Ability to play short sound effects
  - Particle Systems
+ - Time Step Handling
+   - Currently we aren't doing _anything_
+     - We're just updating and rendering in a loop
+   - We _at least_ want to do something like "semi-fixed timestep"
+     - Not perfect...
+     - The "best" option is to use interpolation for remaining
+       time. But, this is a fair amount of overhead (on the programmer!)
+       especially once we consider things like tiles that are doing their
+       update logic, etc.
+       I find it hard to believe that I'll actually do this.
+ - Key/Mouse Event Dispatch / Handling
+   - Instead of having to like, hackily debounce keys with a static bool...
+ - Shift clicking in inventories!
+ - Ability to select part of a stack vs only the entire thing
+ - Click outside of ImGui window to close it? Maybe?
+   - For in-game UIs? Or, some of them?
+     - Inventory, Chest, Furnace, etc.?
+   - Also, pressing E opens the inventory, shouldn't it close it too?
 
 Code/Dev Features/Quality:
  - In-Game Profiler
@@ -61,25 +79,7 @@ Code/Dev Features/Quality:
    - printf style API
  - Better Build System
 
-Quality:
- - Time Step Handling
-   - Currently we aren't doing _anything_
-     - We're just updating and rendering in a loop
-   - We _at least_ want to do something like "semi-fixed timestep"
-     - Not perfect...
-     - The "best" option is to use interpolation for remaining
-       time. But, this is a fair amount of overhead (on the programmer!)
-       especially once we consider things like tiles that are doing their
-       update logic, etc.
-       I find it hard to believe that I'll actually do this.
- - Key/Mouse Event Dispatch / Handling
-   - Instead of having to like, hackily debounce keys with a static bool...
- - Shift clicking in inventories!
- - Ability to select part of a stack vs only the entire thing
- - Click outside of ImGui window to close it? Maybe?
-   - For in-game UIs? Or, some of them?
-     - Inventory, Chest, Furnace, etc.?
-   - Also, pressing E opens the inventory, shouldn't it close it too?
+Quality/Optimization:
  - Instead of using N textures for ores that are diminishing,
    just render them differently by using different UVs!
  - Tests
@@ -97,6 +97,7 @@ Quality:
  - Organization
    - Probably only want one level of subdirectory in `src`
    - Namespaces! structs! etc.
+   - Could probably apply this to the TODO file itself tbh lol
  - Maybe use references more? And const references? er....
    - Definitely need to do some research/learning, etc. to know for sure...
      - But maybe.. maybe it's a good idea in some/many places. Dunno.    
