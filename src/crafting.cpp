@@ -222,38 +222,38 @@ namespace crafting {
                 auto& job = queue[0];
                 auto& req = job.current();
 
-                if(job.craft()) {
-                    // NOTE: We finished processing "1/`count`" of the current Request.
+                if(!job.craft()) return;
 
-                    if(job.next()) {
-                        // NOTE: We have processed <`count` of the current Request.
-                        return;
+                // NOTE: We finished processing "1/`count`" of the current Request.
+
+                if(job.next()) {
+                    // NOTE: We have processed <`count` of the current Request.
+                    return;
+                }
+
+                // NOTE: We have processed `count` of the current Request.
+                // Try to move on to the next Request.
+
+                if(job.next_request()) {
+                    // NOTE: There is a next request. Continue processing as normal.
+                    return;
+                }
+
+                // NOTE: We finished processing the Job! Transfer the items 
+                // to the `player_inventory` and remove the Job from the queue.
+
+                for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                    auto type = (Item_Type) i;
+                    if(type == req.recipe->output.type) {
+                        assert(job.have[type] == req.recipe->output.count);
+                        assert(player_inventory->insert(Item_Stack(type, job.have[type])) == 0); // TODO: Handle this case!
                     } else {
-                        // NOTE: We have processed `count` of the current Request.
-                        // Try to move on to the next Request.
-
-                        if(job.next_request()) {
-                            // NOTE: There is a next request. Continue processing as normal.
-                            return;
-                        } else {
-                            // NOTE: We finished processing the Job! Transfer the items 
-                            // to the `player_inventory` and remove the Job from the queue.
-
-                            for(u32 i = 0; i < N_ITEM_TYPES; i++) {
-                                auto type = (Item_Type) i;
-                                if(type == req.recipe->output.type) {
-                                    assert(job.have[type] == req.recipe->output.count);
-                                    assert(player_inventory->insert(Item_Stack(type, job.have[type])) == 0); // TODO: Handle this case!
-                                } else {
-                                    assert(job.have[i] == 0);
-                                }
-                            }
-
-                            queue[0].deinit();
-                            arrdel(queue, 0);
-                        }
+                        assert(job.have[i] == 0);
                     }
                 }
+
+                queue[0].deinit();
+                arrdel(queue, 0);
             }
         }
 
