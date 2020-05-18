@@ -72,6 +72,12 @@ namespace crafting {
     }
 
 
+    // NOTE TODO: Some ideas on how we can fix Queue:
+    //  - Move most of its state into Queue::Job
+    //    request_index, request_count, crafting_time, progress
+    //  - Instead of using Dynamic_Item_Container, we could just
+    //    use Job::have! Right?!
+    //              - sci4me, 5/18/20
     struct Queue {
         struct Job {
             struct Request {
