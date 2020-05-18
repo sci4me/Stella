@@ -281,6 +281,16 @@ namespace crafting {
                 for(u32 i = 0; i < arrlen(queue); i++) {
                     auto const& job = queue[i];
 
+                    // NOTE TODO: This is kind of a hack.
+                    // Because of this, there will be 1 frame
+                    // in which the queue is not displayed.
+                    // You can observe this as a flash between
+                    // one Request and the next.
+                    // Ideally, we'd just guarantee that update
+                    // always leaves us in a valid state...
+                    //              - sci4me, 5/18/20
+                    if(!job.started) break;
+
                     u32 start;
                     if(i == 0) start = job.request_index;
                     else start = 0;
