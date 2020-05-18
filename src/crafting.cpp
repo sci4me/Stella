@@ -247,7 +247,7 @@ namespace crafting {
                 for(u32 i = 0; i < N_ITEM_TYPES; i++) {
                     auto type = (Item_Type) i;
                     if(type == req.recipe->output.type) {
-                        assert(job.have[type] == req.recipe->output.type);
+                        assert(job.have[type] == req.recipe->output.count);
                         player_inventory->insert(Item_Stack(type, job.have[type]));
                     } else {
                         assert(job.have[i] == 0);
