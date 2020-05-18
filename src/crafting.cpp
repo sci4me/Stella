@@ -202,8 +202,6 @@ namespace crafting {
             for(u32 i = 0; i < N_ITEM_TYPES; i++) {
                 Item_Stack stack = { (Item_Type) i, job.have[i] };
                 if(job.have[i] > 0) {
-                    auto n = job.have[i];
-                    auto h = player_inventory->count_type(stack.type);
                     assert(player_inventory->remove(stack, false));
                 }
             }
