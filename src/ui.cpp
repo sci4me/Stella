@@ -107,32 +107,6 @@ namespace ui {
         ImGui::PopID();
     }
 
-    void dynamic_container(Dynamic_Item_Container *container, u32 width) {
-        auto font = ImGui::GetFont();
-        auto font_size = ImGui::GetFontSize();
-        auto drawlist = ImGui::GetForegroundDrawList();
-
-        ImGui::PushID(container);
-        u32 c = 0;
-        u32 len = hmlen(container->entries);
-        for(u32 i = 0; i < len; i++) {
-            auto const& entry = container->entries[i];
-
-            ImGui::Image((ImTextureID)(u64)item_textures[entry.key].id, { SLOT_SIZE, SLOT_SIZE });
-
-            char buf[8];
-            snprintf(buf, 8, "%d", entry.value);
-
-            auto tpos = ImGui::GetItemRectMax();
-            auto tsize = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, buf);
-
-            drawlist->AddText(font, font_size, { tpos.x - tsize.x, tpos.y - tsize.y }, 0xFFFFFFFF, buf);
-
-            if(c++ < width && i < len - 1) ImGui::SameLine();
-        }
-        ImGui::PopID();
-    }
-
     void chest_ui(Item_Container *player_inventory, Tile_Chest *c, Tile **tile_ref) {
         // NOTE: Currently we only have one GUI open at a time,
         // so we don't have to push any extra ID info.
@@ -235,7 +209,6 @@ namespace ui {
             // NOTE TODO: hardcoded bs code for days
 
             auto inventory = crafting_queue->player_inventory;      
-            dynamic_container(&crafting_queue->crafting_buffer, 4);
             container(inventory, 4, 4);
 
             ImGui::Separator();

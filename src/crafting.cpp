@@ -85,9 +85,14 @@ namespace crafting {
                 u32 count;
             };
 
+            bool inputs_available;
             u32 have[N_ITEM_TYPES];
             Request *request;
-            bool complete;
+            bool started = false;
+            u32 request_index;
+            u32 request_count;
+            u32 crafting_time;
+            u32 progress;
 
             void deinit() {
                 arrfree(request);
@@ -95,7 +100,7 @@ namespace crafting {
 
             static Job calculate(Recipe *recipe, Item_Container *player_inventory) {
                 Job result = {};
-                result.complete = !result.calculate(recipe, 1, player_inventory);
+                result.inputs_available = !result.calculate(recipe, 1, player_inventory);
                 return result;
             }
 
@@ -134,13 +139,6 @@ namespace crafting {
         Job *queue = nullptr;
 
         bool actively_crafting = false;
-        u32 request_index;
-        u32 request_count;
-        u32 crafting_time;
-        u32 progress;
-
-        Dynamic_Item_Container crafting_buffer;
-
         bool crafting_paused = false;
 
         void init(Item_Container *player_inventory) {
@@ -149,23 +147,19 @@ namespace crafting {
 
         void deinit() {
             arrfree(queue);
-            crafting_buffer.deinit();
         }
 
         bool request(Recipe *r) {
             Job job = Job::calculate(r, player_inventory);
             
-            if(!job.complete) {
+            if(!job.inputs_available) {
                 job.deinit();
                 return false;
             }
 
             for(u32 i = 0; i < N_ITEM_TYPES; i++) {
                 Item_Stack stack = { (Item_Type) i, job.have[i] };
-                if(job.have[i] > 0) {
-                    assert(player_inventory->remove(stack, false));
-                    crafting_buffer.insert(stack);
-                }
+                if(job.have[i] > 0) assert(player_inventory->remove(stack, false));
             }
             player_inventory->sort();
 
@@ -174,54 +168,94 @@ namespace crafting {
         }
 
         void update() {
+            actively_crafting = arrlen(queue) > 0;
             if(crafting_paused) return;
+            if(!actively_crafting) return;
+            
+            auto& job = queue[0];
+            auto const& req = job.request[job.request_index];
 
-            if(actively_crafting) {
-                if(progress != crafting_time) {
-                    progress++;
-                    return;
+            if(!job.started) {
+                // NOTE: This is the initial state before
+                // we begin to process a Request. We must
+                // initialize the crafting_time from the
+                // recipe of this Request. We also reset
+                // progress to 0. And of course, set started.
+
+                job.started = true;
+                job.request_count = 0;
+                job.crafting_time = req.recipe->time;
+                job.progress = 0;
+                return;
+            }
+
+            // NOTE: If we get this far, we have an active Request.
+
+            if(job.progress < job.crafting_time) {
+                // NOTE: In this case, we are currently "crafting"
+                // a single instance of a Recipe; 1 out of `count`.
+
+                job.progress++;
+                return;
+            }
+
+            // NOTE: If we get this far, we have just completed "crafting"
+            // a single 1/`count` of the active Request.
+            job.request_count++;
+
+            // NOTE: This is basically uh.. yknow.. O(n*m).. but n and m
+            // are always going to be pretty small. So. We should be fine.
+            // ... Well, actually, it's O(n*N_ITEM_TYPES), so, if we ever
+            // have tons of different item types, this might add up. But.
+            // Yeeeh.
+            for(u32 i = 0; i < req.recipe->n_inputs; i++) {
+                auto const& input = req.recipe->inputs[i];
+                for(u32 j = 0; j < N_ITEM_TYPES; j++) {
+                    auto type = (Item_Type) j;
+                    if(input.type != type) continue;
+
+                    assert(job.have[type] >= input.count);
+                    job.have[type] -= input.count;
                 }
+            }
+            job.have[req.recipe->output.type] += req.recipe->output.count;
+            printf("Crafted %s\n", item_names[req.recipe->output.type]);
 
-                auto const& job = queue[0];
-                if(request_index < arrlen(job.request)) {
-                    auto const& req = job.request[request_index];
+            if(job.request_count < req.count) {
+                // NOTE: In this case, we have crafted <req.count;
+                // keep going!
 
-                    for(u32 i = 0; i < req.recipe->n_inputs; i++) {
-                        assert(crafting_buffer.remove(req.recipe->inputs[i].type, req.recipe->inputs[i].count));
-                    }
-                    if(request_index < arrlen(job.request) - 1) crafting_buffer.insert(req.recipe->output);
+                job.progress = 0;
+                return;
+            }
 
-                    request_count++;
-                    if(request_count == req.count) {
-                        request_count = 0;
-                        request_index++;
-                        if(request_index < arrlen(job.request)) {
-                            crafting_time = job.request[request_index].recipe->time;
-                            progress = 0;
-                        } else {
-                            assert(player_inventory->insert(job.request[request_index - 1].recipe->output) == 0);
+            // NOTE: If we made it this far, we have crafted
+            // an entire Request! So, increment request_index
+            // to move on to the next one...
 
-                            queue[0].deinit();
-                            arrdel(queue, 0);
+            job.request_index++;
 
-                            actively_crafting = arrlen(queue) > 0;
-                            request_index = 0;
-                            request_count = 0;
-                            progress = 0;
-                            if(actively_crafting) crafting_time = queue[0].request[0].recipe->time;
-                            else assert(crafting_buffer.total_count() == 0);
-                        }
+            if(job.request_index < arrlen(job.request)) {
+                // NOTE: In this case, there are more Requests to process in
+                // this Job. Set started to false in order to re-init the
+                // Job with the current Request.
+
+                job.started = false;
+            } else {
+                // NOTE: In this case, we finished the Job!
+
+                for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                    auto type = (Item_Type) i;
+                    if(type == req.recipe->output.type) {
+                        assert(job.have[type] == req.recipe->output.type);
+                        player_inventory->insert(Item_Stack(type, job.have[type]));
                     } else {
-                        crafting_time = job.request[request_index].recipe->time;
-                        progress = 0;
+                        assert(job.have[i] == 0);
                     }
                 }
-            } else if(arrlen(queue) > 0) {
-                actively_crafting = true;
-                request_index = 0;
-                request_count = 0;
-                crafting_time = queue[0].request[0].recipe->time;
-                progress = 0;
+
+                queue[0].deinit();
+                arrdel(queue, 0);
             }
         }
 
@@ -234,7 +268,7 @@ namespace crafting {
 
             f32 crafting_progress = 0.0f;
             if(actively_crafting) {
-                crafting_progress = (f32)progress / (f32)crafting_time;
+                crafting_progress = (f32)queue[0].progress / (f32)queue[0].crafting_time;
             }
             ImGui::ProgressBar(crafting_progress, {100, 14});
 
@@ -248,14 +282,14 @@ namespace crafting {
                     auto const& job = queue[i];
 
                     u32 start;
-                    if(i == 0) start = request_index;
+                    if(i == 0) start = job.request_index;
                     else start = 0;
 
                     for(u32 k = start; k < arrlen(job.request); k++) {
                         auto const& req = job.request[k];
 
                         u32 end;
-                        if(i == 0 && k == start) end = req.count - request_count;
+                        if(i == 0 && k == start) end = req.count - job.request_count;
                         else end = req.count;
 
                         // TODO: Instead of _just_ looping here, count how many of these,
@@ -289,40 +323,12 @@ namespace crafting {
 
     private:
         void cancel_job(u32 job_index) {
-            if(job_index == 0) {
-                // NOTE: We cancelled the job we're working on;
-                // transfer the items from crafting_buffer to
-                // player_inventory.
-
-                // NOTE TODO: Is it actually safe to do this?
-                // In Java this would be akin to ConcurrentModificationException...
-                // *shrugs* it seems to work rn... so... ???
-                auto len = hmlen(crafting_buffer.entries);
-                for(u32 i = 0; i < len; i++) {
-                    auto const& entry = crafting_buffer.entries[i];
-
-                    // NOTE: I explicitly do this before the hmdel;
-                    // not sure / don't care if this is needed, 
-                    // just being defensive!
-                    assert(player_inventory->insert(Item_Stack(entry.key, entry.value)) == 0); // TODO: handle this failure!
-                    hmdel(crafting_buffer.entries, entry.key);
-                }
-                assert(crafting_buffer.total_count() == 0);
-            } else {
-                // NOTE: We cancelled a job that we haven't
-                // started working on yet; just give them back
-                // the items in job.have.
-
-                auto const& job = queue[job_index];
-                for(u32 i = 0; i < N_ITEM_TYPES; i++) {
-                    if(job.have[i] > 0) {
-                        assert(player_inventory->insert(Item_Stack((Item_Type) i, job.have[i])) == 0); // TODO: Handle this failure!
-                    }
-                }
+            auto const& job = queue[job_index];
+            for(u32 i = 0; i < N_ITEM_TYPES; i++) {
+                auto type = (Item_Type) i;
+                if(job.have[i] > 0) player_inventory->insert(Item_Stack(type, job.have[i]));
             }
-
             arrdel(queue, job_index);
-            actively_crafting = false;
         }
     };
 }
