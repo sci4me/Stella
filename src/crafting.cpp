@@ -326,11 +326,12 @@ namespace crafting {
 
     private:
         void cancel_job(u32 job_index) {
-            auto const& job = queue[job_index];
+            auto& job = queue[job_index];
             for(u32 i = 0; i < N_ITEM_TYPES; i++) {
                 auto type = (Item_Type) i;
                 if(job.have[i] > 0) player_inventory->insert(Item_Stack(type, job.have[i]));
             }
+            job.deinit();
             arrdel(queue, job_index);
         }
     };
