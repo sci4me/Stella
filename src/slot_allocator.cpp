@@ -12,12 +12,12 @@ struct Slot_Allocator {
         count = 0;
     }
 
-    s32 alloc(T x) {
-        if(count == size) return -1;
-        
+    s32 alloc(T x) {      
         for(s32 i = 0; i < count; i++) {
             if(slots[i] == x) return i;
         }
+
+        if(count == size) return -1;
 
         slots[count] = x;
         return count++;
