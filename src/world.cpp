@@ -39,7 +39,7 @@ struct Chunk {
     void generate();
     void update();
     void render();
-    void draw();
+    void draw(Batch_Renderer *r);
 
     rnd_pcg_t make_rng_for_chunk();
 };
@@ -152,56 +152,14 @@ struct World {
         // TODO: instead of taking `view` as a parameter, we could technically just get it from Batch_Renderer?
         glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, view.value_ptr());
 
-
         glUseProgram(chunk_shader);
         for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
             for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
                 Chunk *c = get_chunk(i, j);
-                c->draw();
+                c->draw(r);
             }
         }
         glUseProgram(0);
-
-
-        for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
-            for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
-                Chunk *c = get_chunk(i, j);
-
-                for(u32 k = 0; k < hmlen(c->layer1); k++) {
-                    auto p = c->layer1[k].key;
-                    auto tile = c->layer1[k].value;
-
-                    s32 l = (i * Chunk::SIZE) + p.x;
-                    s32 m = (j * Chunk::SIZE) + p.y;
-
-                    if(l < vp_min_x || m < vp_min_y || l > vp_max_x || m > vp_max_y) continue;
-
-                    tile->draw(r);
-                }
-            }
-        }
-
-
-        // TODO: This is just a copy/paste of the above! FIX IT!
-        // i.e. Don't duplicate the code lol
-        for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
-            for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
-                Chunk *c = get_chunk(i, j);
-
-                for(u32 k = 0; k < hmlen(c->layer2); k++) {
-                    auto p = c->layer2[k].key;
-                    auto tile = c->layer2[k].value;
-
-                    s32 l = (i * Chunk::SIZE) + p.x;
-                    s32 m = (j * Chunk::SIZE) + p.y;
-
-                    if(l < vp_min_x || m < vp_min_y || l > vp_max_x || m > vp_max_y) continue;
-
-                    tile->draw(r);
-                }
-            }
-        }
-
 
         return (vp_max_cx - vp_min_cx) * (vp_max_cy - vp_min_cy);
     }
@@ -418,7 +376,7 @@ void Chunk::render() {
     ibo.set_data(&chunk_index_buffer.data, MAX_INDICES * sizeof(u32));
 }
 
-void Chunk::draw() {
+void Chunk::draw(Batch_Renderer *r) {
     vao.bind();
 
     for(u32 i = 0; i < textures.count; i++)
@@ -430,6 +388,29 @@ void Chunk::draw() {
         glBindTextureUnit(i, 0);
 
     vao.unbind();
+
+
+    for(u32 k = 0; k < hmlen(layer1); k++) {
+        auto p = layer1[k].key;
+        auto tile = layer1[k].value;
+
+        s32 l = (x * SIZE) + p.x;
+        s32 m = (y * SIZE) + p.y;
+
+        tile->draw(r);
+    }
+
+    // TODO: This is just a copy/paste of the above! FIX IT!
+    // i.e. Don't duplicate the code lol
+    for(u32 k = 0; k < hmlen(layer2); k++) {
+        auto p = layer2[k].key;
+        auto tile = layer2[k].value;
+
+        s32 l = (x * SIZE) + p.x;
+        s32 m = (y * SIZE) + p.y;
+
+        tile->draw(r);
+    }
 }
 
 void Chunk::update() {
