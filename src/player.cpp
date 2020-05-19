@@ -372,6 +372,20 @@ private:
                 // some sort of handle system for referencing tiles
                 // so that we can handle when they're destroyed
                 // a little bit better... .... maybe.....
+
+                //
+                // NOTE: An update on the above comment:
+                // Yes, we probably do want to have some concept of a
+                // Tile Handle. We'll run into this when we try to do
+                // things like have one tile reference another.
+                // For example, a mining machine trying to reference
+                // the tile it is mining.
+                //
+                // It's either that or "polling" (not relevant here).
+                //
+                //              - sci4me, 5/18/20
+                //
+
                 if(active_ui_tile == chest) active_ui_tile = nullptr;
 
                 for(u32 i = 0; i < chest->container.size; i++) {
@@ -381,6 +395,13 @@ private:
 
                     // NOTE TODO: If the result is >0 we have to
                     // spawn the item in the world.
+
+                    // NOTE: An update on the above comment: technically,
+                    // we could, in a general sense, disallow mining tiles
+                    // unless the results of that mining operation
+                    // will fit, entirely, in the player inventory.
+                    // But, I dunno. Do we want that? er.....
+                    //              - sci4me, 5/18/20
                     assert(!rem);
                 }
 
@@ -393,7 +414,7 @@ private:
                 break;
             }
             case TILE_FURNACE: {
-                assert(0);
+                assert(0); // TODO
                 break;
             }
             default: {
