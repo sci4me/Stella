@@ -166,7 +166,7 @@ namespace ui {
         }
         ImGui::End();
 
-        if(!open) *tile_ref = false;
+        if(!open) *tile_ref = nullptr;
     }
 
     void tile_ui(Item_Container *player_inventory, Tile **tile_ref) {
