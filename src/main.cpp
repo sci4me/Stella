@@ -151,7 +151,7 @@ s32 main(s32 argc, char **argv) {
 
     GLFWwindow *window = glfwCreateWindow(window_width, window_height, "Stella", nullptr, nullptr);
     if (!window) {
-        fprintf(stderr, "Failed to create GLFW window!");
+        fprintf(stderr, "Failed to create GLFW window!\n");
         glfwTerminate();
         return 1;
     }

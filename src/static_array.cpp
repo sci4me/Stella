@@ -11,4 +11,6 @@ struct Static_Array {
         data[count] = datum;
         return count++;
     }
+
+    // TODO: override [] 'operator'
 };
