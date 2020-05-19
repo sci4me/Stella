@@ -152,19 +152,25 @@ struct mat4 {
 };
 
 
-// TODO: templatize these!
-inline f32 min(f32 a, f32 b) { return a < b ? a : b; }
-inline u32 min(u32 a, u32 b) { return a < b ? a : b; }
-inline f32 max(f32 a, f32 b) { return a > b ? a : b; }
-inline f32 square(f32 x) { return x * x; }
-inline f32 sign(f32 x) { return x < 0 ? -1 : 1; }
+template<typename T>
+inline T min(T a, T b) { return a < b ? a : b; }
 
+template<typename T>
+inline T max(T a, T b) { return a > b ? a : b; }
 
+// NOTE: These must be declared after the templatized
+// versions as they are specializations.....
 inline vec2 min(vec2 a, vec2 b) { return vec2(min(a.x, b.x), min(a.y, b.y)); }
 inline vec2 max(vec2 a, vec2 b) { return vec2(max(a.x, b.x), max(a.y, b.y)); }
 
+template<typename T>
+inline T square(T x) { return x * x; }
 
-inline f32 clamp(f32 x, f32 min, f32 max) {
+template<typename T>
+inline T sign(T x) { return x < 0 ? -1 : 1; }
+
+template<typename T>
+inline T clamp(T x, T min, T max) {
     if(x < min) return min;
     if(x > max) return max;
     return x;
