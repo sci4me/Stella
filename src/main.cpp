@@ -324,6 +324,20 @@ s32 main(s32 argc, char **argv) {
         imgui_begin_frame();
 
 
+        //
+        // NOTE: We only have to recompute the view matrix if:
+        // 1. the scale changes
+        // 2. the window size changes
+        // 3. the player moves
+        //
+        // Since the player is probably going to be moving
+        // for like 50%+ of the time, it may not be worth it
+        // to cache these. *shrugs*
+        // If it's an issue, SIMD-ize the matrix multiply.
+        //              
+        //              - sci4me, 5/18/20
+        //
+
         auto s = mat4::scale(scale, scale, 1.0f);
         auto t = mat4::translate((window_width / 2 / scale) - player.pos.x, (window_height / 2 / scale) - player.pos.y, 0.0f);
         auto view = t * s;
