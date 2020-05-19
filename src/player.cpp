@@ -173,7 +173,7 @@ struct Player {
                                         open_tile_ui(tile);
                                         break;
                                     default:
-                                        // assert(0);
+                                        assert(0);
                                         break;
                                 }
                             } else {
@@ -205,7 +205,7 @@ struct Player {
                 r->push_solid_quad(
                     hovered_tile_x * TILE_SIZE, 
                     hovered_tile_y * TILE_SIZE, 
-                    clampf(mining_progress, 0.0f, 1.0f) * TILE_SIZE,
+                    clamp(mining_progress, 0.0f, 1.0f) * TILE_SIZE,
                     TILE_SIZE,
                     vec4(1.0f, 0.0f, 0.0f, 0.5f)
                 );
@@ -231,6 +231,9 @@ struct Player {
 
 private:
     Chunk* get_current_chunk() {
+        // NOTE: Don't forget to floor these divisions! Once up on a time
+        // I forgot to floor and spent like 10 minutes wondering why I had
+        // 0 and -0 as separate tile coords!
         return world->get_chunk_containing(floor(pos.x / TILE_SIZE), floor(pos.y / TILE_SIZE));
     }
 

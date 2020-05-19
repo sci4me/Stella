@@ -101,6 +101,12 @@ struct Tile_Ore : public Tile {
             texture = &textures[6];
         }
 
+        // NOTE TODO: We probably can just change this to use 1 texture!
+        // Just change the UVs! "shrink" them, if you will. Whether it be
+        // by using a hardcoded array of UVs or, more likely, just
+        // calculating them.
+        //                  - sci4me, 5/18/20
+
         r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, texture);
     }
 };
@@ -130,6 +136,13 @@ struct Tile_Chest : public Tile {
 };
 
 
+// NOTE TODO: Eventually we'll probably want to move the "smelting"
+// code somewhere else, possibly "crafting.cpp". Not sure yet.
+// This will become especially relevant once we have >1 kind of
+// "smelting machine" (furnace).
+// Or, for example, if we ever want to handle recipes in a way
+// that is not hardcoded (i.e. load from file, etc.)
+//                  - sci4me, 5/18/20
 constexpr u32 COAL_FUEL_POINTS          = 800;
 constexpr u32 FUEL_POINTS_PER_SMELT     = 100;
 
@@ -194,6 +207,9 @@ struct Tile_Furnace : public Tile {
     }
 
     virtual void update() override {
+        // TODO: Is this method really as simple as possible?
+        // Press X to doubt.
+
         // TODO: Only consume an item from the input slot
         // if we have fuel!
 

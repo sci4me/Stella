@@ -112,7 +112,7 @@ namespace ui {
         // so we don't have to push any extra ID info.
         bool open = true;
         if(ImGui::Begin("Chest", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
-            // NOTE TODO: hardcoded bs code for days
+            // NOTE TODO: hardcoded bs code for days 
             container(&c->container, 5, 5);
 
             ImGui::Separator();
@@ -246,6 +246,30 @@ namespace ui {
                     //
                     //                      - sci4me, 5/17/20
                     //
+
+                    //
+                    // Quick update to the above comment: I'm currently unsure how we would do this.
+                    // In order to get the flattened version of the recipe, we'd have to call like,
+                    // Job::calculate or something like it... but... we DEFINITELY don't want to do
+                    // that per-frame in our render code! So...... hmh.
+                    //
+                    // It's not that Job::calculate has to do any intense computation or anything, but,
+                    // you know, we're querying the player inventory constantly and that's probably
+                    // ending up doing a ton of linear searches (albeit with a relatively small N, but still)
+                    // So... I don't know. Maybe we could get away with calculating this every time just fine.
+                    // Especially considering that we only have to do so when hovering over the 'recipe'.
+                    // But idk.
+                    //
+                    // There's no cache-based optimization to do here since this depends on the player inventory,
+                    // and also since the computation itself isn't that expensive.. that wouldn't make sense.
+                    // It's really just the amount of iteration I'm worried about. But, obviously without profiling,
+                    // this is just a crap shoot.
+                    //
+                    // *shrugs*
+                    //
+                    //                      - sci4me, 5/18/20
+                    //
+
                     for(u32 j = 0; j < r->n_inputs; j++) {
                         auto& input = r->inputs[j];
                         u32 n = inventory->count_type(input.type);

@@ -107,7 +107,7 @@ bool debug_pause = false;
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse) {
-        scale = clampf(scale + y * 0.05f, 0.1f, 5.0f);
+        scale = clamp(scale + y * 0.05f, 0.1f, 5.0f);
     }
 }
 

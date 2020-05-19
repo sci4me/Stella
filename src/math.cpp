@@ -164,6 +164,13 @@ inline vec2 min(vec2 a, vec2 b) { return vec2(min(a.x, b.x), min(a.y, b.y)); }
 inline vec2 max(vec2 a, vec2 b) { return vec2(max(a.x, b.x), max(a.y, b.y)); }
 
 
+inline f32 clamp(f32 x, f32 min, f32 max) {
+    if(x < min) return min;
+    if(x > max) return max;
+    return x;
+}
+
+
 inline vec4 rgba255_to_rgba1(u32 c) {
     u8 r = c & 0xFF;
     u8 g = (c >> 8) & 0xFF;

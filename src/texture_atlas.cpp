@@ -1,3 +1,24 @@
+// NOTE TODO: So, we tried out the traditional texture atlas system
+// but actually, surprisingly, failed to get it working artifact-free.
+// This was before we did MIP mapping. Obviously, now that we _do_ MIP
+// mapping, we can't use this.
+//
+// We should rewrite this to use OpenGL texture arrays. I've never worked
+// with them before but they look simple enough.
+//
+// Frankly, the reason I haven't already done this is that our Batch_Renderer
+// shader (and the chunk shader, as of now) are written to use regular textures.
+//
+// I could easily convert those shaders (and the supporting C++ code) to use
+// array textures, but then they wouldn't support regular textures.
+//
+// The thing is, I really want to avoid having to do a conditional branch in my
+// shaders to check whether we should use a 2D or 3D textures.
+// So. Until I stop being stupid and realize a way to do this, uh.. yeah. F.
+//
+//                      - sci4me, 5/18/20
+//
+
 enum {
     UV_TOP_LEFT = 0,
     UV_TOP_RIGHT = 1,

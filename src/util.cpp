@@ -21,12 +21,6 @@ char* read_entire_file(char *name) {
     return code;
 }
 
-f32 clampf(f32 x, f32 min, f32 max) {
-    if(x < min) return min;
-    if(x > max) return max;
-    return x;
-}
-
 void dump_gl_info() {
     // TODO: some kind of logging!!!
 
