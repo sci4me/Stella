@@ -71,6 +71,14 @@ Code/Dev Features/Quality:
      - As for GLFW, I think we'll just try leaving it in the dynlib
        and saving the ... window...
        - Or maybe we should just .. move it.. idk.
+   - We will absolutely have to ensure that ALL memory allocation
+     goes through our own API so that we can control _where_ the
+     allocations happen. i.e. you can't allocate memory in the dynlib
+     and expect it to survive reload! The call to malloc must occur
+     within the persistent executable.
+   - We also would like to make it possible to build either as an exe
+     or as an exe and a dll/so, etc. depending on whether it's a dev
+     or release build. This shouldn't be hard; maybe just a bit finicky.
  - Shader Abstraction
    - Bind/Unbind
    - Ability to handle uniforms
