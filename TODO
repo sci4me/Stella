@@ -65,6 +65,12 @@ Code/Dev Features/Quality:
        about memory; all allocation must happen from within
        the platform layer so that when the dynlib reloads, it can
        just keep using that same memory.
+   - We may want to move the GLEW/GLFW stuff into platform layer?
+     - Well, actually, we should probably just leave GLEW in the
+       dynlib and just call glewInit every time...
+     - As for GLFW, I think we'll just try leaving it in the dynlib
+       and saving the ... window...
+       - Or maybe we should just .. move it.. idk.
  - Shader Abstraction
    - Bind/Unbind
    - Ability to handle uniforms
