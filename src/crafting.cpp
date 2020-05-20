@@ -38,17 +38,22 @@ namespace crafting {
         Recipe *value;
     } *output_type_to_recipe = nullptr;
 
-    void register_recipe(Item_Stack output, u32 time, std::initializer_list<Item_Stack> inputs) {
-        auto r = (Recipe*) malloc(sizeof(Recipe) + sizeof(Item_Stack) * inputs.size());
+    template<typename... T>
+    void register_recipe(Item_Stack output, u32 time, T... _inputs) {
+        static_assert((otr::type_eq<T, Item_Stack> && ...));
+        
+        auto n_inputs = sizeof...(_inputs);
+        Item_Stack inputs[] = { _inputs... };
+
+        auto r = (Recipe*) malloc(sizeof(Recipe) + sizeof(Item_Stack) * n_inputs);
 
         r->inputs = (Item_Stack*) (r + 1); // inputs are right after the Recipe struct
-        r->n_inputs = inputs.size();
+        r->n_inputs = n_inputs;
         r->output = output;
         r->time = time;
 
-        u32 i = 0;
-        for(auto s : inputs) {
-            r->inputs[i++] = s;
+        for(u32 i = 0; i < n_inputs; i++) {
+            r->inputs[i] = inputs[i];;
         }
 
         arrput(recipes, r);
@@ -56,10 +61,10 @@ namespace crafting {
     }
 
     void init() {
-        register_recipe({ ITEM_FURNACE, 1 },        100, { { ITEM_COBBLESTONE, 8 } });
-        register_recipe({ ITEM_CHEST, 1 },          100, { { ITEM_COBBLESTONE, 8 }, { ITEM_IRON_PLATE, 4 } });
-        register_recipe({ ITEM_IRON_GEAR, 1 },      100, { { ITEM_IRON_PLATE, 6 } });
-        register_recipe({ ITEM_MINING_MACHINE, 1 }, 100, { { ITEM_COBBLESTONE, 16 }, { ITEM_IRON_PLATE, 8 }, { ITEM_IRON_GEAR, 4 } });
+        register_recipe(Item_Stack(ITEM_FURNACE, 1),         100, Item_Stack(ITEM_COBBLESTONE, 8));
+        register_recipe(Item_Stack(ITEM_CHEST, 1),           100, Item_Stack(ITEM_COBBLESTONE, 8), Item_Stack(ITEM_IRON_PLATE, 4));
+        register_recipe(Item_Stack(ITEM_IRON_GEAR, 1),       100, Item_Stack(ITEM_IRON_PLATE, 6));
+        register_recipe(Item_Stack(ITEM_MINING_MACHINE, 1),  100, Item_Stack(ITEM_COBBLESTONE, 16), Item_Stack(ITEM_IRON_PLATE, 8), Item_Stack(ITEM_IRON_GEAR, 4));
     }
 
     void free() {

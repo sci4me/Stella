@@ -174,11 +174,19 @@ void Chunk::init(World *world, s32 x, s32 y) {
     ibo.init(MAX_INDICES * sizeof(u32), GL_STATIC_DRAW);
 
     vao.init();
+    /*
     vao.add_vertex_buffer(vbo, {
         { GL_FLOAT, 2 },
         { GL_FLOAT, 2 },
         { GL_INT, 1 }
     });
+    */
+    vao.add_vertex_buffer(
+        vbo,
+        Vertex_Element(GL_FLOAT, 2),
+        Vertex_Element(GL_FLOAT, 2),
+        Vertex_Element(GL_INT, 1)
+    );
     vao.set_index_buffer(ibo);
 }
 

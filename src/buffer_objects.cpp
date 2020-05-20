@@ -31,6 +31,8 @@ struct Vertex_Element {
     GLenum type;
     s32 count;
 
+    Vertex_Element(GLenum _type, s32 _count) : type(_type), count(_count) {}
+
     s64 size() const {
         switch(type) {
             case GL_FLOAT:
@@ -64,20 +66,26 @@ struct Vertex_Array {
         glBindVertexArray(0);
     }
 
-    void add_vertex_buffer(Vertex_Buffer& vbo, std::initializer_list<Vertex_Element> format) {
+    template<typename... T>
+    void add_vertex_buffer(Vertex_Buffer& vbo, T... _format) {
+        static_assert((otr::type_eq<T, Vertex_Element> && ...));
+        
+        auto n = sizeof...(_format);
+        Vertex_Element format[] = { _format... };
+
         s64 stride = 0;
-        for(auto& e: format) {
-            stride += e.size();
+        for(u32 i = 0; i < n; i++) {
+            stride += format[i].size();
         }
 
         glVertexArrayVertexBuffer(id, binding_index, vbo.id, 0, stride);
 
-        s32 i = 0;
         s64 offset = 0;
-        for(auto& e: format) {
+        for(u32 i = 0; i < n; i++) {
             glEnableVertexArrayAttrib(id, i);
             glVertexArrayAttribBinding(id, i, binding_index);
 
+            auto const& e = format[i];
             switch(e.type) {
                 case GL_FLOAT:
                     glVertexArrayAttribFormat(id, i, e.count, e.type, GL_FALSE, offset);
@@ -90,7 +98,6 @@ struct Vertex_Array {
             }
             
             offset += e.size();
-            i++;
         }
 
         binding_index++;
