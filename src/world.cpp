@@ -393,22 +393,15 @@ void Chunk::draw(Batch_Renderer *r) {
     for(u32 k = 0; k < hmlen(layer1); k++) {
         auto p = layer1[k].key;
         auto tile = layer1[k].value;
-
-        s32 l = (x * SIZE) + p.x;
-        s32 m = (y * SIZE) + p.y;
-
         tile->draw(r);
     }
 
     // TODO: This is just a copy/paste of the above! FIX IT!
     // i.e. Don't duplicate the code lol
+    // ... er... maybe? er... yeah.....
     for(u32 k = 0; k < hmlen(layer2); k++) {
         auto p = layer2[k].key;
         auto tile = layer2[k].value;
-
-        s32 l = (x * SIZE) + p.x;
-        s32 m = (y * SIZE) + p.y;
-
         tile->draw(r);
     }
 }
