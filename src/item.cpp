@@ -23,16 +23,18 @@ Texture item_textures[N_ITEM_TYPES];
 const char *item_names[N_ITEM_TYPES];
 
 void init_items() {
-    item_textures[ITEM_COBBLESTONE]     = assets::textures::cobblestone[6];
-    item_textures[ITEM_COAL_ORE]        = assets::textures::coal_ore[6];
-    item_textures[ITEM_IRON_ORE]        = assets::textures::iron_ore[6];
-    item_textures[ITEM_GOLD_ORE]        = assets::textures::gold_ore[6];
-    item_textures[ITEM_IRON_PLATE]      = assets::textures::iron_plate;
-    item_textures[ITEM_GOLD_PLATE]      = assets::textures::gold_plate;
-    item_textures[ITEM_IRON_GEAR]       = assets::textures::iron_gear;
-    item_textures[ITEM_CHEST]           = assets::textures::chest;
-    item_textures[ITEM_FURNACE]         = assets::textures::furnace;
-    item_textures[ITEM_MINING_MACHINE]  = assets::textures::mining_machine;
+    using namespace assets::textures;
+
+    item_textures[ITEM_COBBLESTONE]     = cobblestone[6];
+    item_textures[ITEM_COAL_ORE]        = coal_ore[6];
+    item_textures[ITEM_IRON_ORE]        = iron_ore[6];
+    item_textures[ITEM_GOLD_ORE]        = gold_ore[6];
+    item_textures[ITEM_IRON_PLATE]      = iron_plate;
+    item_textures[ITEM_GOLD_PLATE]      = gold_plate;
+    item_textures[ITEM_IRON_GEAR]       = iron_gear;
+    item_textures[ITEM_CHEST]           = chest;
+    item_textures[ITEM_FURNACE]         = furnace;
+    item_textures[ITEM_MINING_MACHINE]  = mining_machine;
 
     item_names[ITEM_COBBLESTONE]        = "Cobblestone";
     item_names[ITEM_COAL_ORE]           = "Coal Ore";
