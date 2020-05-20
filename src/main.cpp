@@ -1,3 +1,8 @@
+#define GL_DEBUG
+#define GL_MAJOR 4
+#define GL_MINOR 4
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -31,19 +36,16 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#include "PerlinNoise.hpp"
-
+#define RND_U32 u32
+#define RND_U64 u64
 #define RND_IMPLEMENTATION
 #include "rnd.h"
-
-#define GL_DEBUG
-#define GL_MAJOR 4
-#define GL_MINOR 4
 
 #include "imgui_support.cpp"
 #include "util.cpp"
 #include "math.cpp"
 #include "static_array.cpp"
+#include "perlin_noise.cpp"
 #include "static_bitset.cpp"
 #include "slot_allocator.cpp"
 #include "shader.cpp"
@@ -220,7 +222,7 @@ s32 main(s32 argc, char **argv) {
 
     Player player;
     player.init(window, &world);
-    player.pos = {4400, -100};
+    player.pos = {496, 3637};
 
 
 

@@ -12,5 +12,6 @@ struct Static_Array {
         return count++;
     }
 
-    // TODO: override [] 'operator'
+    T& operator[](s32 x) { return data[x]; }
+    T const& operator[](s32 x) const { return data[x]; }
 };

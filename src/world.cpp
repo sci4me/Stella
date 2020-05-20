@@ -45,7 +45,7 @@ struct Chunk {
 };
 
 struct World {
-    siv::PerlinNoise noise;
+    PerlinNoise noise;
 
     u32 seed;
 

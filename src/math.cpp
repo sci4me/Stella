@@ -153,27 +153,32 @@ struct mat4 {
 
 
 template<typename T>
-inline T min(T a, T b) { return a < b ? a : b; }
+constexpr T min(T a, T b) noexcept { return a < b ? a : b; }
 
 template<typename T>
-inline T max(T a, T b) { return a > b ? a : b; }
+constexpr T max(T a, T b) noexcept { return a > b ? a : b; }
 
 // NOTE: These must be declared after the templatized
 // versions as they are specializations.....
-inline vec2 min(vec2 a, vec2 b) { return vec2(min(a.x, b.x), min(a.y, b.y)); }
-inline vec2 max(vec2 a, vec2 b) { return vec2(max(a.x, b.x), max(a.y, b.y)); }
+constexpr vec2 min(vec2 a, vec2 b) noexcept { return vec2(min(a.x, b.x), min(a.y, b.y)); }
+constexpr vec2 max(vec2 a, vec2 b) noexcept { return vec2(max(a.x, b.x), max(a.y, b.y)); }
 
 template<typename T>
-inline T square(T x) { return x * x; }
+constexpr T square(T x) noexcept { return x * x; }
 
 template<typename T>
-inline T sign(T x) { return x < 0 ? -1 : 1; }
+constexpr T sign(T x) noexcept { return x < 0 ? -1 : 1; }
 
 template<typename T>
-inline T clamp(T x, T min, T max) {
+constexpr T clamp(T x, T min, T max) noexcept {
     if(x < min) return min;
     if(x > max) return max;
     return x;
+}
+
+template<typename T>
+constexpr T lerp(T t, T a, T b) noexcept {
+    return a + t * (b - a);
 }
 
 
