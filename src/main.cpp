@@ -41,6 +41,9 @@
 #define RND_IMPLEMENTATION
 #include "rnd.h"
 
+#include <initializer_list>
+#include <new>
+
 #include "imgui_support.cpp"
 #include "util.cpp"
 #include "math.cpp"
