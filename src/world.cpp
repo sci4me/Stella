@@ -174,13 +174,6 @@ void Chunk::init(World *world, s32 x, s32 y) {
     ibo.init(MAX_INDICES * sizeof(u32), GL_STATIC_DRAW);
 
     vao.init();
-    /*
-    vao.add_vertex_buffer(vbo, {
-        { GL_FLOAT, 2 },
-        { GL_FLOAT, 2 },
-        { GL_INT, 1 }
-    });
-    */
     vao.add_vertex_buffer(
         vbo,
         Vertex_Element(GL_FLOAT, 2),
@@ -243,8 +236,7 @@ void Chunk::generate() {
                 );
 
                 if(m < coal_threshold) {
-                    auto tile_mem = malloc(sizeof(Tile_Ore));
-                    auto tile = new(tile_mem) Tile_Ore;
+                    auto tile = make_tile<Tile_Ore>();
                     tile->type = TILE_COBBLESTONE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;
@@ -266,8 +258,7 @@ void Chunk::generate() {
                 );
 
                 if(m < coal_threshold) {
-                    auto tile_mem = malloc(sizeof(Tile_Ore));
-                    auto tile = new(tile_mem) Tile_Ore;
+                    auto tile = make_tile<Tile_Ore>();
                     tile->type = TILE_COAL_ORE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;
@@ -289,8 +280,7 @@ void Chunk::generate() {
                 );
 
                 if(m < iron_threshold) {
-                    auto tile_mem = malloc(sizeof(Tile_Ore));
-                    auto tile = new(tile_mem) Tile_Ore;
+                    auto tile = make_tile<Tile_Ore>();
                     tile->type = TILE_IRON_ORE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;
@@ -312,8 +302,7 @@ void Chunk::generate() {
                 );
 
                 if(m < gold_threshold) {
-                    auto tile_mem = malloc(sizeof(Tile_Ore));
-                    auto tile = new(tile_mem) Tile_Ore;
+                    auto tile = make_tile<Tile_Ore>();
                     tile->type = TILE_GOLD_ORE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;

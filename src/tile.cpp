@@ -161,16 +161,20 @@ struct Tile_Furnace : public Tile {
     Item_Container fuel;
     Item_Container output;
 
-    u32 fuel_points = 0;
-    bool is_smelting = false;
+    u32 fuel_points;
+    bool is_smelting;
     Item_Type smelting_input_type;
     Item_Type smelting_output_type;
-    u32 smelting_progress = 0;
+    u32 smelting_progress;
 
     virtual void init() override {
         Tile::init();
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
         flags |= TILE_FLAG_IS_COLLIDER;
+
+        fuel_points = 0;
+        is_smelting = false;
+        smelting_progress = 0;
 
         // NOTE TODO: Don't hardcode these numbers!!
         // They're 4 and 28 because our tile size is 32;
@@ -297,12 +301,10 @@ struct Tile_Mining_Machine : public Tile {
     }
 };
 
-
 template<typename T>
-Tile* make_tile() {
-    auto mem = malloc(sizeof(T));
-    T *tile = new(mem) T;
-    return (Tile*)tile;
+T* make_tile() {
+    auto t = malloc(sizeof(T));
+    return new(t) T;
 }
 
 Tile* make_tile(Tile_Type type) {
