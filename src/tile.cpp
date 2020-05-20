@@ -301,9 +301,19 @@ struct Tile_Mining_Machine : public Tile {
     }
 };
 
+
+// NOTE: The following crap is just to make sure
+// that the vtables get initialized, which happens
+// sometime during the ctor...
+// Long-term, we should probably just remove all
+// use of virtual methods.
+
+inline void* operator new(size_t, void* ptr) { return ptr; }
+inline void  operator delete(void*, void*) {}
+
 template<typename T>
 T* make_tile() {
-    auto t = malloc(sizeof(T));
+    void *t = malloc(sizeof(T));
     return new(t) T;
 }
 
