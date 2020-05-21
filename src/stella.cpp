@@ -79,17 +79,6 @@ void Game::window_size_callback(s32 width, s32 height) {
 }
 
 s32 Game::run() {
-	Hash_Table<u32, u32> ht;
-	ht.init();
-	ht.set(5, 3);
-	ht.set(32, 69);
-	ht.set(69, 420);
-	ht.set(420, 1337);
-	printf("%d %d %d %d (%d %d %d %d)\n", ht.get(5), ht.get(32), ht.get(69), ht.get(420), ht.index_of(5), ht.index_of(32), ht.index_of(69), ht.index_of(420));
-	assert(ht.remove(69));
-	printf("%d %d %d %d (%d %d %d %d)\n", ht.get(5), ht.get(32), ht.get(69), ht.get(420), ht.index_of(5), ht.index_of(32), ht.index_of(69), ht.index_of(420));
-	ht.deinit();
-
 	if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
         return 1;

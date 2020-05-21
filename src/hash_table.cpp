@@ -103,15 +103,36 @@ struct Hash_Table {
 		free(slots);
 	}
 
-	void resize(u32 size) {
+	void resize(u32 new_size) {
 		assert(size);
 		assert((size & (size - 1)) == 0);
 
-		// TODO
-		assert(0);
+		u32 old_count = count;
+		u32 old_size = size;
+		Slot *old_slots = slots;
+
+		count = 0;
+		size = new_size;
+		mask = size - 1;
+		slots = (Slot*) malloc(size * sizeof(Slot));
+		for(u32 i = 0; i < size; i++) slots[i].hash = 0;
+
+		for(u32 i = 0; i < old_size; i++) {
+			if(old_slots[i].hash) {
+				set(old_slots[i].key, old_slots[i].value);
+			}
+		}
+
+		assert(count == old_count);
+
+		free(old_slots);
 	}
 
 	void set(K _key, V _value) {
+		if(load_factor() > HASH_TABLE_LOAD_FACTOR_EXPAND_THRESHOLD) {
+			resize(size * 2);
+		}
+
 		K key = _key;
 		V value = _value;
 		u32 hash = hash_key(key);
@@ -123,11 +144,14 @@ struct Hash_Table {
 				slots[i].key = key;
 				slots[i].value = value;
 				slots[i].hash = hash;
+				count++;
 				return;
 			}
 
-			s32 epd = (i + size - (hash & mask)) & mask;
+			s32 epd = (i + size - (slots[i].hash & mask)) & mask;
 			if(epd < dist) {
+				assert(slots[i].hash);
+
 				K _k = slots[i].key;
 				V _v = slots[i].value;
 				u32 _h = slots[i].hash;
@@ -161,8 +185,14 @@ struct Hash_Table {
 	s32 index_of(K key) {
 		u32 hash = hash_key(key);
 		s32 i = hash & mask;
+		u32 dist = 0;
 		for(;;) {
 			if(slots[i].hash == 0) {
+				return -1;
+			}
+
+			s32 epd = (i + size - (hash & mask)) & mask;
+			if(dist > epd) {
 				return -1;
 			}
 
@@ -171,6 +201,7 @@ struct Hash_Table {
 			}
 
 			i = (i + 1) & mask;
+			dist++;
 		}
 	}
 
@@ -192,8 +223,17 @@ struct Hash_Table {
 		}
 
 		slots[i].hash = 0;
+		count--;
+
+		if(load_factor() < HASH_TABLE_LOAD_FACTOR_SHRINK_THRESHOLD) {
+			resize(size / 2);
+		}
 
 		return true;
+	}
+
+	f32 load_factor() {
+		return (f32) count / (f32) size;
 	}
 
 private:
