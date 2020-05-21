@@ -42,14 +42,14 @@ struct Texture_Atlas {
     u32 columns;
     u32 rows;
 
-    Texture_Atlas_Entry *entries;
+    Dynamic_Array<Texture_Atlas_Entry> entries;
 
     void init(u32 sprite_width, u32 sprite_height, u32 columns, u32 rows) {
         this->sprite_width = sprite_width;
         this->sprite_height = sprite_height;
         this->columns = columns;
         this->rows = rows;
-        this->entries = nullptr;
+        entries.init();
 
         u32 atlas_width = sprite_width * columns;
         u32 atlas_height = sprite_height * rows;
@@ -63,12 +63,14 @@ struct Texture_Atlas {
         glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
-    void free() {
+    void deinit() {
         glDeleteTextures(1, &id);
+
+        entries.deinit();
     }
 
     u32 add(void *image) {
-        u32 index = arrlen(entries);
+        u32 index = entries.count;
         assert(index < (columns * rows));
 
         u32 col = index % columns;
@@ -92,7 +94,7 @@ struct Texture_Atlas {
                 vec2(u1, v2)
             }
         };
-        arrput(entries, entry);
+        entries.push(entry);
 
         return index;
     }
