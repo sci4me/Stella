@@ -194,8 +194,7 @@ namespace crafting {
                 }
 
                 if(!missing_something) {
-                    Request req = { recipe, count };
-                    request.push(req); // TODO
+                    request.push({ recipe, count });
                 }
 
                 return missing_something;
