@@ -34,3 +34,7 @@ void dump_gl_info() {
     printf("  GL_MAJOR_VERSION              %d\n", major);
     printf("  GL_MINOR_VERSION              %d\n", minor);
 }
+
+constexpr u32 rotl32(u32 x, u32 r) {
+    return (x << r) | (x >> (32 - r));
+}
