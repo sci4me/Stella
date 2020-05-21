@@ -25,7 +25,7 @@ struct Player {
     bool show_inventory = false;
 
     // TODO: maybe change this to be an overlay that we always
-    // display whenever arrlen(queue) > 0?
+    // display whenever queue.count > 0?
     bool show_crafting_queue = false;
 
 

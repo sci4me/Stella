@@ -213,7 +213,7 @@ namespace ui {
 
             ImGui::Separator();
 
-            for(u32 i = 0; i < arrlen(crafting::recipes); i++) {
+            for(u32 i = 0; i < crafting::recipes.count; i++) {
                 auto r = crafting::recipes[i];
                 
                 if(ImGui::ImageButton((ImTextureID)(u64)item_textures[r->output.type].id, { SLOT_SIZE, SLOT_SIZE })) {

@@ -1,6 +1,4 @@
 Features:
- - Linux Build!!!!!
-   - Also, we're not doing OSX. Fuck Apple. #FuckApple2k20
  - Entities
    - Item Entities
    - Other Entities? (eventually, TM)
@@ -38,6 +36,11 @@ Features:
    - Also, pressing E opens the inventory, shouldn't it close it too?
 
 Code/Dev Features/Quality:
+ - Build GLEW and GLFW from source!
+   - Difficult to do on Windows (maybe)
+     - Not going to use VS!!!
+       - So we'll just write our own
+         build scripts...
  - In-Game Profiler
    - Instrumentation; use it
  - Make our own String type

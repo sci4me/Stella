@@ -27,12 +27,7 @@ namespace crafting {
     //                  - sci4me, 5/17/20
     //
 
-
-    // TODO: Whenever I get around to making the Arena in sci.h
-    // have a configurable block size, consider using that here
-    // instead of malloc.
-    //              - sci4me, 5/14/20
-    Recipe **recipes = nullptr;
+    Dynamic_Array<Recipe*> recipes;
     struct {
         Item_Type key;
         Recipe *value;
@@ -45,6 +40,10 @@ namespace crafting {
         auto n_inputs = sizeof...(_inputs);
         Item_Stack inputs[] = { _inputs... };
 
+        // TODO: Whenever I get around to making the Arena in sci.h
+        // have a configurable block size, consider using that here
+        // instead of malloc.
+        //              - sci4me, 5/14/20
         auto r = (Recipe*) malloc(sizeof(Recipe) + sizeof(Item_Stack) * n_inputs);
 
         r->inputs = (Item_Stack*) (r + 1); // inputs are right after the Recipe struct
@@ -56,11 +55,13 @@ namespace crafting {
             r->inputs[i] = inputs[i];;
         }
 
-        arrput(recipes, r);
+        recipes.push(r);
         hmput(output_type_to_recipe, output.type, r);
     }
 
     void init() {
+        recipes.init();
+
         register_recipe(Item_Stack(ITEM_FURNACE, 1),         100, Item_Stack(ITEM_COBBLESTONE, 8));
         register_recipe(Item_Stack(ITEM_CHEST, 1),           100, Item_Stack(ITEM_COBBLESTONE, 8), Item_Stack(ITEM_IRON_PLATE, 4));
         register_recipe(Item_Stack(ITEM_IRON_GEAR, 1),       100, Item_Stack(ITEM_IRON_PLATE, 6));
@@ -68,10 +69,10 @@ namespace crafting {
     }
 
     void free() {
-        for(u32 i = 0; i < arrlen(recipes); i++) {
+        for(u32 i = 0; i < recipes.count; i++) {
             ::free(recipes[i]);
         }
-        arrfree(recipes);
+        recipes.deinit();
 
         hmfree(output_type_to_recipe);
     }
@@ -86,14 +87,18 @@ namespace crafting {
 
             bool inputs_available;
             u32 have[N_ITEM_TYPES];
-            Request *request;
+            Dynamic_Array<Request> request;
             u32 request_index;
             u32 request_count;
             u32 crafting_time;
             u32 progress;
 
+            void init() {
+                request.init();
+            }
+
             void deinit() {
-                arrfree(request);
+                request.deinit();
             }
 
             bool next_request() {
@@ -101,7 +106,7 @@ namespace crafting {
                 request_count = 0;
                 progress = 0;
 
-                bool result = request_index < arrlen(request);
+                bool result = request_index < request.count;
                 if(result) crafting_time = request[request_index].recipe->time;
                 return result;
             }
@@ -161,6 +166,7 @@ namespace crafting {
 
             static Job calculate(Recipe *recipe, Item_Container *player_inventory) {
                 Job result = {};
+                result.init();
                 result.inputs_available = !result.calculate(recipe, 1, player_inventory);
                 return result;
             }
@@ -189,7 +195,7 @@ namespace crafting {
 
                 if(!missing_something) {
                     Request req = { recipe, count };
-                    arrput(request, req);
+                    request.push(req); // TODO
                 }
 
                 return missing_something;
@@ -197,16 +203,17 @@ namespace crafting {
         };
 
         Item_Container *player_inventory;
-        Job *queue = nullptr;
+        Dynamic_Array<Job> queue;
 
         bool crafting_paused = false;
 
         void init(Item_Container *player_inventory) {
             this->player_inventory = player_inventory;
+            queue.init();
         }
 
         void deinit() {
-            arrfree(queue);
+            queue.deinit();
         }
 
         bool request(Recipe *r) {
@@ -219,13 +226,13 @@ namespace crafting {
 
             job.start(player_inventory);
 
-            arrput(queue, job);
+            queue.push(job);
             return true;
         }
 
         void update() {
             if(crafting_paused) return;
-            if(arrlen(queue) == 0) return;
+            if(queue.count == 0) return;
             
             auto& job = queue[0];
             auto& req = job.current();
@@ -266,7 +273,7 @@ namespace crafting {
             }
 
             queue[0].deinit();
-            arrdel(queue, 0);
+            queue.ordered_remove(0);
         }
 
         void draw() {
@@ -276,7 +283,7 @@ namespace crafting {
 
             ImGui::Separator();
 
-            auto queue_len = arrlen(queue);
+            auto queue_len = queue.count;
             f32 crafting_progress = 0.0f;
             if(queue_len) {
                 crafting_progress = (f32)queue[0].progress / (f32)queue[0].crafting_time;
@@ -294,7 +301,7 @@ namespace crafting {
                 if(i == 0) start = job.request_index;
                 else start = 0;
 
-                for(u32 k = start; k < arrlen(job.request); k++) {
+                for(u32 k = start; k < job.request.count; k++) {
                     auto const& req = job.request[k];
 
                     u32 end;
@@ -337,7 +344,7 @@ namespace crafting {
                 if(job.have[i] > 0) player_inventory->insert(Item_Stack(type, job.have[i]));
             }
             job.deinit();
-            arrdel(queue, job_index);
+            queue.ordered_remove(job_index);
         }
     };
 }
