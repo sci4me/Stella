@@ -28,10 +28,7 @@ namespace crafting {
     //
 
     Dynamic_Array<Recipe*> recipes;
-    struct {
-        Item_Type key;
-        Recipe *value;
-    } *output_type_to_recipe = nullptr;
+    Hash_Table<Item_Type, Recipe*> output_type_to_recipe;
 
     template<typename... T>
     void register_recipe(Item_Stack output, u32 time, T... _inputs) {
@@ -56,11 +53,12 @@ namespace crafting {
         }
 
         recipes.push(r);
-        hmput(output_type_to_recipe, output.type, r);
+        output_type_to_recipe.set(output.type, r);
     }
 
     void init() {
         recipes.init();
+        output_type_to_recipe.init();
 
         register_recipe(Item_Stack(ITEM_FURNACE, 1),         100, Item_Stack(ITEM_COBBLESTONE, 8));
         register_recipe(Item_Stack(ITEM_CHEST, 1),           100, Item_Stack(ITEM_COBBLESTONE, 8), Item_Stack(ITEM_IRON_PLATE, 4));
@@ -72,9 +70,9 @@ namespace crafting {
         for(u32 i = 0; i < recipes.count; i++) {
             ::free(recipes[i]);
         }
+        
         recipes.deinit();
-
-        hmfree(output_type_to_recipe);
+        output_type_to_recipe.deinit();
     }
 
 
@@ -184,11 +182,11 @@ namespace crafting {
 
                     if(n < needed.count) {
                         u32 r = needed.count - n;
-                        auto idx = hmgeti(output_type_to_recipe, needed.type);
+                        s32 idx = output_type_to_recipe.index_of(needed.type);
                         if(idx == -1) {
                             missing_something = true;
                         } else {
-                            missing_something = missing_something || calculate(output_type_to_recipe[idx].value, r, player_inventory);
+                            missing_something = missing_something || calculate(output_type_to_recipe.slots[idx].value, r, player_inventory);
                         }
                     }
                 }

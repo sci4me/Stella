@@ -191,7 +191,7 @@ s32 Game::run() {
                 t->x & (Chunk::SIZE - 1),
                 t->y & (Chunk::SIZE - 1)
             };
-            hmput(c->layer2, key, t);
+            c->layer2.set(key, t);
         };
 
         f(135, -4);

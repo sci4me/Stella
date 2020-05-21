@@ -109,7 +109,7 @@ struct Player {
                     if(ui::held_item_container) {
                         auto held_stack = &ui::held_item_container->slots[ui::held_item_index];
 
-                        auto wtf = hmgeti(chunk->layer2, key);
+                        auto wtf = chunk->layer2.index_of(key);
                         if(wtf != -1) {
                             placement_valid = false;
                         } else {
@@ -130,7 +130,7 @@ struct Player {
                                 tile->x = hovered_tile_x;
                                 tile->y = hovered_tile_y;
                                 tile->init();
-                                hmput(chunk->layer2, key, tile);
+                                chunk->layer2.set(key, tile);
 
                                 
                                 Item_Stack stack = *held_stack;
@@ -151,8 +151,8 @@ struct Player {
                             }
                         }
                     } else {
-                        auto l1i = hmgeti(chunk->layer1, key);
-                        auto l2i = hmgeti(chunk->layer2, key);
+                        s32 l1i = chunk->layer1.index_of(key);
+                        s32 l2i = chunk->layer2.index_of(key);
 
                         if(l1i != -1 || l2i != -1) {
                             tile_hovered = true;
@@ -165,7 +165,7 @@ struct Player {
                                 // my ass. So fuck it, for now it's this way, future me will suffer through fixing it.
                                 // #PrankYourFutureSelf2k20 #YEET
                                 //              - sci4me, 5/13/20
-                                auto tile = chunk->layer2[l2i].value;
+                                auto tile = chunk->layer2.slots[l2i].value;
                                 switch(tile->type) {
                                     case TILE_CHEST:
                                     case TILE_FURNACE:
@@ -271,8 +271,10 @@ private:
 
             // NOTE TODO: We don't really have to check EVERY tile
             // for collisions! Just check the ones close to us.
-            for(u32 i = 0; i < hmlen(chunk->layer2); i++) {
-                auto tile = chunk->layer2[i].value;
+            for(u32 i = 0; i < chunk->layer2.size; i++) {
+                if(chunk->layer2.slots[i].hash == 0) continue;
+
+                auto tile = chunk->layer2.slots[i].value;
                 if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
                 auto const& tile_bb = tile->collision_aabb;
@@ -322,15 +324,15 @@ private:
             hovered_tile_y & (Chunk::SIZE - 1)
         };
 
-        auto layer = chunk->layer2;
-        auto index = hmgeti(layer, key);
+        auto layer = &chunk->layer2;
+        auto index = layer->index_of(key);
         if(index == -1) {
-            layer = chunk->layer1;
-            index = hmgeti(layer, key);
+            layer = &chunk->layer1;
+            index = layer->index_of(key);
         }
         assert(index != -1);
         
-        Tile *tile = layer[index].value;
+        Tile *tile = layer->slots[index].value;
 
         switch(tile->type) {
             case TILE_COBBLESTONE:
@@ -356,7 +358,7 @@ private:
                 assert(!inventory.insert({ ore_item, 1 }));
 
                 if(ore->count == 1) {
-                    hmdel(layer, key);
+                    assert(layer->remove(key));
                     ore->free();
                     ::free(ore);
                 } else {
@@ -408,7 +410,7 @@ private:
                 // TODO: remove the assert, handle the result.
                 assert(!inventory.insert({ ITEM_CHEST, 1 }));
 
-                hmdel(layer, key);
+                layer->remove(key);
                 chest->free();
                 ::free(chest);
                 break;

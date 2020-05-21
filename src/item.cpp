@@ -112,38 +112,44 @@ struct Item_Container {
         // TODO: This implementation _can't_ be the most efficient/ideal one.....
         // It's kinda just the naive hacky version... I suspect.
 
-        struct {
-            Item_Type key;
-            u32 value;
-        } *stacks = nullptr;
+        Hash_Table<Item_Type, u32> stacks;
+
+        // NOTE: We set the size to 30% more than the number of slots we have;
+        // this should guarantee that we never have to resize the table.
+        // We then round up to the next power of 2 since the table requires that.
+        //                  - sci4me, 5/21/20
+        stacks.init(next_pow2_u32(size + (u32)(size * (1.0f - HASH_TABLE_LOAD_FACTOR_EXPAND_THRESHOLD))));
 
         for(u32 i = 0; i < size; i++) {
             if(!slots[i].count) continue;
             
             auto key = slots[i].type;
-            u32 idx = hmgeti(stacks, key);
+            s32 idx = stacks.index_of(key);
             if(idx == -1) {
-                hmput(stacks, key, slots[i].count);
+                stacks.set(key, slots[i].count);
             } else {
-                stacks[idx].value += slots[i].count;
+                stacks.slots[idx].value += slots[i].count;
             }
         }
 
         memset(slots, 0, size * sizeof(Item_Stack));
 
         u32 slot = 0;
-        for(u32 i = 0; i < hmlen(stacks); i++) {
-            u32 remaining = stacks[i].value;
+        for(u32 i = 0; i < stacks.size; i++) {
+            if(stacks.slots[i].hash == 0) continue;
+
+            auto key = stacks.slots[i].key;
+            u32 remaining = stacks.slots[i].value;
             do {
                 u32 n = min(remaining, MAX_ITEM_SLOT_SIZE);
                 remaining -= n;
-                slots[slot].type = stacks[i].key;
+                slots[slot].type = key;
                 slots[slot].count = n;
                 slot++;
             } while(remaining);
         }
 
-        hmfree(stacks);
+        stacks.deinit();
     }
 
     bool accepts_item_type(Item_Type type) {

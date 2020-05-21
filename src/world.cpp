@@ -7,11 +7,6 @@ struct Chunk {
     };
     #pragma pack(pop)
 
-    struct Tile_Map {
-        ivec2 key;
-        Tile *value;
-    };
-
     static constexpr s32 SIZE = 64; // must be a power of 2!
     static constexpr s32 LAYERS = 3;
 
@@ -25,8 +20,8 @@ struct Chunk {
     s32 y;
 
     Tile_Type layer0[SIZE][SIZE];
-    Tile_Map *layer1;
-    Tile_Map *layer2;
+    Hash_Table<ivec2, Tile*> layer1;
+    Hash_Table<ivec2, Tile*> layer2;
 
     Vertex_Array vao;
     Vertex_Buffer vbo;
@@ -61,7 +56,6 @@ struct World {
         this->seed = seed;
         noise.reseed(seed);
 
-        printf("%llu\n", sizeof(Chunk));
         chunks.init(64);
 
         chunk_shader = load_shader_program("chunk", VERTEX_SHADER | FRAGMENT_SHADER);
@@ -176,6 +170,9 @@ void Chunk::init(World *world, s32 x, s32 y) {
     this->world = world;
     this->x = x;
     this->y = y;
+
+    layer1.init();
+    layer2.init();
     
     vbo.init(MAX_VERTICES * sizeof(Vertex), GL_STATIC_DRAW);
     ibo.init(MAX_INDICES * sizeof(u32), GL_STATIC_DRAW);
@@ -195,16 +192,18 @@ void Chunk::free() {
     vbo.free();
     ibo.free();
 
-    for(u32 i = 0; i < hmlen(layer1); i++) {
-        layer1[i].value->free();
-        ::free(layer1[i].value);
+    for(u32 i = 0; i < layer1.size; i++) {
+        if(layer1.slots[i].hash == 0) continue;
+        layer1.slots[i].value->free();
+        ::free(layer1.slots[i].value);
     }
-    for(u32 i = 0; i < hmlen(layer2); i++) {
-        layer2[i].value->free();
-        ::free(layer2[i].value);
-    }
-    hmfree(layer1);
-    hmfree(layer2);
+    for(u32 i = 0; i < layer2.size; i++) {
+        if(layer2.slots[i].hash == 0) continue;
+        layer2.slots[i].value->free();
+        ::free(layer2.slots[i].value);
+    }    
+    layer1.deinit();
+    layer2.deinit();
 }
 
 void Chunk::generate() {
@@ -252,8 +251,8 @@ void Chunk::generate() {
                     tile->init();
 
                     ivec2 key = {i, j};
-                    hmput(layer1, key, tile);
-                    
+                    layer1.set(key, tile);
+
                     continue;
                 }
             }
@@ -274,7 +273,7 @@ void Chunk::generate() {
                     tile->init();
 
                     ivec2 key = {i, j};
-                    hmput(layer1, key, tile);
+                    layer1.set(key, tile);
                     
                     continue;
                 }
@@ -296,7 +295,7 @@ void Chunk::generate() {
                     tile->init();
 
                     ivec2 key = {i, j};
-                    hmput(layer1, key, tile);
+                    layer1.set(key, tile);
                     
                     continue;
                 }
@@ -318,7 +317,7 @@ void Chunk::generate() {
                     tile->init();
 
                     ivec2 key = {i, j};
-                    hmput(layer1, key, tile);
+                    layer1.set(key, tile);
                     
                     continue;
                 }
@@ -394,24 +393,27 @@ void Chunk::draw(Batch_Renderer *r) {
     vao.unbind();
 
 
-    for(u32 k = 0; k < hmlen(layer1); k++) {
-        auto tile = layer1[k].value;
+    for(u32 k = 0; k < layer1.size; k++) {
+        if(layer1.slots[k].hash == 0) continue;
+        auto tile = layer1.slots[k].value;
         tile->draw(r);
     }
 
     // TODO: This is just a copy/paste of the above! FIX IT!
     // i.e. Don't duplicate the code lol
     // ... er... maybe? er... yeah.....
-    for(u32 k = 0; k < hmlen(layer2); k++) {
-        auto tile = layer2[k].value;
+    for(u32 k = 0; k < layer2.size; k++) {
+        if(layer2.slots[k].hash == 0) continue;
+        auto tile = layer2.slots[k].value;
         tile->draw(r);
     }
 }
 
 void Chunk::update() {
     // NOTE: layer1 (and layer0, obviously) tiles don't get dynamic updates
-    for(u32 i = 0; i < hmlen(layer2); i++) {
-        auto tile = layer2[i].value;
+    for(u32 i = 0; i < layer2.size; i++) {
+        if(layer2.slots[i].hash == 0) continue;
+        auto tile = layer2.slots[i].value;
         if(tile->flags & TILE_FLAG_WANTS_DYNAMIC_UPDATES) tile->update();
     }
 }

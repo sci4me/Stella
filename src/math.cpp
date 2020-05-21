@@ -182,6 +182,19 @@ constexpr T lerp(T t, T a, T b) noexcept {
 }
 
 
+u32 next_pow2_u32(u32 y) {
+    u32 x = y;
+    x--;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    x++;
+    return x;
+}
+
+
 inline vec4 rgba255_to_rgba1(u32 c) {
     u8 r = c & 0xFF;
     u8 g = (c >> 8) & 0xFF;

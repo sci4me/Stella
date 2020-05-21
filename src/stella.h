@@ -22,13 +22,6 @@
 #include "imgui/imgui_impl_opengl3.h"
 
 // NOTE TODO: We will need to do this for hot code reloading!
-// #define STBDS_REALLOC(context,ptr,size) better_realloc
-// #define STBDS_FREE(context,ptr)         better_free
-
-#define STB_DS_IMPLEMENTATION
-#include "stb_ds.h"
-
-// NOTE TODO: We will need to do this for hot code reloading!
 // #define STBI_MALLOC(sz)           malloc(sz)
 // #define STBI_REALLOC(p,newsz)     realloc(p,newsz)
 // #define STBI_FREE(p)              free(p)
