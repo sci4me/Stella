@@ -7,15 +7,12 @@ char* read_entire_file(char *name) {
     }
 
     fseek(fp, 0L, SEEK_END);
-    u32 size = ftell(fp);
+    u64 size = ftell(fp);
     rewind(fp);
 
     char *code = (char*) malloc(size + 1);
 
-    // TODO: use fread
-    for (u32 i = 0; i < size; i++) {
-        code[i] = fgetc(fp);
-    }
+    assert(fread(code, sizeof(char), size, fp) == size);
     code[size] = 0;
 
     return code;
