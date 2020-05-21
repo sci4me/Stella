@@ -250,10 +250,6 @@ struct AABB {
         );
     }
 
-    AABB add(AABB const& b) const {
-        return { ::min(min, b.min), ::max(max, b.max) };
-    }
-
     inline vec2 get_center() const {
         return 0.5f * (min + max);
     }
@@ -268,6 +264,10 @@ struct AABB {
 
     static AABB from_center(vec2 const& center, vec2 const& half_size) {
         return { center - half_size, center + half_size };
+    }
+
+    static AABB disjunction(AABB const& a, AABB const& b) {
+        return { ::min(a.min, b.min), ::max(a.max, b.max) };
     }
 
     static Hit sweep(AABB const& a, AABB const& b, vec2 const& delta) {

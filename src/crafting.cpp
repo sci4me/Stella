@@ -142,6 +142,12 @@ namespace crafting {
                 for(u32 i = 0; i < N_ITEM_TYPES; i++) {
                     Item_Stack stack = { (Item_Type) i, have[i] };
                     if(have[i] > 0) {
+                        // NOTE TODO: There is a bug that can cause this assert to fail.
+                        // Probably not going to debug it _now_.
+                        // To reproduce, start crafting a mining machine. Then, start crafting
+                        // an iron gear. Then start crafting another mining machine.
+                        // This assert fails when you do this. No idea why.
+                        //                  - sci4me, 5/20/20
                         assert(player_inventory->remove(stack, false));
                     }
                 }

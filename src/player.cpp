@@ -4,7 +4,7 @@ struct Player {
     static constexpr f32 SPEED = 3.0f;
     static constexpr f32 SIZE = 10.0f;
 
-    GLFWwindow *window;
+    Game *game;
 
     World *world;
     vec2 pos;
@@ -29,8 +29,8 @@ struct Player {
     bool show_crafting_queue = false;
 
 
-    void init(GLFWwindow *window, World *world) {
-        this->window = window;
+    void init(Game *game, World *world) {
+        this->game = game;;
         this->world = world;
 
         inventory.init(16);
@@ -55,23 +55,23 @@ struct Player {
 
         if(!io.WantCaptureKeyboard) {
             vec2 delta = {0, 0};
-            if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) delta.y = -1.0f;
-            if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) delta.y = 1.0f;
-            if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) delta.x = -1.0f;
-            if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) delta.x = 1.0f;
+            if(glfwGetKey(game->window, GLFW_KEY_W) == GLFW_PRESS) delta.y = -1.0f;
+            if(glfwGetKey(game->window, GLFW_KEY_S) == GLFW_PRESS) delta.y = 1.0f;
+            if(glfwGetKey(game->window, GLFW_KEY_A) == GLFW_PRESS) delta.x = -1.0f;
+            if(glfwGetKey(game->window, GLFW_KEY_D) == GLFW_PRESS) delta.x = 1.0f;
             
             auto speed = SPEED;
-            if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
+            if(glfwGetKey(game->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
             delta = normalize(delta) * speed;
             
             move(delta);
 
 
-            if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
+            if(glfwGetKey(game->window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
 
 
             static bool last_c_key = false;
-            if(glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
+            if(glfwGetKey(game->window, GLFW_KEY_C) == GLFW_PRESS) {
                 if(!last_c_key) {
                     last_c_key = true;
                     show_crafting_queue = !show_crafting_queue;                    
@@ -86,12 +86,12 @@ struct Player {
 
         if(!io.WantCaptureMouse) {
             f64 mx, my;
-            glfwGetCursorPos(window, &mx, &my);
+            glfwGetCursorPos(game->window, &mx, &my);
 
-            if(mx >= 0 && my >= 0 && mx < window_width && my < window_height) {
+            if(mx >= 0 && my >= 0 && mx < game->window_width && my < game->window_height) {
                 vec2 mouse_world_pos = {
-                    pos.x + (f32)((mx - (window_width / 2)) / scale),
-                    pos.y + (f32)((my - (window_height / 2)) / scale)
+                    pos.x + (f32)((mx - (game->window_width / 2)) / game->scale),
+                    pos.y + (f32)((my - (game->window_height / 2)) / game->scale)
                 };
 
                 // NOTE: `10 * TILE_SIZE` is the max distance the player can "reach".
@@ -117,7 +117,7 @@ struct Player {
 
                             // TODO: Instead of polling the mouse, we want to do this stuff
                             // in a mouse event handler!
-                            if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                            if(glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
                                 Tile *tile;
 
                                 switch(held_stack->type) {
@@ -159,7 +159,7 @@ struct Player {
 
                             // TODO: Instead of polling the mouse, we want to do this stuff
                             // in a mouse event handler!
-                            if(l2i != -1 && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                            if(l2i != -1 && glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
                                 // NOTE TODO: This shit is fkin hardcoded asf yo. But I don't want to go through
                                 // the pain of making all these fkin hpp files and .. goddamn.. uh.. forward declaring
                                 // my ass. So fuck it, for now it's this way, future me will suffer through fixing it.
@@ -177,7 +177,7 @@ struct Player {
                                         break;
                                 }
                             } else {
-                                is_mining = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+                                is_mining = glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
                                 if(is_mining) handle_mining();    
                             }
                         }
@@ -203,18 +203,18 @@ struct Player {
         if(tile_hovered) {
             if(is_mining) {
                 r->push_solid_quad(
-                    hovered_tile_x * TILE_SIZE, 
-                    hovered_tile_y * TILE_SIZE, 
+                    hovered_tile_x * TILE_SIZE,
+                    hovered_tile_y * TILE_SIZE,
                     clamp(mining_progress, 0.0f, 1.0f) * TILE_SIZE,
                     TILE_SIZE,
                     vec4(1.0f, 0.0f, 0.0f, 0.5f)
                 );
             } else {
                 r->push_solid_quad(
-                    hovered_tile_x * TILE_SIZE, 
-                    hovered_tile_y * TILE_SIZE, 
-                    TILE_SIZE, 
-                    TILE_SIZE, 
+                    hovered_tile_x * TILE_SIZE,
+                    hovered_tile_y * TILE_SIZE,
+                    TILE_SIZE,
+                    TILE_SIZE,
                     vec4(1.0f, 1.0f, 1.0f, 0.2f)
                 ); 
             }
@@ -260,7 +260,7 @@ private:
         while(delta.length() > EPSILON && iteration++ < MAX_ITER) {
             auto player_bb = AABB::from_center(pos, v_half_size);
             auto target_bb = AABB::from_center(pos + delta, v_half_size);
-            auto broad = player_bb.add(target_bb);
+            auto broad = AABB::disjunction(player_bb, target_bb);
 
             // NOTE: We query the current chunk every time
             // just in case the player happens to move into
@@ -308,7 +308,7 @@ private:
     void handle_mining() {
         // TODO: Base this on mining speed and
         // make sure to handle time correctly.
-        mining_progress += fast_mining ? 0.5f : 0.015f;
+        mining_progress += game->fast_mining ? 0.5f : 0.015f;
         if(mining_progress >= 1.0f) {
             mining_progress = 0.0f;
         } else {
