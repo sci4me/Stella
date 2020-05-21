@@ -311,7 +311,7 @@ s32 Game::run() {
 
                 if(ImGui::CollapsingHeader("World")) {
                     ImGui::Text("Scale: %0.3f", scale);
-                    ImGui::Text("Total Chunks: %d", hmlen(world->chunks));
+                    ImGui::Text("Total Chunks: %d", world->chunks.count);
                     ImGui::Text("Chunk Draw Calls: %d", chunk_draw_calls);
                 }
 

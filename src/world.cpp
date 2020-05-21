@@ -49,10 +49,7 @@ struct World {
 
     u32 seed;
 
-    struct {
-        ivec2 key;
-        struct Chunk *value;
-    } *chunks = NULL;
+    Hash_Table<ivec2, Chunk*> chunks;
 
     GLuint chunk_shader;
     GLuint u_textures;
@@ -63,6 +60,9 @@ struct World {
         assert(seed);
         this->seed = seed;
         noise.reseed(seed);
+
+        printf("%llu\n", sizeof(Chunk));
+        chunks.init(64);
 
         chunk_shader = load_shader_program("chunk", VERTEX_SHADER | FRAGMENT_SHADER);
         u_textures = glGetUniformLocation(chunk_shader, "u_textures");
@@ -78,10 +78,11 @@ struct World {
     void free() {
         glDeleteProgram(chunk_shader);
 
-        for(u32 i = 0; i < hmlen(chunks); i++) {
-            ::free(chunks[i].value);
+        for(u32 i = 0; i < chunks.size; i++) {
+            if(chunks.slots[i].hash == 0) continue;
+            ::free(chunks.slots[i].value);
         }
-        hmfree(chunks);
+        chunks.deinit();
     }
 
     void set_projection(mat4 proj) {
@@ -90,7 +91,7 @@ struct World {
 
     Chunk* get_chunk(s32 x, s32 y) {
         ivec2 key = {x, y};
-        s64 i = hmgeti(chunks, key);
+        s32 i = chunks.index_of(key);
 
         if(i == -1) {
             Chunk *c = (Chunk*) calloc(1, sizeof(Chunk));
@@ -99,12 +100,12 @@ struct World {
             c->generate();
             c->render();
 
-            hmput(chunks, key, c);
+            chunks.set(key, c);
             
             return c;
         }   
 
-        return chunks[i].value;
+        return chunks.slots[i].value;
     }
 
     Chunk* get_chunk_containing(s32 x, s32 y) {
@@ -127,8 +128,14 @@ struct World {
         //
         //                  - sci4me, 5/13/20
 
-        for(u32 i = 0; i < hmlen(chunks); i++) {
-            chunks[i].value->update();
+        // NOTE: Instead of iterating the Hash_Table,
+        // keep a list of active chunks, and have the
+        // Hash_Table either map into that, or just
+        // guarantee they're always 'in-sync'.
+        //                  - sci4me, 5/21/20
+        for(u32 i = 0; i < chunks.size; i++) {
+            if(chunks.slots[i].hash == 0) continue;
+            chunks.slots[i].value->update();
         }
     }
 
