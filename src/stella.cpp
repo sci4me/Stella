@@ -118,7 +118,7 @@ s32 Game::run() {
     #ifdef GL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback((GLDEBUGPROCARB)::gl_debug_callback, 0);
+        glDebugMessageCallback((GLDEBUGPROCARB) ::gl_debug_callback, 0);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     #endif
 
@@ -141,8 +141,8 @@ s32 Game::run() {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 
-    Batch_Renderer *r = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
-    r->init();
+    batch_renderer = (Batch_Renderer*) malloc(sizeof(Batch_Renderer));
+    batch_renderer->init();
 
 
     assets::load();
@@ -213,7 +213,7 @@ s32 Game::run() {
             
             projection_matrix = mat4::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
 
-            r->set_projection(projection_matrix);
+            batch_renderer->set_projection(projection_matrix);
             world->set_projection(projection_matrix);
         }
 
@@ -280,18 +280,18 @@ s32 Game::run() {
         auto s = mat4::scale(scale, scale, 1.0f);
         auto t = mat4::translate((window_width / 2 / scale) - player->pos.x, (window_height / 2 / scale) - player->pos.y, 0.0f);
         auto view = t * s;
-        r->begin(view);
+        batch_renderer->begin(view);
         {
             // NOTE: We render the world from within the Batch_Renderer frame since
             // we are currently using the Batch_Renderer for any tiles that
             // aren't on layer 0.
             //              - sci4me, 5/9/20
-            chunk_draw_calls = world->draw_around(r, player->pos, scale, window_width, window_height, view);
+            chunk_draw_calls = world->draw_around(batch_renderer, player->pos, scale, window_width, window_height, view);
 
-            player->draw(r);
+            player->draw(batch_renderer);
 
         }
-        auto per_frame_stats = r->end_frame();
+        auto per_frame_stats = batch_renderer->end_frame();
 
         if(show_debug_window) {
             if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
@@ -344,6 +344,9 @@ s32 Game::run() {
 
         treset();
     }
+
+    delete world;
+    delete player;
 
     crafting::free();
 

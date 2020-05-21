@@ -71,9 +71,11 @@ struct Game {
 	//              - sci4me, 5/15/20
 	bool debug_pause = false;
 
+	struct Batch_Renderer *batch_renderer;
+
 	struct World *world;
 	struct Player *player;
-	
+
 	void scroll_callback(f64 x, f64 y);
 	void key_callback(s32 key, s32 scancode, s32 action, s32 mods);
 	void window_size_callback(s32 width, s32 height);

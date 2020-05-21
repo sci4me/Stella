@@ -311,9 +311,6 @@ struct Tile_Mining_Machine : public Tile {
 // Long-term, we should probably just remove all
 // use of virtual methods.
 
-inline void* operator new(size_t, void* ptr) { return ptr; }
-inline void  operator delete(void*, void*) {}
-
 template<typename T>
 T* make_tile() {
     void *t = malloc(sizeof(T));
