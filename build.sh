@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ctime -begin stella_linux.ctm
+
 SRC_DIR=src
 BUILD_DIR=build
 VENDOR_DIR=vendor
@@ -20,3 +22,5 @@ g++ -o $BUILD_DIR/stella $BUILD_DIR/main.o $LDFLAGS
 if [ $? -ne 0 ]; then
 	exit 1
 fi
+
+ctime -end stella_linux.ctm
