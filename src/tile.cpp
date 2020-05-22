@@ -25,10 +25,10 @@ void init_tiles() {
 
     tile_textures[TILE_STONE]               = stone;
     tile_textures[TILE_GRASS]               = grass;
-    tile_textures[TILE_COBBLESTONE]         = cobblestone[array_length(assets::textures::coal_ore) - 1];
-    tile_textures[TILE_COAL_ORE]            = coal_ore[array_length(assets::textures::coal_ore) - 1];
-    tile_textures[TILE_IRON_ORE]            = iron_ore[array_length(assets::textures::iron_ore) - 1];
-    tile_textures[TILE_GOLD_ORE]            = gold_ore[array_length(assets::textures::gold_ore) - 1];
+    tile_textures[TILE_COBBLESTONE]         = cobblestone;
+    tile_textures[TILE_COAL_ORE]            = coal_ore;
+    tile_textures[TILE_IRON_ORE]            = iron_ore;
+    tile_textures[TILE_GOLD_ORE]            = gold_ore;
     tile_textures[TILE_CHEST]               = chest;
     tile_textures[TILE_FURNACE]             = furnace;
     tile_textures[TILE_MINING_MACHINE]      = mining_machine;
@@ -69,48 +69,34 @@ struct Tile {
 struct Tile_Ore : public Tile {
     u32 count;
     u32 initial_count;
-    Texture *textures;
 
     virtual void init() override {
         Tile::init();
-
-        using namespace assets::textures;
-        switch(type) {
-            case TILE_COBBLESTONE:  textures = cobblestone; break;
-            case TILE_COAL_ORE:     textures = coal_ore; break;
-            case TILE_IRON_ORE:     textures = iron_ore; break;
-            case TILE_GOLD_ORE:     textures = gold_ore; break;
-            default:                assert(0); break;
-        }
     }
 
     virtual void draw(Batch_Renderer *r) override {
-        Texture *texture;
-
         f32 p = (f32)count / (f32)initial_count;
-        if(p < 0.1f) {
-            texture = &textures[0];
-        } else if(p >= 0.1f && p < 0.2f) {
-            texture = &textures[1];
-        } else if(p >= 0.2f && p < 0.3f) {
-            texture = &textures[2];
-        } else if(p >= 0.3f && p < 0.5f) {
-            texture = &textures[3];
-        } else if(p >= 0.5f && p < 0.7f) {
-            texture = &textures[4];
-        } else if(p >= 0.7f && p < 0.9f) {
-            texture = &textures[5];
-        } else {
-            texture = &textures[6];
-        }
+        f32 invp = 1.0f - p;
 
-        // NOTE TODO: We probably can just change this to use 1 texture!
-        // Just change the UVs! "shrink" them, if you will. Whether it be
-        // by using a hardcoded array of UVs or, more likely, just
-        // calculating them.
-        //                  - sci4me, 5/18/20
+        f32 h = invp * 0.5f;
+        vec2 uvs[] = {
+            vec2(0.0f + h, 0.0f + h),
+            vec2(1.0f - h, 0.0f + h),
+            vec2(1.0f - h, 1.0f - h),
+            vec2(0.0f + h, 1.0f - h)
+        };
 
-        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, texture);
+        f32 H = invp * TILE_SIZE * 0.5f;
+        f32 H2 = invp * TILE_SIZE;
+        r->push_quad(
+            x * TILE_SIZE + H,
+            y * TILE_SIZE + H,
+            TILE_SIZE - H2,
+            TILE_SIZE - H2,
+            vec4(1.0f, 1.0f, 1.0f, 1.0f),
+            uvs,
+            tile_textures[(u32) type].id
+        );
     }
 };
 

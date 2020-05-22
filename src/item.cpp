@@ -25,10 +25,10 @@ const char *item_names[N_ITEM_TYPES];
 void init_items() {
     using namespace assets::textures;
 
-    item_textures[ITEM_COBBLESTONE]     = cobblestone[6];
-    item_textures[ITEM_COAL_ORE]        = coal_ore[6];
-    item_textures[ITEM_IRON_ORE]        = iron_ore[6];
-    item_textures[ITEM_GOLD_ORE]        = gold_ore[6];
+    item_textures[ITEM_COBBLESTONE]     = cobblestone;
+    item_textures[ITEM_COAL_ORE]        = coal_ore;
+    item_textures[ITEM_IRON_ORE]        = iron_ore;
+    item_textures[ITEM_GOLD_ORE]        = gold_ore;
     item_textures[ITEM_IRON_PLATE]      = iron_plate;
     item_textures[ITEM_GOLD_PLATE]      = gold_plate;
     item_textures[ITEM_IRON_GEAR]       = iron_gear;

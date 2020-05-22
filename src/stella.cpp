@@ -357,9 +357,9 @@ s32 Game::run() {
 
     crafting::deinit();
 
-    tfree();
-
     imgui_shutdown();
+
+    tfree();
 
     glfwTerminate();
     return 0;
