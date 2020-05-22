@@ -34,7 +34,7 @@ GLuint load_shader_program(const char *name, GLenum flags) {
 
     #define SHADER_TYPE(t, n, s)\
         if(flags & t) {\
-            sprintf(buffer, "res/shaders/%s/%s.glsl", name, n);\
+            sprintf(buffer, "assets/shaders/%s/%s.glsl", name, n);\
             program_attach_shader(p, buffer, s);\
         }
 

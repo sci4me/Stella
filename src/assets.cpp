@@ -20,20 +20,20 @@ namespace assets {
     void init() {
         constexpr bool MIPS = true;
 
-        textures::stone                 = load_texture_from_file("res/textures/tile/stone.png", MIPS);
-        textures::grass                 = load_texture_from_file("res/textures/tile/grass.png", MIPS);
-        textures::cobblestone           = load_texture_from_file("res/textures/tile/cobblestone.png", MIPS);
-        textures::coal_ore              = load_texture_from_file("res/textures/tile/coal_ore.png", MIPS);
-        textures::iron_ore              = load_texture_from_file("res/textures/tile/iron_ore.png", MIPS);
-        textures::gold_ore              = load_texture_from_file("res/textures/tile/gold_ore.png", MIPS);
-        textures::chest                 = load_texture_from_file("res/textures/tile/chest.png", MIPS);
-        textures::furnace               = load_texture_from_file("res/textures/tile/furnace.png", MIPS);
-        textures::mining_machine        = load_texture_from_file("res/textures/tile/mining_machine.png", MIPS);
+        textures::stone                 = load_texture_from_file("assets/textures/tile/stone.png", MIPS);
+        textures::grass                 = load_texture_from_file("assets/textures/tile/grass.png", MIPS);
+        textures::cobblestone           = load_texture_from_file("assets/textures/tile/cobblestone.png", MIPS);
+        textures::coal_ore              = load_texture_from_file("assets/textures/tile/coal_ore.png", MIPS);
+        textures::iron_ore              = load_texture_from_file("assets/textures/tile/iron_ore.png", MIPS);
+        textures::gold_ore              = load_texture_from_file("assets/textures/tile/gold_ore.png", MIPS);
+        textures::chest                 = load_texture_from_file("assets/textures/tile/chest.png", MIPS);
+        textures::furnace               = load_texture_from_file("assets/textures/tile/furnace.png", MIPS);
+        textures::mining_machine        = load_texture_from_file("assets/textures/tile/mining_machine.png", MIPS);
 
         // TODO: Do we actually want MIPs for items? i.e. for item entities?
-        textures::iron_plate            = load_texture_from_file("res/textures/item/iron_plate.png", false);
-        textures::gold_plate            = load_texture_from_file("res/textures/item/gold_plate.png", false);
-        textures::iron_gear             = load_texture_from_file("res/textures/item/iron_gear.png", false);
+        textures::iron_plate            = load_texture_from_file("assets/textures/item/iron_plate.png", false);
+        textures::gold_plate            = load_texture_from_file("assets/textures/item/gold_plate.png", false);
+        textures::iron_gear             = load_texture_from_file("assets/textures/item/iron_gear.png", false);
     }
 
     void deinit() {
