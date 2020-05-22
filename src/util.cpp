@@ -1,5 +1,6 @@
 #define array_length(a) ((sizeof(a))/(sizeof(a[0])))
 
+
 char* read_entire_file(char *name) {
     FILE *fp = fopen(name, "rb");
     if (!fp) {
@@ -18,6 +19,7 @@ char* read_entire_file(char *name) {
     return code;
 }
 
+
 void dump_gl_info() {
     // TODO: some kind of logging!!!
 
@@ -35,6 +37,15 @@ void dump_gl_info() {
     printf("  GL_MINOR_VERSION              %d\n", minor);
 }
 
+
 constexpr u32 rotl32(u32 x, u32 r) {
     return (x << r) | (x >> (32 - r));
 }
+
+
+static constexpr vec2 QUAD_UVS[4][4] = {
+    { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } },
+    { { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } },
+    { { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } },
+    { { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f } }
+};

@@ -234,8 +234,11 @@ void Chunk::generate() {
     constexpr f32 gold_frequency = 50.0f;
     constexpr f32 gold_threshold = 0.2f;
 
+    auto rng = make_rng_for_chunk();
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
+            u32 rot = rnd_pcg_range(&rng, 0, 3);
+
             {
                 f32 m = world->noise.noise2D_0_1(
                     ((f32) ((x * SIZE) + i)) / cobblestone_frequency, 
@@ -249,6 +252,7 @@ void Chunk::generate() {
                     tile->y = y * SIZE + j;
                     tile->count = 100; // TODO
                     tile->initial_count = tile->count;
+                    tile->rot = rot;
                     tile->init();
 
                     ivec2 key = {i, j};
@@ -271,6 +275,7 @@ void Chunk::generate() {
                     tile->y = y * SIZE + j;
                     tile->count = 100; // TODO
                     tile->initial_count = tile->count;
+                    tile->rot = rot;
                     tile->init();
 
                     ivec2 key = {i, j};
@@ -293,6 +298,7 @@ void Chunk::generate() {
                     tile->y = y * SIZE + j;
                     tile->count = 100; // TODO
                     tile->initial_count = tile->count;
+                    tile->rot = rot;
                     tile->init();
 
                     ivec2 key = {i, j};
@@ -315,6 +321,7 @@ void Chunk::generate() {
                     tile->y = y * SIZE + j;
                     tile->count = 100; // TODO
                     tile->initial_count = tile->count;
+                    tile->rot = rot;
                     tile->init();
 
                     ivec2 key = {i, j};
@@ -337,14 +344,7 @@ void Chunk::render() {
     
     textures.clear();
 
-    rnd_pcg_t l0rot = make_rng_for_chunk();
-
-    static constexpr vec2 uvs[4][4] = {
-        { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } },
-        { { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } },
-        { { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } },
-        { { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f } }
-    };
+    auto l0rot = make_rng_for_chunk();
 
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
@@ -359,10 +359,10 @@ void Chunk::render() {
 
             auto rot = rnd_pcg_range(&l0rot, 0, 3);
 
-            u32 tl = chunk_vertex_buffer.push({ {k, l}, uvs[rot][0], tex_index });
-            u32 tr = chunk_vertex_buffer.push({ {k + TILE_SIZE, l}, uvs[rot][1], tex_index });
-            u32 br = chunk_vertex_buffer.push({ {k + TILE_SIZE, l + TILE_SIZE}, uvs[rot][2], tex_index });
-            u32 bl = chunk_vertex_buffer.push({ {k, l + TILE_SIZE}, uvs[rot][3], tex_index });
+            u32 tl = chunk_vertex_buffer.push({ {k, l}, QUAD_UVS[rot][0], tex_index });
+            u32 tr = chunk_vertex_buffer.push({ {k + TILE_SIZE, l}, QUAD_UVS[rot][1], tex_index });
+            u32 br = chunk_vertex_buffer.push({ {k + TILE_SIZE, l + TILE_SIZE}, QUAD_UVS[rot][2], tex_index });
+            u32 bl = chunk_vertex_buffer.push({ {k, l + TILE_SIZE}, QUAD_UVS[rot][3], tex_index });
 
             chunk_index_buffer.push(tl);
             chunk_index_buffer.push(tr);

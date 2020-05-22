@@ -69,6 +69,7 @@ struct Tile {
 struct Tile_Ore : public Tile {
     u32 count;
     u32 initial_count;
+    u32 rot;
 
     virtual void init() override {
         Tile::init();
@@ -78,13 +79,8 @@ struct Tile_Ore : public Tile {
         f32 p = (f32)count / (f32)initial_count;
         f32 invp = 1.0f - p;
 
-        f32 h = invp * 0.5f;
-        vec2 uvs[] = {
-            vec2(0.0f + h, 0.0f + h),
-            vec2(1.0f - h, 0.0f + h),
-            vec2(1.0f - h, 1.0f - h),
-            vec2(0.0f + h, 1.0f - h)
-        };
+        vec2 uvs[4];
+        memcpy(&uvs, QUAD_UVS[rot], sizeof(vec2) * 4);
 
         f32 H = invp * TILE_SIZE * 0.5f;
         f32 H2 = invp * TILE_SIZE;
