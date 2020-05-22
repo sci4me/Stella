@@ -15,11 +15,14 @@ INCLUDES="-I$VENDOR_DIR/GLEW/include -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/im
 mkdir -p $BUILD_DIR
 
 g++ $CXXFLAGS $INCLUDES -c -o $BUILD_DIR/main.o $SRC_DIR/main.cpp
-if [  $? -ne 0 ]; then # TODO: figure out the bash way of doing this in a less "white-trash" way
+# TODO: figure out the bash way of doing this in a less "white-trash" way
+if [  $? -ne 0 ]; then
+	ctime -end stella_linux.ctm 1
 	exit 1
 fi
 g++ -o $BUILD_DIR/stella $BUILD_DIR/main.o $LDFLAGS
 if [ $? -ne 0 ]; then
+	ctime -end stella_linux.ctm 1
 	exit 1
 fi
 
