@@ -50,8 +50,6 @@ Code/Dev Features/Quality:
  - HOT CODE RELOAD!!!!!
    - Definitely non-trivial to implement!
      - We have a ton of state.. sorta.
-     - Much of it is either from malloc or
-       allocated by stb_ds.h...
    - Totally worth doing though!
      - Not hard conceptually: just use a dynamic
        library to hold the actual game code, and
