@@ -56,7 +56,7 @@ struct Tile {
     AABB collision_aabb;
 
     virtual void init() {}
-    virtual void free() {}
+    virtual void deinit() {}
 
     virtual void draw(Batch_Renderer *r) {
         r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) type]);
@@ -131,10 +131,10 @@ struct Tile_Chest : public Tile {
         container.init(25);
     }
 
-    virtual void free() override {
-        Tile::free();
+    virtual void deinit() override {
+        Tile::deinit();
 
-        container.free();
+        container.deinit();
     }
 };
 
@@ -205,12 +205,12 @@ struct Tile_Furnace : public Tile {
         output.init(1, ITEM_CONTAINER_FLAG_NO_INSERT);
     }
 
-    virtual void free() {
-        Tile::free();
+    virtual void deinit() {
+        Tile::deinit();
 
-        input.free();
-        fuel.free();
-        output.free();
+        input.deinit();
+        fuel.deinit();
+        output.deinit();
     }
 
     virtual void update() override {
@@ -292,11 +292,11 @@ struct Tile_Mining_Machine : public Tile {
         output.init(9);
     }
 
-    virtual void free() override {
-        Tile::free();
+    virtual void deinit() override {
+        Tile::deinit();
 
-        fuel.free();
-        output.free();
+        fuel.deinit();
+        output.deinit();
     }
 
     virtual void update() override {

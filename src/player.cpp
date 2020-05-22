@@ -37,8 +37,8 @@ struct Player {
         crafting_queue.init(&inventory);
     }
 
-    void free() {
-        inventory.free();
+    void deinit() {
+        inventory.deinit();
         crafting_queue.deinit();
     }
 
@@ -359,7 +359,7 @@ private:
 
                 if(ore->count == 1) {
                     assert(layer->remove(key));
-                    ore->free();
+                    ore->deinit();
                     ::free(ore);
                 } else {
                     ore->count--;
@@ -411,7 +411,7 @@ private:
                 assert(!inventory.insert({ ITEM_CHEST, 1 }));
 
                 layer->remove(key);
-                chest->free();
+                chest->deinit();
                 ::free(chest);
                 break;
             }

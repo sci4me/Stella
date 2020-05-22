@@ -147,7 +147,7 @@ s32 Game::run() {
     batch_renderer->init();
 
 
-    assets::load();
+    assets::init();
     init_tiles();
     init_items();
 
@@ -347,10 +347,15 @@ s32 Game::run() {
         treset();
     }
 
+    batch_renderer->deinit();
+
+    world->deinit();
     delete world;
+
+    player->deinit();
     delete player;
 
-    crafting::free();
+    crafting::deinit();
 
     tfree();
 

@@ -102,7 +102,7 @@ struct Item_Container {
         slots = (Item_Stack*) calloc(size, sizeof(Item_Stack));
     }
 
-    void free() {
+    void deinit() {
         ::free(slots);
     }
 

@@ -24,7 +24,7 @@ struct Texture {
         glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
-    void free() {
+    void deinit() {
         glDeleteTextures(1, &id);
     }
 

@@ -75,12 +75,12 @@ public:
         vao.set_index_buffer(ibo);
     }
 
-    void free() {
+    void deinit() {
         glDeleteProgram(shader);
         glDeleteTextures(1, &white_texture);
-        vao.free();
-        vbo.free();
-        ibo.free();
+        vao.deinit();
+        vbo.deinit();
+        ibo.deinit();
     }
 
     void set_projection(mat4 proj) {

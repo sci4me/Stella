@@ -29,7 +29,7 @@ struct Chunk {
     Slot_Allocator<GLuint, MAX_TEXTURE_SLOTS> textures;
 
     void init(struct World *world, s32 x, s32 y);
-    void free();
+    void deinit();
 
     void generate();
     void update();
@@ -69,11 +69,12 @@ struct World {
         glProgramUniform1iv(chunk_shader, u_textures, Chunk::MAX_TEXTURE_SLOTS, samplers);
     }
 
-    void free() {
+    void deinit() {
         glDeleteProgram(chunk_shader);
 
         for(u32 i = 0; i < chunks.size; i++) {
             if(chunks.slots[i].hash == 0) continue;
+            chunks.slots[i].value->deinit();
             ::free(chunks.slots[i].value);
         }
         chunks.deinit();
@@ -187,19 +188,19 @@ void Chunk::init(World *world, s32 x, s32 y) {
     vao.set_index_buffer(ibo);
 }
 
-void Chunk::free() {
-    vao.free();
-    vbo.free();
-    ibo.free();
+void Chunk::deinit() {
+    vao.deinit();
+    vbo.deinit();
+    ibo.deinit();
 
     for(u32 i = 0; i < layer1.size; i++) {
         if(layer1.slots[i].hash == 0) continue;
-        layer1.slots[i].value->free();
+        layer1.slots[i].value->deinit();
         ::free(layer1.slots[i].value);
     }
     for(u32 i = 0; i < layer2.size; i++) {
         if(layer2.slots[i].hash == 0) continue;
-        layer2.slots[i].value->free();
+        layer2.slots[i].value->deinit();
         ::free(layer2.slots[i].value);
     }    
     layer1.deinit();

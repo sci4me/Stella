@@ -7,7 +7,7 @@ struct GL_Buffer {
         glNamedBufferData(id, size, nullptr, usage);
     }
 
-    void free() {
+    void deinit() {
         glDeleteBuffers(1, &id);
     }
 
@@ -54,7 +54,7 @@ struct Vertex_Array {
         binding_index = 0;
     }
 
-    void free() {
+    void deinit() {
         glDeleteVertexArrays(1, &id);
     }
 

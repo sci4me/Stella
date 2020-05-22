@@ -66,7 +66,7 @@ namespace crafting {
         register_recipe(Item_Stack(ITEM_MINING_MACHINE, 1),  100, Item_Stack(ITEM_COBBLESTONE, 16), Item_Stack(ITEM_IRON_PLATE, 8), Item_Stack(ITEM_IRON_GEAR, 4));
     }
 
-    void free() {
+    void deinit() {
         for(u32 i = 0; i < recipes.count; i++) {
             ::free(recipes[i]);
         }

@@ -17,7 +17,7 @@ namespace assets {
         Texture iron_gear;
     }
 
-    void load() {
+    void init() {
         constexpr bool MIPS = true;
 
         textures::stone                 = load_texture_from_file("res/textures/tile/stone.png", MIPS);
@@ -58,5 +58,9 @@ namespace assets {
         textures::iron_plate            = load_texture_from_file("res/textures/item/iron_plate.png", false);
         textures::gold_plate            = load_texture_from_file("res/textures/item/gold_plate.png", false);
         textures::iron_gear             = load_texture_from_file("res/textures/item/iron_gear.png", false);
+    }
+
+    void deinit() {
+        // TODO
     }
 }
