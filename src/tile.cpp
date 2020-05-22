@@ -82,6 +82,13 @@ struct Tile_Ore : public Tile {
         vec2 uvs[4];
         memcpy(&uvs, QUAD_UVS[rot], sizeof(vec2) * 4);
 
+        f32 h = invp * 0.5f;
+        for(u32 i = 0; i < array_length(uvs); i++) {
+            s32 us = uvs[i].x == 1.0f ? -1 : 1;
+            s32 vs = uvs[i].y == 1.0f ? -1 : 1;
+            uvs[i] += vec2(h * us, h * vs);
+        }
+
         f32 H = invp * TILE_SIZE * 0.5f;
         f32 H2 = invp * TILE_SIZE;
         r->push_quad(
