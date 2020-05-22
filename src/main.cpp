@@ -1,4 +1,4 @@
-#include "stella.h"
+#include "stella.hpp"
 #include "stella.cpp"
 
 s32 main(s32 argc, char **argv) {
