@@ -349,6 +349,7 @@ s32 Game::run() {
             ImGui::End();
         }
     
+    	// NOTE TODO: This next line is kind of a hack...
         if(!is_paused) prof::end_frame(); else prof::frame_events.clear();
         if(show_profiler) prof::show();
 

@@ -34,9 +34,6 @@ namespace prof {
 	Static_Array<Debug_Event, MAX_DEBUG_EVENTS> frame_events;
 
 
-	// NOTE: We are using `clock_gettime` which is a Linux-specific call!
-	// Eventually we'll want to have the windows equivalent as well.
-	//			- sci4me, 5/22/20
 	struct Timed_Block {
 		char *guid;
 		char *name;

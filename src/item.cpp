@@ -107,6 +107,8 @@ struct Item_Container {
     }
 
     void sort() {
+        TIMED_FUNCTION();
+
         if(size == 1) return;
 
         // TODO: This implementation _can't_ be the most efficient/ideal one.....
@@ -159,6 +161,8 @@ struct Item_Container {
     }
 
     u32 insert(Item_Stack const& s, bool resort = true) {
+        TIMED_FUNCTION();
+
         assert(s.is_valid());
 
         if(!accepts_item_type(s.type)) return s.count;
@@ -216,6 +220,8 @@ struct Item_Container {
     }
 
     bool remove(Item_Stack const& s, bool resort = true) {
+        TIMED_FUNCTION();
+
         assert(s.is_valid());
 
         if(!contains(s)) return false;

@@ -212,6 +212,8 @@ void Chunk::deinit() {
 }
 
 void Chunk::generate() {
+    TIMED_FUNCTION();
+    
     // TODO
 
     constexpr f32 stone_frequency = 70.0f;
@@ -343,6 +345,8 @@ Static_Array<u32, Chunk::MAX_INDICES> chunk_index_buffer;
 
 // NOTE: This method is _not_ reentrant (or thread safe)!
 void Chunk::render() {
+    TIMED_FUNCTION();
+
     chunk_vertex_buffer.clear();
     chunk_index_buffer.clear();
     
@@ -418,7 +422,7 @@ void Chunk::draw(Batch_Renderer *r) {
 
 void Chunk::update() {
     TIMED_FUNCTION();
-    
+
     // NOTE: layer1 (and layer0, obviously) tiles don't get dynamic updates
     for(u32 i = 0; i < layer2.size; i++) {
         if(layer2.slots[i].hash == 0) continue;

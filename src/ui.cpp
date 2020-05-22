@@ -108,6 +108,8 @@ namespace ui {
     }
 
     void chest_ui(Item_Container *player_inventory, Tile_Chest *c, Tile **tile_ref) {
+        TIMED_FUNCTION();
+
         // NOTE: Currently we only have one GUI open at a time,
         // so we don't have to push any extra ID info.
         bool open = true;
@@ -127,6 +129,8 @@ namespace ui {
     }
 
     void furnace_ui(Item_Container *player_inventory, Tile_Furnace *f, Tile **tile_ref) {
+        TIMED_FUNCTION();
+
         // TODO: Looks like shit but I guess it works for now...
         // TODO: Visual indication of fuel in internal buffer
 
@@ -160,6 +164,8 @@ namespace ui {
     }
 
     void mining_machine_ui(Item_Container *player_inventory, Tile_Mining_Machine *m, Tile **tile_ref) {
+        TIMED_FUNCTION();
+
         bool open = true;
         if(ImGui::Begin("Mining Machine", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
             // TODO
@@ -203,6 +209,8 @@ namespace ui {
     // NOTE: We just pass the crafting::Queue since it contains the
     // Item_Container for the player inventory, and we need the Queue anyway.
     void player_inventory(crafting::Queue *crafting_queue, bool *open) {
+        TIMED_FUNCTION();
+        
         if(!*open) return;
 
         if(ImGui::Begin("Inventory", open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {

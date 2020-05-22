@@ -88,6 +88,8 @@ public:
     }
 
     void flush() {
+        TIMED_FUNCTION();
+
         if(vertices.count == 0) return;
 
         assert(indices.count % 3 == 0 && indices.count > 0);
@@ -145,6 +147,8 @@ public:
     }
 
     void push_quad(f32 x, f32 y, f32 w, f32 h, vec4 color, vec2 uvs[4], GLuint texture) {
+        TIMED_FUNCTION();
+        
         ensure_available(4, 6);
 
         s32 tex_index;

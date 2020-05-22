@@ -43,6 +43,8 @@ struct Player {
     }
 
     void update() {
+        TIMED_FUNCTION();
+
         crafting_queue.update();
 
         // NOTE: We set these, if necessary, every update.
@@ -190,6 +192,8 @@ struct Player {
     }
 
     void draw(Batch_Renderer *r) {
+        TIMED_FUNCTION();
+
         if(placement_valid) {
             r->push_solid_quad(
                 hovered_tile_x * TILE_SIZE, 
@@ -248,6 +252,8 @@ private:
     }
 
     void move(vec2 delta) {
+        TIMED_FUNCTION();
+
         // NOTE: We'll probably want to tweak these
         // as we go/later on!
         constexpr f32 EPSILON = 0.00001;
@@ -308,6 +314,8 @@ private:
     }
 
     void handle_mining() {
+        TIMED_FUNCTION();
+
         // TODO: Base this on mining speed and
         // make sure to handle time correctly.
         mining_progress += game->fast_mining ? 0.5f : 0.015f;
