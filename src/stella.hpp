@@ -48,6 +48,8 @@ struct Game {
 
 	f32 scale = 1.0f;
 
+	bool show_profiler = false;
+
 	bool show_debug_window = false;
 	bool show_imgui_metrics_window = false;
 

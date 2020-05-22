@@ -1,10 +1,11 @@
 #include "off_the_rails.cpp"
-#include "imgui_support.cpp"
 #include "math.cpp"
 #include "util.cpp"
 #include "static_array.cpp"
 #include "dynamic_array.cpp"
 #include "hash_table.cpp"
+#include "profiler.cpp"
+#include "imgui_support.cpp"
 #include "perlin_noise.cpp"
 #include "static_bitset.cpp"
 #include "slot_allocator.cpp"
@@ -58,6 +59,9 @@ void Game::scroll_callback(f64 x, f64 y) {
 void Game::key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
 	if(action == GLFW_RELEASE) {
         switch(key) {
+        	case GLFW_KEY_F2:
+        		show_profiler = !show_profiler;
+        		break;
             case GLFW_KEY_F3:
                 show_debug_window = !show_debug_window;
                 break;
@@ -130,6 +134,9 @@ s32 Game::run() {
 
     time_t t;
     srand((unsigned) time(&t));
+
+
+    prof::init();
 
 
     imgui_init(window);
@@ -205,6 +212,9 @@ s32 Game::run() {
     mat4 projection_matrix;
     f64 last_time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
+    	bool is_paused = debug_pause;
+    	if(!is_paused) prof::begin_frame();
+
         glfwPollEvents();
 
 
@@ -256,7 +266,7 @@ s32 Game::run() {
         //
         //              - sci4me, 5/13/20
 
-        if(!debug_pause) {
+        if(!is_paused) {
             world->update();
             player->update();
         }
@@ -339,8 +349,10 @@ s32 Game::run() {
             ImGui::End();
         }
     
+        if(!is_paused) prof::end_frame(); else prof::frame_events.clear();
+        if(show_profiler) prof::show();
 
-        imgui_end_frame();
+    	imgui_end_frame();
 
         glfwSwapBuffers(window);
 
@@ -358,6 +370,8 @@ s32 Game::run() {
     crafting::deinit();
 
     imgui_shutdown();
+
+    prof::deinit();
 
     tfree();
 

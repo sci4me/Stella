@@ -110,6 +110,8 @@ struct World {
     }
 
     void update() {
+        TIMED_FUNCTION();
+
         // TODO: So many things. So many.
         // First of all, well, yeah. Many things. Lots of things.
         // Every things.
@@ -135,6 +137,8 @@ struct World {
     }
 
     u32 draw_around(Batch_Renderer *r, vec2 pos, f32 scale, s32 window_width, s32 window_height, mat4 view) {
+        TIMED_FUNCTION();
+
         f32 x = pos.x * scale;
         f32 y = pos.y * scale;
 
@@ -381,6 +385,8 @@ void Chunk::render() {
 }
 
 void Chunk::draw(Batch_Renderer *r) {
+    TIMED_FUNCTION();
+
     vao.bind();
 
     for(u32 i = 0; i < textures.count; i++)
@@ -411,6 +417,8 @@ void Chunk::draw(Batch_Renderer *r) {
 }
 
 void Chunk::update() {
+    TIMED_FUNCTION();
+    
     // NOTE: layer1 (and layer0, obviously) tiles don't get dynamic updates
     for(u32 i = 0; i < layer2.size; i++) {
         if(layer2.slots[i].hash == 0) continue;

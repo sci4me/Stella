@@ -1,3 +1,5 @@
+// NOTE: NOT thread safe!
+
 template<typename T, u32 capacity>
 struct Static_Array {
     T data[capacity];
@@ -8,8 +10,14 @@ struct Static_Array {
     }
 
     u32 push(T datum) {
+        assert(count < capacity);
         data[count] = datum;
         return count++;
+    }
+
+    T pop() {
+        assert(count > 0);
+        return data[--count];
     }
 
     T& operator[](s32 x) { return data[x]; }

@@ -27,12 +27,21 @@ struct Dynamic_Array {
 		this->size = size;
 	}
 
+	void clear() {
+		count = 0;
+	}
+
 	void push(T v) {
 		if(count == size) {
 			resize(size * 2);
 		}
 
 		data[count++] = v;
+	}
+
+	T pop() {
+		assert(count > 0);
+		return data[--count];
 	}
 
 	void ordered_remove(u32 i) {

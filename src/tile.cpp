@@ -59,6 +59,8 @@ struct Tile {
     virtual void deinit() {}
 
     virtual void draw(Batch_Renderer *r) {
+        TIMED_FUNCTION();
+
         r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) type]);
     }
 
@@ -76,6 +78,8 @@ struct Tile_Ore : public Tile {
     }
 
     virtual void draw(Batch_Renderer *r) override {
+        TIMED_FUNCTION();
+
         f32 p = (f32)count / (f32)initial_count;
         f32 invp = 1.0f - p;
 
@@ -203,6 +207,8 @@ struct Tile_Furnace : public Tile {
     }
 
     virtual void update() override {
+        TIMED_FUNCTION();
+
         // TODO: Is this method really as simple as possible?
         // Press X to doubt.
 
