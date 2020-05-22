@@ -45,9 +45,6 @@ Code/Dev Features/Quality:
    - Instrumentation; use it
  - Make our own String type
  - Rename Tile to Tile_Entity
- - Consider switching away from stb_ds.h
-   - It's a great library! But .. eh.
-     - Fewer Libraries = Better
  - Internal
    - #define internal static
  - HOT CODE RELOAD!!!!!
