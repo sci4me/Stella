@@ -34,6 +34,15 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 }
 #endif
 
+
+// NOTE: We _think_ these are called from the main thread,
+// however, we don't _really_ know...
+// For now, sticking with the generic non-thread-aware version,
+// but, later on, we may want/need to do something where we
+// add these events to a ring buffer and process them in
+// our main loop. Maybe. *shrugs*
+//					- sci4me, 5/23/20
+
 void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
 	auto g = (Game*) glfwGetWindowUserPointer(window);
 	g->scroll_callback(x, y);
@@ -49,6 +58,7 @@ void window_size_callback(GLFWwindow *window, s32 width, s32 height) {
 	g->window_size_callback(width, height);
 }
 
+
 void Game::scroll_callback(f64 x, f64 y) {
 	ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse) {
@@ -57,23 +67,36 @@ void Game::scroll_callback(f64 x, f64 y) {
 }
 
 void Game::key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
-	if(action == GLFW_RELEASE) {
+	if(action == GLFW_PRESS) {
         switch(key) {
-        	case GLFW_KEY_F2:
+        	case GLFW_KEY_F2: {
         		show_profiler = !show_profiler;
-        		break;
-            case GLFW_KEY_F3:
+        		return;
+        	}
+            case GLFW_KEY_F3: {
                 show_debug_window = !show_debug_window;
-                break;
-            case GLFW_KEY_F11:
+                return;
+            }
+            case GLFW_KEY_F11: {
                 fullscreen = !fullscreen;
                 fullscreen_changed = true;
-                break;
-            case GLFW_KEY_F12:
+                return;
+            }
+            case GLFW_KEY_F12: {
                 debug_pause = !debug_pause;
-                break;
+                return;
+            }
         }
-    }
+	}
+
+	// NOTE: Here is where we dispatch this event to
+	// "listeners". Trying to avoid the function-pointer
+	// dynamic event bus type of system, so, for now we
+    // hardcode the dispatch. May want to change this
+    // to make the code nicer, later on.
+	// 					- sci4me, 5/23/20
+
+	player->key_callback(key, scancode, action, mods);
 }
 
 void Game::window_size_callback(s32 width, s32 height) {
@@ -374,7 +397,7 @@ s32 Game::run() {
     prof::deinit();
 
     glfwTerminate();
-    
+
     tfree();
     return 0;
 }

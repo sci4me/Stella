@@ -43,6 +43,14 @@ Features:
    - Also, pressing E opens the inventory, shouldn't it close it too?
 
 Code/Dev Features/Quality:
+ - Instead of rendering layer 1 and 2 with
+   Batch_Renderer, what if we just did the same
+   thing we do for Chunks? i.e. render them when
+   they change and then uh, yknow, .. yeah.
+   And of course, we could easily have a tile flag
+   that says a tile wants to be rendered per-frame
+   using Batch_Renderer still, in case of animated
+   tiles, etc.
  - Consider removing GLEW
    - We could, relatively easily, handle any
      extension querying and function pointer

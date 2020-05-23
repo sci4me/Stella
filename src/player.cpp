@@ -42,6 +42,27 @@ struct Player {
         crafting_queue.deinit();
     }
 
+    void key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
+        if(action == GLFW_PRESS) {
+            switch(key) {
+                case GLFW_KEY_C: {
+                    show_crafting_queue = !show_crafting_queue;
+                    break;
+                }
+                case GLFW_KEY_E: {
+                    show_inventory = !show_inventory;
+                    if(show_inventory) active_ui_tile = nullptr;
+                    break;
+                }
+                case GLFW_KEY_ESCAPE: {
+                    // TODO: un-hold held items
+                    // TODO: close UIs?
+                    break;
+                }
+            }
+        }   
+    }
+
     void update() {
         TIMED_FUNCTION();
 
@@ -67,22 +88,6 @@ struct Player {
             delta = normalize(delta) * speed;
             
             move(delta);
-
-
-            if(glfwGetKey(game->window, GLFW_KEY_E) == GLFW_PRESS) open_inventory();
-
-
-            static bool last_c_key = false;
-            if(glfwGetKey(game->window, GLFW_KEY_C) == GLFW_PRESS) {
-                if(!last_c_key) {
-                    last_c_key = true;
-                    show_crafting_queue = !show_crafting_queue;                    
-                }
-            } else {
-                last_c_key = false;
-            }
-
-            // TODO escape should un-hold a held item?
         }
 
 
@@ -239,11 +244,6 @@ private:
         // I forgot to floor and spent like 10 minutes wondering why I had
         // 0 and -0 as separate tile coords!
         return world->get_chunk_containing(floor(pos.x / TILE_SIZE), floor(pos.y / TILE_SIZE));
-    }
-
-    void open_inventory() {
-        active_ui_tile = nullptr;
-        show_inventory = true;
     }
 
     void open_tile_ui(Tile *t) {
