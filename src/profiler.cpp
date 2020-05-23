@@ -77,6 +77,7 @@ namespace prof {
 
 		u32 count;
 		u64 time_ns;
+		u64 child_time_ns;
 
 		Dynamic_Array<struct Block_Profile*> children;
 
@@ -88,6 +89,7 @@ namespace prof {
 
 			count = 0;
 			time_ns = 0;
+			child_time_ns = 0;
 
 			children.init();
 		}
@@ -99,6 +101,15 @@ namespace prof {
 			}
 
 			children.deinit();
+		}
+
+		void calculate_child_time() {
+			child_time_ns = 0;
+
+			for(u32 i = 0; i < children.count; i++) {
+				children[i]->calculate_child_time();
+				child_time_ns += children[i]->time_ns;
+			}
 		}
 	};
 
@@ -202,6 +213,10 @@ namespace prof {
 		assert(block_profile_stack.count == 0);
 		assert(current_block_profile == nullptr);
 
+		for(u32 i = 0; i < fp.block_profiles.count; i++) {
+			fp.block_profiles[i]->calculate_child_time();
+		}
+
 		block_profiles.deinit();
 		block_profile_stack.deinit();
 
@@ -235,7 +250,16 @@ namespace prof {
 	void show_block_profile(Block_Profile *bp) {
 		if(ImGui::TreeNode(bp->guid, "%s", bp->name)) {
 			ImGui::Text("Count: %u", bp->count);
-			ImGui::Text("Time: %s", format_ns(bp->time_ns));
+
+			ImGui::Columns(2);
+				ImGui::Text("Time: %s", format_ns(bp->time_ns));
+				ImGui::Text("Self: %s", format_ns(bp->time_ns - bp->child_time_ns));
+				ImGui::Text("Child: %s", format_ns(bp->child_time_ns));
+				ImGui::NextColumn();
+				ImGui::Text("Time/Count: %s", format_ns(bp->time_ns / bp->count));
+				ImGui::Text("Self/Count: %s", format_ns((bp->time_ns - bp->child_time_ns) / bp->count));
+				ImGui::Text("Child/Count: %s", format_ns(bp->child_time_ns / bp->count));
+			ImGui::Columns(1);
 
 			for(u32 i = 0; i < bp->children.count; i++) {
 				show_block_profile(bp->children[i]);
@@ -246,6 +270,11 @@ namespace prof {
 	}
 
 	void show_frames() {
+		// TODO: Figure out how to make this a proper
+		// imgui component instead of just using ImGui::Dummy
+		// Doing it the way we are now prevents scrolling from
+		// working correctly (er, at all.)
+
 		auto window_pos = ImGui::GetWindowPos();
 		auto mouse_pos = ImGui::GetMousePos();
 		auto dl = ImGui::GetWindowDrawList();

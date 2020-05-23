@@ -1,3 +1,10 @@
+Bugs:
+ - It is possible to place items without having one "held"
+   - Click an item in your inventory
+   - Close the inventory
+   - Place the item
+   - Cry
+
 Features:
  - Entities
    - Item Entities
