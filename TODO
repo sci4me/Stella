@@ -36,6 +36,11 @@ Features:
    - Also, pressing E opens the inventory, shouldn't it close it too?
 
 Code/Dev Features/Quality:
+ - Consider removing GLEW
+   - We could, relatively easily, handle any
+     extension querying and function pointer
+     lookup that we need, on a function-by-function
+     basis.
  - Build GLEW and GLFW from source!
    - Difficult to do on Windows (maybe)
      - Not going to use VS!!!
@@ -124,6 +129,13 @@ Quality/Optimization:
    - Probably only want one level of subdirectory in `src`
    - Namespaces! structs! etc.
    - Could probably apply this to the TODO file itself tbh lol
+   - OMG WE REALLY NEED TO DO THIS!!!
+     - At the time of writing this text:
+       - 26 files!!!
+       - 3196 lines!!! 
+     - Dependencies between files is getting more annoying.....
+       - Better organization should help
+         - If not, resort to hpps
  - Maybe use references more? And const references? er....
    - Definitely need to do some research/learning, etc. to know for sure...
      - But maybe.. maybe it's a good idea in some/many places. Dunno.    

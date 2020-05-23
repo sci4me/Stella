@@ -1,8 +1,8 @@
 #include "off_the_rails.cpp"
 #include "math.cpp"
-#include "util.cpp"
 #include "static_array.cpp"
 #include "dynamic_array.cpp"
+#include "util.cpp"
 #include "hash_table.cpp"
 #include "profiler.cpp"
 #include "imgui_support.cpp"
@@ -83,6 +83,8 @@ void Game::window_size_callback(s32 width, s32 height) {
 }
 
 s32 Game::run() {
+	tinit();
+
 	if (!glfwInit()) {
         fprintf(stderr, "Failed to initialized GLFW3!\n");
         return 1;
@@ -127,9 +129,6 @@ s32 Game::run() {
         glDebugMessageCallback((GLDEBUGPROCARB) ::gl_debug_callback, 0);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     #endif
-
-
-    tinit();
 
 
     time_t t;
@@ -374,8 +373,8 @@ s32 Game::run() {
 
     prof::deinit();
 
-    tfree();
-
     glfwTerminate();
+    
+    tfree();
     return 0;
 }
