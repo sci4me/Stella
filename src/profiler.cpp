@@ -242,8 +242,46 @@ namespace prof {
 		}
 	}
 
+	void show_frames() {
+		auto window_pos = ImGui::GetWindowPos();
+		auto mouse_pos = ImGui::GetMousePos();
+		auto dl = ImGui::GetWindowDrawList();
+
+		constexpr f32 FRAME_WIDTH = 12.0f;
+		constexpr f32 FRAME_HEIGHT = 40.0f;
+		constexpr vec2 OFFSET = vec2(10.0f, 30.0f);
+
+		vec2 min = window_pos + OFFSET;
+		vec2 max = min + vec2(FRAME_WIDTH * MAX_FRAME_PROFILES, 0) + vec2(0, FRAME_HEIGHT);
+
+		ImGui::Dummy(max - min + vec2(10.0f, 10.0f));
+
+		for(u32 i = 0; i < MAX_FRAME_PROFILES; i++) {
+			vec2 s = min + vec2(i * FRAME_WIDTH, 0);
+			vec2 e = s + vec2(FRAME_WIDTH, FRAME_HEIGHT);
+
+			if(i == frame_profile_index) dl->AddRectFilled(s, e, 0xFF0000FF);
+
+			if(mouse_pos.x >= s.x && mouse_pos.x < e.x && mouse_pos.y >= s.y && mouse_pos.y < e.y) {
+				dl->AddRectFilled(s, e, 0x44FFFFFF);
+			}
+
+			if(i == 0) continue;
+
+			vec2 ls = min + vec2(i * FRAME_WIDTH, 0);
+			vec2 le = s + vec2(0, FRAME_HEIGHT - 1);
+			dl->AddLine(ls, le, 0xFFFFFFFF);
+		}
+
+		dl->AddRect(min, max, 0xFFFFFFFF);
+	}
+
 	void show() {
 		if(ImGui::Begin("Profiler", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
+			show_frames();
+
+			ImGui::Separator();
+
 			Frame_Profile& fp = frame_profiles[frame_profile_index]; // NOTE: - 1 because we increment after write
 			for(u32 i = 0; i < fp.block_profiles.count; i++) {
 				show_block_profile(fp.block_profiles[i]);
