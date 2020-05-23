@@ -118,6 +118,7 @@ namespace prof {
 	constexpr u32 MAX_FRAME_PROFILES = 60;
 	Frame_Profile frame_profiles[MAX_FRAME_PROFILES];
 	u32 frame_profile_index = 0;
+	u32 selected_frame_profile_index = 0;
 
 
 	void init() {
@@ -205,6 +206,8 @@ namespace prof {
 		block_profile_stack.deinit();
 
 		frame_events.clear();
+
+		selected_frame_profile_index = frame_profile_index;
 	}
 
 	char* format_ns(u64 ns) {
@@ -261,9 +264,14 @@ namespace prof {
 			vec2 e = s + vec2(FRAME_WIDTH, FRAME_HEIGHT);
 
 			if(i == frame_profile_index) dl->AddRectFilled(s, e, 0xFF0000FF);
+			else if(i == selected_frame_profile_index) dl->AddRectFilled(s, e, 0xFFFF0000);
 
 			if(mouse_pos.x >= s.x && mouse_pos.x < e.x && mouse_pos.y >= s.y && mouse_pos.y < e.y) {
-				dl->AddRectFilled(s, e, 0x44FFFFFF);
+				dl->AddRectFilled(s, e, 0x66FFFFFF);
+
+				if(ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+					selected_frame_profile_index = i;
+				}
 			}
 
 			if(i == 0) continue;
@@ -282,7 +290,7 @@ namespace prof {
 
 			ImGui::Separator();
 
-			Frame_Profile& fp = frame_profiles[frame_profile_index]; // NOTE: - 1 because we increment after write
+			Frame_Profile& fp = frame_profiles[selected_frame_profile_index]; // NOTE: - 1 because we increment after write
 			for(u32 i = 0; i < fp.block_profiles.count; i++) {
 				show_block_profile(fp.block_profiles[i]);
 			}
