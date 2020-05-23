@@ -10,7 +10,7 @@ namespace assets {
         Texture furnace;
         Texture mining_machine;
 
-        // NOTE TODO: Do we want to separate textures for tiles, items, etc.
+        // NOTE: Do we want to separate textures for tiles, items, etc.
         // into their own namespaces? Dunno. Maybe.
         Texture iron_plate;
         Texture gold_plate;
@@ -30,13 +30,25 @@ namespace assets {
         textures::furnace               = load_texture_from_file("assets/textures/tile/furnace.png", MIPS);
         textures::mining_machine        = load_texture_from_file("assets/textures/tile/mining_machine.png", MIPS);
 
-        // TODO: Do we actually want MIPs for items? i.e. for item entities?
+        // NOTE: Do we actually want MIPs for items? i.e. for item entities?
         textures::iron_plate            = load_texture_from_file("assets/textures/item/iron_plate.png", false);
         textures::gold_plate            = load_texture_from_file("assets/textures/item/gold_plate.png", false);
         textures::iron_gear             = load_texture_from_file("assets/textures/item/iron_gear.png", false);
     }
 
     void deinit() {
-        // TODO
+        textures::stone.deinit();
+        textures::grass.deinit();
+        textures::cobblestone.deinit();
+        textures::coal_ore.deinit();
+        textures::iron_ore.deinit();
+        textures::gold_ore.deinit();
+        textures::chest.deinit();
+        textures::furnace.deinit();
+        textures::mining_machine.deinit();
+
+        textures::iron_plate.deinit();
+        textures::gold_plate.deinit();
+        textures::iron_gear.deinit();
     }
 }

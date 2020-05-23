@@ -20,9 +20,6 @@ u32 murmur3(void const *input, s32 len, u32 seed) {
 		h = h * 5 + 0xE6546B64;
 	}
 
-	// NOTE TODO: equivalent to:
-	// u8 const *tail = data + len;
-	// ????????????
 	u8 const *tail = (u8 const*) (data + n_blocks * 4);
 	u32 k = 0;
 	switch(len & 3) {
