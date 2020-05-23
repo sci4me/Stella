@@ -19,33 +19,47 @@ enum Item_Type : u8 {
 };
 
 
+// NOTE TODO: This is stupid! Fix it!
+
 Texture item_textures[N_ITEM_TYPES];
 const char *item_names[N_ITEM_TYPES];
+bool item_is_placeable[N_ITEM_TYPES];
 
 void init_items() {
     using namespace assets::textures;
 
-    item_textures[ITEM_COBBLESTONE]     = cobblestone;
-    item_textures[ITEM_COAL_ORE]        = coal_ore;
-    item_textures[ITEM_IRON_ORE]        = iron_ore;
-    item_textures[ITEM_GOLD_ORE]        = gold_ore;
-    item_textures[ITEM_IRON_PLATE]      = iron_plate;
-    item_textures[ITEM_GOLD_PLATE]      = gold_plate;
-    item_textures[ITEM_IRON_GEAR]       = iron_gear;
-    item_textures[ITEM_CHEST]           = chest;
-    item_textures[ITEM_FURNACE]         = furnace;
-    item_textures[ITEM_MINING_MACHINE]  = mining_machine;
+    item_textures[ITEM_COBBLESTONE]                     = cobblestone;
+    item_textures[ITEM_COAL_ORE]                        = coal_ore;
+    item_textures[ITEM_IRON_ORE]                        = iron_ore;
+    item_textures[ITEM_GOLD_ORE]                        = gold_ore;
+    item_textures[ITEM_IRON_PLATE]                      = iron_plate;
+    item_textures[ITEM_GOLD_PLATE]                      = gold_plate;
+    item_textures[ITEM_IRON_GEAR]                       = iron_gear;
+    item_textures[ITEM_CHEST]                           = chest;
+    item_textures[ITEM_FURNACE]                         = furnace;
+    item_textures[ITEM_MINING_MACHINE]                  = mining_machine;
 
-    item_names[ITEM_COBBLESTONE]        = "Cobblestone";
-    item_names[ITEM_COAL_ORE]           = "Coal Ore";
-    item_names[ITEM_IRON_ORE]           = "Iron Ore";
-    item_names[ITEM_GOLD_ORE]           = "Gold Ore";
-    item_names[ITEM_IRON_PLATE]         = "Iron Plate";
-    item_names[ITEM_GOLD_PLATE]         = "Gold Plate";
-    item_names[ITEM_IRON_GEAR]          = "Iron Gear";
-    item_names[ITEM_CHEST]              = "Chest";
-    item_names[ITEM_FURNACE]            = "Furnace";
-    item_names[ITEM_MINING_MACHINE]     = "Mining Machine";
+    item_names[ITEM_COBBLESTONE]                        = "Cobblestone";
+    item_names[ITEM_COAL_ORE]                           = "Coal Ore";
+    item_names[ITEM_IRON_ORE]                           = "Iron Ore";
+    item_names[ITEM_GOLD_ORE]                           = "Gold Ore";
+    item_names[ITEM_IRON_PLATE]                         = "Iron Plate";
+    item_names[ITEM_GOLD_PLATE]                         = "Gold Plate";
+    item_names[ITEM_IRON_GEAR]                          = "Iron Gear";
+    item_names[ITEM_CHEST]                              = "Chest";
+    item_names[ITEM_FURNACE]                            = "Furnace";
+    item_names[ITEM_MINING_MACHINE]                     = "Mining Machine";
+
+    item_is_placeable[ITEM_COBBLESTONE]                 = false;
+    item_is_placeable[ITEM_COAL_ORE]                    = false;
+    item_is_placeable[ITEM_IRON_ORE]                    = false;
+    item_is_placeable[ITEM_GOLD_ORE]                    = false;
+    item_is_placeable[ITEM_IRON_PLATE]                  = false;
+    item_is_placeable[ITEM_GOLD_PLATE]                  = false;
+    item_is_placeable[ITEM_IRON_GEAR]                   = false;
+    item_is_placeable[ITEM_CHEST]                       = true;
+    item_is_placeable[ITEM_FURNACE]                     = true;
+    item_is_placeable[ITEM_MINING_MACHINE]              = true; 
 }
 
 

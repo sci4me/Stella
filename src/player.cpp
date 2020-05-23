@@ -113,13 +113,13 @@ struct Player {
                         hovered_tile_y & (Chunk::SIZE - 1)
                     };
                     
-                    if(ui::held_item_container) {
+                    if(ui::held_item_container != nullptr) {
                         auto held_stack = &ui::held_item_container->slots[ui::held_item_index];
 
                         auto wtf = chunk->layer2.index_of(key);
                         if(wtf != -1) {
                             placement_valid = false;
-                        } else {
+                        } else if(item_is_placeable[held_stack->type]) { // NOTE: Doing this check after the index_of is silly.
                             placement_valid = true;
 
                             // TODO: Instead of polling the mouse, we want to do this stuff
@@ -231,6 +231,15 @@ struct Player {
 
         ui::tile_ui(&inventory, &active_ui_tile);
         ui::player_inventory(&crafting_queue, &show_inventory);
+
+        if(!show_inventory && active_ui_tile == nullptr) {
+            // NOTE TODO: This is hacky! We should have a better system for handling this.
+            // This also fails to consider cases where we have an active_ui_tile but that
+            // UI doesn't have any item containers in it!
+            //                  - sci4me, 5/23/20
+            
+            ui::held_item_container = nullptr;
+        }
 
         if(show_crafting_queue) crafting_queue.draw();
 
