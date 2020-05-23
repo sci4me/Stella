@@ -33,9 +33,19 @@ Features:
  - Click outside of ImGui window to close it? Maybe?
    - For in-game UIs? Or, some of them?
      - Inventory, Chest, Furnace, etc.?
-   - Also, pressing E opens the inventory, shouldn't it close it too?
 
 Code/Dev Features/Quality:
+ - Proper shutdown
+   - Right now I just deinit stuff as I remember to, but
+     it's entirely possible that I haven't gotten everything.
+   - Do we care?
+     - In some sense, no. The OS will free resources our process
+       was using when the process exits, so...... why slow down
+       shutdown time for nothing?
+       - On the other hand, maybe it's better to make sure things
+         are shut down properly?
+         - Certainly for things like files, we probably want to be
+           sure we're closing them, etc.
  - Instead of rendering layer 1 and 2 with
    Batch_Renderer, what if we just did the same
    thing we do for Chunks? i.e. render them when
@@ -56,10 +66,12 @@ Code/Dev Features/Quality:
          build scripts...
  - In-Game Profiler
    - Instrumentation; use it
+   - We've started on this...
  - Make our own String type
  - Rename Tile to Tile_Entity
  - Internal
    - #define internal static
+   - Do we really care? er..
  - HOT CODE RELOAD!!!!!
    - Definitely non-trivial to implement!
      - We have a ton of state.. sorta.
@@ -119,23 +131,13 @@ Quality/Optimization:
    - Also, tbh, I don't know ... if/how our imgui build is working;
      It's including <GLEW/*> rather than "glew/*" so, is it using
      headers _outside of /vendor? It would have to be???
- - Instead of using N textures for ores that are diminishing,
-   just render them differently by using different UVs!
  - Tests
    - It's starting to get to the point where we have easily
      testable things that probably _should_ be tested.
- - Change from "init" and "free" to constructors and destructors
-   - I didn't want to have to do it, but... fucking... C++ yo.
-     - The problem with init and free is that you can't change
-       the parameter types when you're overriding it in a
-       child struct. So. F.
-   - Not 100% convinced about this yet, so we'll push it off
-     - But probably, we want to do this?... ..er.. yeah.
-   - Okay yeah, update on this one: ctors/dtors are evil! Find a way
-     to avoid them at all costs!
  - Organization
    - Probably only want one level of subdirectory in `src`
    - Namespaces! structs! etc.
+     - We've done some of this, but it's inconsistent
    - Could probably apply this to the TODO file itself tbh lol
    - OMG WE REALLY NEED TO DO THIS!!!
      - At the time of writing this text:
