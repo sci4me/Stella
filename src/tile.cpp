@@ -44,6 +44,7 @@ enum Tile_Flags_ : u8 {
 
 
 struct Tile {
+    struct World *world;
     Tile_Type type;
     s32 x;
     s32 y;
@@ -271,6 +272,8 @@ struct Tile_Mining_Machine : public Tile {
     Item_Container fuel;
     Item_Container output;
 
+    u32 fuel_points;
+
     virtual void init() override {
         Tile::init();
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
@@ -283,8 +286,10 @@ struct Tile_Mining_Machine : public Tile {
             wp + vec2(28.0f, 28.0f)
         };
 
-        fuel.init(1);
-        output.init(9);
+        fuel.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);
+        fuel.insertion_filter.set(ITEM_COAL_ORE);
+
+        output.init(1, ITEM_CONTAINER_FLAG_NO_INSERT);
     }
 
     virtual void deinit() override {
@@ -295,7 +300,18 @@ struct Tile_Mining_Machine : public Tile {
     }
 
     virtual void update() override {
-        // TODO
+        TIMED_FUNCTION();
+
+        if(fuel.slots[0].count) {
+            fuel.slots[0].count--;
+            fuel_points += COAL_FUEL_POINTS;
+        }
+
+        if(fuel_points > 0) {
+            // auto chunk = world->get_chunk_containing(x, y);
+            // auto idx = chunk->layer1.index_of(ivec2(x & (Chunk::SIZE - 1), y & (Chunk::SIZE - 1)));
+            // if(idx == -1) return;
+        }
     }
 };
 

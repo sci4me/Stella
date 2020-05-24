@@ -253,6 +253,7 @@ void Chunk::generate() {
 
                 if(m < coal_threshold) {
                     auto tile = make_tile<Tile_Ore>();
+                    tile->world = world;
                     tile->type = TILE_COBBLESTONE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;
@@ -276,6 +277,7 @@ void Chunk::generate() {
 
                 if(m < coal_threshold) {
                     auto tile = make_tile<Tile_Ore>();
+                    tile->world = world;
                     tile->type = TILE_COAL_ORE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;
@@ -299,6 +301,7 @@ void Chunk::generate() {
 
                 if(m < iron_threshold) {
                     auto tile = make_tile<Tile_Ore>();
+                    tile->world = world;
                     tile->type = TILE_IRON_ORE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;
@@ -322,6 +325,7 @@ void Chunk::generate() {
 
                 if(m < gold_threshold) {
                     auto tile = make_tile<Tile_Ore>();
+                    tile->world = world;
                     tile->type = TILE_GOLD_ORE;
                     tile->x = x * SIZE + i;
                     tile->y = y * SIZE + j;

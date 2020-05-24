@@ -35,6 +35,10 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Merge the ctime files!
+   - I split them because the linux version
+     of ctime wouldn't handle the Casey version
+     correctly...
  - Proper shutdown
    - Right now I just deinit stuff as I remember to, but
      it's entirely possible that I haven't gotten everything.

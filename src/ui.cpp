@@ -168,7 +168,23 @@ namespace ui {
 
         bool open = true;
         if(ImGui::Begin("Mining Machine", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
-            // TODO
+            ImGui::Dummy({ 140, 0 });
+
+            ImGui::Columns(2, NULL, false);
+                ImGui::Text("Fuel:");
+                container(&m->fuel, 1, 1);
+
+                ImGui::NextColumn();
+
+                ImGui::Text("Output:");
+                container(&m->output, 1, 1);
+            ImGui::Columns(1);
+
+            ImGui::Separator();
+
+            container(player_inventory, 4, 4);
+
+            held_item();
         }
         ImGui::End();
 
@@ -210,7 +226,7 @@ namespace ui {
     // Item_Container for the player inventory, and we need the Queue anyway.
     void player_inventory(crafting::Queue *crafting_queue, bool *open) {
         TIMED_FUNCTION();
-        
+
         if(!*open) return;
 
         if(ImGui::Begin("Inventory", open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
