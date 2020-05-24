@@ -4,6 +4,10 @@
 // Eventually it may be worth investigating a PR for stb_image upstream. Not sure if this
 // feature would be desired by anyone who isn't as off the rails as me but hey, we can offer
 // it. We can also make it a fork if we like. YAY OPEN SOURCE! <3
+//
+// p.s. STBI_NO_LIBC implies STBI_NO_STDIO. Which implies that the functions that load from a file
+// don't exist. Maybe we'll address this. *shrugs*
+//
 //                        - sci4me, 5/24/20
 
 
@@ -330,10 +334,6 @@ RECENT REVISION HISTORY:
 
 
 #ifdef STBI_NO_LIBC
-
-// #if !defined(STBI_blah) || ...
-// #error "..."
-// #endif
 
 #define STBI_NO_STDIO
 
