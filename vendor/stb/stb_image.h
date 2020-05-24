@@ -337,36 +337,38 @@ RECENT REVISION HISTORY:
 
 #define STBI_NO_STDIO
 
+// TODO: INT_MAX, etc.
+
 #if !defined(STBI_LDEXPF)
-#error "STBI_LDEXPF must be declared if STBI_NO_LIBC is used."
+#error "STBI_LDEXPF must be defined if STBI_NO_LIBC is used."
 #endif
 
 #if !defined(STBI_POWF)
-#error "STBI_POWF must be declared if STBI_NO_LIBC is used."
+#error "STBI_POWF must be defined if STBI_NO_LIBC is used."
 #endif
 
 #if !defined(STBI_MEMSET)
-#error "STBI_MEMSET must be declared if STBI_NO_LIBC is used."
+#error "STBI_MEMSET must be defined if STBI_NO_LIBC is used."
 #endif
 
 #if !defined(STBI_MEMCPY)
-#error "STBI_MEMCPY must be declared if STBI_NO_LIBC is used."
+#error "STBI_MEMCPY must be defined if STBI_NO_LIBC is used."
 #endif
 
 #if !defined(STBI_ABS)
-#error "STBI_ABS must be declared if STBI_NO_LIBC is used."
+#error "STBI_ABS must be defined if STBI_NO_LIBC is used."
 #endif
 
 #if !defined(STBI_STRCMP)
-#error "STBI_STRCMP must be declared if STBI_NO_LIBC is used."
+#error "STBI_STRCMP must be defined if STBI_NO_LIBC is used."
 #endif
 
 #if !defined(STBI_STRNCMP)
-#error "STBI_STRNCMP must be declared if STBI_NO_LIBC is used".
+#error "STBI_STRNCMP must be defined if STBI_NO_LIBC is used".
 #endif
 
 #if !defined(STBI_STRTOL)
-#error "STBI_STRTOL must be declared if STBI_NO_LIBC is used."
+#error "STBI_STRTOL must be defined if STBI_NO_LIBC is used."
 #endif
 
 // NOTE: If we're not using libc and STBI_ASSERT isn't 

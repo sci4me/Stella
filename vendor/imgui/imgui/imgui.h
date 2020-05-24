@@ -1,3 +1,13 @@
+// NOTE: This (fantastic!) library has been mutilated in order to allow me to use it without
+// any standard libc implementation; there are macros for specifying functions like IM_MEMSET,
+// memcpy, IM_STRCMP, etc.
+// Eventually it may be worth investigating a PR for imgui upstream. Not sure if this
+// feature would be desired by anyone who isn't as off the rails as me but hey, we can offer
+// it. We can also make it a fork if we like. YAY OPEN SOURCE! <3
+//
+//                        - sci4me, 5/24/20
+
+
 // dear imgui, v1.76
 // (headers)
 
@@ -51,11 +61,166 @@ Index of this file:
 // Header mess
 //-----------------------------------------------------------------------------
 
+#if !defined(IMGUI_NO_LIBC)
+
 // Includes
 #include <float.h>                  // FLT_MIN, FLT_MAX
 #include <stdarg.h>                 // va_list, va_start, va_end
 #include <stddef.h>                 // ptrdiff_t, NULL
 #include <string.h>                 // memset, memmove, memcpy, strlen, strchr, strcpy, strcmp
+
+#define IM_MEMSET(d, x, n)          memset(d, x, n)
+#define IM_MEMMOVE(d, s, n)         memmove(d, s, n)
+#define IM_MEMCPY(d, s, n)          memcpy(d, s, n)
+#define IM_MEMCMP(a, b, n)          memcmp(a, b, n)
+#define IM_STRLEN(s)                strlen(s)
+#define IM_STRCHR(s, c)             strchr(s, c)
+#define IM_STRCPY(d, s)             strcpy(d, s)
+#define IM_STRCMP(a, b)             strcmp(a, b)
+#define IM_MALLOC(n)                malloc(n)
+#define IM_FREE(p)                  free(p)
+#define IM_TOUPPER(c)               toupper(c)
+#define IM_STRNCPY(d, s, n)         strncpy(d, s, n)
+#define IM_MEMCHR(p, v, n)          memchr(p, v, n)
+#define IM_STRSTR(a, b)             strstr(a, b)
+#define IM_SSCANF(s, f, ...)        sscanf(s, f, __VA_ARGS__)
+
+// We support stb_sprintf which is much faster (see: https://github.com/nothings/stb/blob/master/stb_sprintf.h)
+// You may set IMGUI_USE_STB_SPRINTF to use our default wrapper, or set IMGUI_DISABLE_DEFAULT_FORMAT_FUNCTIONS
+// and setup the wrapper yourself. (FIXME-OPT: Some of our high-level operations such as ImGuiTextBuffer::appendfv() are
+// designed using two-passes worst case, which probably could be improved using the stbsp_vsprintfcb() function.)
+#ifdef IMGUI_USE_STB_SPRINTF
+
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb_sprintf.h"
+
+#define IM_VSNPRINTF(b, s, f, a) stbsp_vsprintf(b, (int)s, f, a)
+
+#else
+
+#if defined(_MSC_VER) && !defined(vsnprintf)
+#define vsnprintf _vsnprintf
+#endif
+
+#define IM_VSNPRINTF(b, s, f, a) vsnprintf(b, s, f, a)
+
+#endif
+
+#else
+
+#define IMGUI_DISABLE_DEFAULT_MATH_FUNCTIONS
+// #define IMGUI_DISABLE_DEFAULT_FORMAT_FUNCTIONS
+#define IMGUI_DISABLE_FILE_FUNCTIONS
+
+#if !defined(IM_MEMSET)
+#error "IM_MEMSET must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_MEMMOVE)
+#error "IM_MEMMOVE must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_MEMCPY)
+#error "IM_MEMCPY must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_MEMCMP)
+#error "IM_MEMCMP must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_STRLEN)
+#error "IM_STRLEN must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_STRCHR)
+#error "IM_STRCHR must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_STRCPY)
+#error "IM_STRCPY must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_STRCMP)
+#error "IM_STRCMP must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImSqrt)
+#error "ImSqrt must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImFabs)
+#error "ImFabs must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImFmod)
+#error "ImFmod must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImCos)
+#error "ImCos must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImSin)
+#error "ImSin must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImAcos)
+#error "ImAcos must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImAtan2)
+#error "ImAtan2 must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImFloorStd)
+#error "ImFloorStd must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImCeil)
+#error "ImCeil must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImAtof)
+#error "ImAtof must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(ImQsort)
+#error "ImQsort must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_MALLOC_FN)
+#error "IM_MALLOC_FN must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_FREE_FN)
+#error "IM_FREE_FN must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_TOUPPER)
+#error "IM_TOUPPER must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_STRNCPY)
+#error "IM_STRNCPY must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_MEMCHR)
+#error "IM_MEMCHR must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_STRSTR)
+#error "IM_STRSTR must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_SSCANF)
+#error "IM_SSCANF must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#if !defined(IM_VSNPRINTF)
+#error "IM_VSNPRINTF must be defined if IMGUI_NO_LIBC is used."
+#endif
+
+#endif
 
 // Version
 // (Integer encoded as XYYZZ for use in #if preprocessor conditionals. Work in progress versions typically starts at XYY99 then bounce up to XYY00, XYY01 etc. when release tagging happens)
@@ -87,7 +252,7 @@ Index of this file:
 #endif
 #define IM_ARRAYSIZE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*_ARR)))       // Size of a static C-style array. Don't use on pointers!
 #define IM_UNUSED(_VAR)             ((void)_VAR)                                // Used to silence "unused variable warnings". Often useful as asserts may be stripped out from final builds.
-#if (__cplusplus >= 201100)
+#if (__cplusplus >= 201100) && !defined(IMGUI_NO_LIBC)
 #define IM_OFFSETOF(_TYPE,_MEMBER)  offsetof(_TYPE, _MEMBER)                    // Offset of _MEMBER within _TYPE. Standardized as offsetof() in C++11
 #else
 #define IM_OFFSETOF(_TYPE,_MEMBER)  ((size_t)&(((_TYPE*)0)->_MEMBER))           // Offset of _MEMBER within _TYPE. Old style macro.
@@ -103,7 +268,7 @@ Index of this file:
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"                  // warning: unknown option after '#pragma GCC diagnostic' kind
-#pragma GCC diagnostic ignored "-Wclass-memaccess"          // [__GNUC__ >= 8] warning: 'memset/memcpy' clearing/writing an object of type 'xxxx' with no trivial copy-assignment; use assignment or value-initialization instead
+#pragma GCC diagnostic ignored "-Wclass-memaccess"          // [__GNUC__ >= 8] warning: 'IM_MEMSET/memcpy' clearing/writing an object of type 'xxxx' with no trivial copy-assignment; use assignment or value-initialization instead
 #endif
 
 //-----------------------------------------------------------------------------
@@ -1294,7 +1459,7 @@ template<typename T> void IM_DELETE(T* p)   { if (p) { p->~T(); ImGui::MemFree(p
 // - We use std-like naming convention here, which is a little unusual for this codebase.
 // - Important: clear() frees memory, resize(0) keep the allocated buffer. We use resize(0) a lot to intentionally recycle allocated buffers across frames and amortize our costs.
 // - Important: our implementation does NOT call C++ constructors/destructors, we treat everything as raw data! This is intentional but be extra mindful of that,
-//   Do NOT use this class as a std::vector replacement in your own code! Many of the structures used by dear imgui can be safely initialized by a zero-memset.
+//   Do NOT use this class as a std::vector replacement in your own code! Many of the structures used by dear imgui can be safely initialized by a zero-IM_MEMSET.
 //-----------------------------------------------------------------------------
 
 template<typename T>
@@ -1312,7 +1477,7 @@ struct ImVector
     // Constructors, destructor
     inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }
     inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }
-    inline ImVector<T>& operator=(const ImVector<T>& src)   { clear(); resize(src.Size); memcpy(Data, src.Data, (size_t)Size * sizeof(T)); return *this; }
+    inline ImVector<T>& operator=(const ImVector<T>& src)   { clear(); resize(src.Size); IM_MEMCPY(Data, src.Data, (size_t)Size * sizeof(T)); return *this; }
     inline ~ImVector()                                      { if (Data) IM_FREE(Data); }
 
     inline bool         empty() const                       { return Size == 0; }
@@ -1335,18 +1500,18 @@ struct ImVector
 
     inline int          _grow_capacity(int sz) const        { int new_capacity = Capacity ? (Capacity + Capacity/2) : 8; return new_capacity > sz ? new_capacity : sz; }
     inline void         resize(int new_size)                { if (new_size > Capacity) reserve(_grow_capacity(new_size)); Size = new_size; }
-    inline void         resize(int new_size, const T& v)    { if (new_size > Capacity) reserve(_grow_capacity(new_size)); if (new_size > Size) for (int n = Size; n < new_size; n++) memcpy(&Data[n], &v, sizeof(v)); Size = new_size; }
+    inline void         resize(int new_size, const T& v)    { if (new_size > Capacity) reserve(_grow_capacity(new_size)); if (new_size > Size) for (int n = Size; n < new_size; n++) IM_MEMCPY(&Data[n], &v, sizeof(v)); Size = new_size; }
     inline void         shrink(int new_size)                { IM_ASSERT(new_size <= Size); Size = new_size; } // Resize a vector to a smaller size, guaranteed not to cause a reallocation
-    inline void         reserve(int new_capacity)           { if (new_capacity <= Capacity) return; T* new_data = (T*)IM_ALLOC((size_t)new_capacity * sizeof(T)); if (Data) { memcpy(new_data, Data, (size_t)Size * sizeof(T)); IM_FREE(Data); } Data = new_data; Capacity = new_capacity; }
+    inline void         reserve(int new_capacity)           { if (new_capacity <= Capacity) return; T* new_data = (T*)IM_ALLOC((size_t)new_capacity * sizeof(T)); if (Data) { IM_MEMCPY(new_data, Data, (size_t)Size * sizeof(T)); IM_FREE(Data); } Data = new_data; Capacity = new_capacity; }
 
     // NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }
+    inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); IM_MEMCPY(&Data[Size], &v, sizeof(v)); Size++; }
     inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }
     inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }
-    inline T*           erase(const T* it)                  { IM_ASSERT(it >= Data && it < Data+Size); const ptrdiff_t off = it - Data; memmove(Data + off, Data + off + 1, ((size_t)Size - (size_t)off - 1) * sizeof(T)); Size--; return Data + off; }
-    inline T*           erase(const T* it, const T* it_last){ IM_ASSERT(it >= Data && it < Data+Size && it_last > it && it_last <= Data+Size); const ptrdiff_t count = it_last - it; const ptrdiff_t off = it - Data; memmove(Data + off, Data + off + count, ((size_t)Size - (size_t)off - count) * sizeof(T)); Size -= (int)count; return Data + off; }
-    inline T*           erase_unsorted(const T* it)         { IM_ASSERT(it >= Data && it < Data+Size);  const ptrdiff_t off = it - Data; if (it < Data+Size-1) memcpy(Data + off, Data + Size - 1, sizeof(T)); Size--; return Data + off; }
-    inline T*           insert(const T* it, const T& v)     { IM_ASSERT(it >= Data && it <= Data+Size); const ptrdiff_t off = it - Data; if (Size == Capacity) reserve(_grow_capacity(Size + 1)); if (off < (int)Size) memmove(Data + off + 1, Data + off, ((size_t)Size - (size_t)off) * sizeof(T)); memcpy(&Data[off], &v, sizeof(v)); Size++; return Data + off; }
+    inline T*           erase(const T* it)                  { IM_ASSERT(it >= Data && it < Data+Size); const ptrdiff_t off = it - Data; IM_MEMMOVE(Data + off, Data + off + 1, ((size_t)Size - (size_t)off - 1) * sizeof(T)); Size--; return Data + off; }
+    inline T*           erase(const T* it, const T* it_last){ IM_ASSERT(it >= Data && it < Data+Size && it_last > it && it_last <= Data+Size); const ptrdiff_t count = it_last - it; const ptrdiff_t off = it - Data; IM_MEMMOVE(Data + off, Data + off + count, ((size_t)Size - (size_t)off - count) * sizeof(T)); Size -= (int)count; return Data + off; }
+    inline T*           erase_unsorted(const T* it)         { IM_ASSERT(it >= Data && it < Data+Size);  const ptrdiff_t off = it - Data; if (it < Data+Size-1) IM_MEMCPY(Data + off, Data + Size - 1, sizeof(T)); Size--; return Data + off; }
+    inline T*           insert(const T* it, const T& v)     { IM_ASSERT(it >= Data && it <= Data+Size); const ptrdiff_t off = it - Data; if (Size == Capacity) reserve(_grow_capacity(Size + 1)); if (off < (int)Size) IM_MEMMOVE(Data + off + 1, Data + off, ((size_t)Size - (size_t)off) * sizeof(T)); IM_MEMCPY(&Data[off], &v, sizeof(v)); Size++; return Data + off; }
     inline bool         contains(const T& v) const          { const T* data = Data;  const T* data_end = Data + Size; while (data < data_end) if (*data++ == v) return true; return false; }
     inline T*           find(const T& v)                    { T* data = Data;  const T* data_end = Data + Size; while (data < data_end) if (*data == v) break; else ++data; return data; }
     inline const T*     find(const T& v) const              { const T* data = Data;  const T* data_end = Data + Size; while (data < data_end) if (*data == v) break; else ++data; return data; }
@@ -1612,8 +1777,8 @@ struct ImGuiPayload
     bool            Delivery;           // Set when AcceptDragDropPayload() was called and mouse button is released over the target item.
 
     ImGuiPayload()  { Clear(); }
-    void Clear()    { SourceId = SourceParentId = 0; Data = NULL; DataSize = 0; memset(DataType, 0, sizeof(DataType)); DataFrameCount = -1; Preview = Delivery = false; }
-    bool IsDataType(const char* type) const { return DataFrameCount != -1 && strcmp(type, DataType) == 0; }
+    void Clear()    { SourceId = SourceParentId = 0; Data = NULL; DataSize = 0; IM_MEMSET(DataType, 0, sizeof(DataType)); DataFrameCount = -1; Preview = Delivery = false; }
+    bool IsDataType(const char* type) const { return DataFrameCount != -1 && IM_STRCMP(type, DataType) == 0; }
     bool IsPreview() const                  { return Preview; }
     bool IsDelivery() const                 { return Delivery; }
 };
@@ -2025,7 +2190,7 @@ struct ImDrawList
     // Stateful path API, add points then finish with PathFillConvex() or PathStroke()
     inline    void  PathClear()                                                 { _Path.Size = 0; }
     inline    void  PathLineTo(const ImVec2& pos)                               { _Path.push_back(pos); }
-    inline    void  PathLineToMergeDuplicate(const ImVec2& pos)                 { if (_Path.Size == 0 || memcmp(&_Path.Data[_Path.Size-1], &pos, 8) != 0) _Path.push_back(pos); }
+    inline    void  PathLineToMergeDuplicate(const ImVec2& pos)                 { if (_Path.Size == 0 || IM_MEMCMP(&_Path.Data[_Path.Size-1], &pos, 8) != 0) _Path.push_back(pos); }
     inline    void  PathFillConvex(ImU32 col)                                   { AddConvexPolyFilled(_Path.Data, _Path.Size, col); _Path.Size = 0; }  // Note: Anti-aliased filling requires points to be in clockwise order.
     inline    void  PathStroke(ImU32 col, bool closed, float thickness = 1.0f)  { AddPolyline(_Path.Data, _Path.Size, col, closed, thickness); _Path.Size = 0; }
     IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 10);
@@ -2135,7 +2300,7 @@ struct ImFontGlyphRangesBuilder
     ImVector<ImU32> UsedChars;            // Store 1-bit per Unicode code point (0=unused, 1=used)
 
     ImFontGlyphRangesBuilder()              { Clear(); }
-    inline void     Clear()                 { int size_in_bytes = (IM_UNICODE_CODEPOINT_MAX + 1) / 8; UsedChars.resize(size_in_bytes / (int)sizeof(ImU32)); memset(UsedChars.Data, 0, (size_t)size_in_bytes); }
+    inline void     Clear()                 { int size_in_bytes = (IM_UNICODE_CODEPOINT_MAX + 1) / 8; UsedChars.resize(size_in_bytes / (int)sizeof(ImU32)); IM_MEMSET(UsedChars.Data, 0, (size_t)size_in_bytes); }
     inline bool     GetBit(size_t n) const  { int off = (int)(n >> 5); ImU32 mask = 1u << (n & 31); return (UsedChars[off] & mask) != 0; }  // Get bit n in the array
     inline void     SetBit(size_t n)        { int off = (int)(n >> 5); ImU32 mask = 1u << (n & 31); UsedChars[off] |= mask; }               // Set bit n in the array
     inline void     AddChar(ImWchar c)      { SetBit(c); }                      // Add character

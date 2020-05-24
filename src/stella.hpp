@@ -8,19 +8,61 @@
 // #include <math.h>
 // #include <time.h>
 
+
 // #define SCI_H_IMPL
 // #define SCI_H_TEMP_STORAGE_ASSERT_NO_OVERRUN
 // #include "sci.h"
 
+
 // #define GLEW_STATIC
-// #define GLEW_NO_GLU
-// #include "GL/glew.h"
+#define GLEW_NO_GLU
+//#include "GL/glew.h"
 // #include "GLFW/glfw3.h"
 
+
+// NOTE TODO: implement assert
+#define IMGUI_NO_LIBC
+#define IM_ASSERT(x)
+#define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
+#define IM_MEMMOVE(d, s, n)         mlc_memmove(d, s, n)
+#define IM_MEMCPY(d, s, n)          mlc_memcpy(d, s, n)
+#define IM_MEMCMP(a, b, n)			mlc_memcmp(a, b, n)
+#define IM_STRLEN(s)                mlc_strlen(s)
+#define IM_STRCHR(s, c)             mlc_strchr(s, c)
+#define IM_STRCPY(d, s)             mlc_strcpy(d, s)
+#define IM_STRCMP(a, b)             mlc_strcmp(a, b)
+#define ImFabs(x)					mlc_fabsf(x)
+#define ImSqrt(x)					mlc_sqrtf(x)
+#define ImFmod(a, b)				mlc_fmodf(a, b)
+#define ImCos(x)					mlc_cos(x)
+#define ImSin(x)					mlc_sin(x)
+#define ImAcos(x)					mlc_acos(x)
+#define ImAtan2(y, x)				mlc_atan2(y, x)
+#define ImFloorStd(x)				mlc_floorf(x)
+#define ImCeil(x)					mlc_ceilf(x)
+#define ImAtof(s)					mlc_atof(s)
+static inline float ImPow(float b, float e) { return mlc_powf(b, e); }
+static inline double ImPow(double b, double e) { return mlc_powf(b, e); }
+#define ImQsort(b, n, s, c)			mlc_qsort(b, n, s, c)
+#define IM_MALLOC_FN(n)				mlc_malloc(n)
+#define IM_FREE_FN(p)				mlc_free(p)
+#define IM_TOUPPER(c)				mlc_toupper(c)
+#define IM_STRNCPY(d, s, n)			mlc_strncpy(d, s, n)
+#define IM_MEMCHR(p, v, n)			mlc_memchr(p, v, n)
+#define IM_STRSTR(a, b)				mlc_strstr(a, b)
+#define IM_SSCANF(s, f, ...)		mlc_sscanf(s, f, __VA_ARGS__)
+#define IM_VSNPRINTF(b, s, f, a)	mlc_vsnprintf(b, s, f, a)
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #define IMGUI_IMPL_OPENGL_LOADER_GLEW
 #include "imgui/imgui_impl_opengl3.h"
+
+#include "imgui/imgui.cpp"
+#include "imgui/imgui_draw.cpp"
+//#include "imgui/imgui_impl_glfw.cpp"
+//#include "imgui/imgui_impl_opengl3.cpp"
+#include "imgui/imgui_widgets.cpp"
+
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_GIF
@@ -39,6 +81,7 @@
 #define STBI_STRNCMP(a, b, n)		mlc_strncmp(a, b, n)
 #define STBI_STRTOL(s, e, b)		mlc_strtol(s, e, b)
 #include "stb_image.h" 
+
 
 #define RND_U32 u32
 #define RND_U64 u64
