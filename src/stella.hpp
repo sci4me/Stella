@@ -55,6 +55,7 @@ struct Game {
 
 	bool fullscreen_changed = false;
 	bool fullscreen = false;
+	s32 saved_window_x, saved_window_y, saved_window_w, saved_window_h;
 
 	bool vsync = true;
 	bool fast_mining = false;

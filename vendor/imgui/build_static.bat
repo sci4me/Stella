@@ -3,6 +3,8 @@
 set BasePath=%~dp0
 set VendorPath=%BasePath%\..
 
+REM TODO this is totally messed up! Why the hell do we have /FeStella.exe here!
+REM Clearly it HAPPENS to work but it's definitely incomplete!
 set CFlags=/c /FeStella.exe /Zi /DEBUG:FULL /std:c++17 -D_CRT_SECURE_NO_WARNINGS -DIMGUI_IMPL_OPENGL_LOADER_GLEW -DGLEW_NO_GLU
 set LDFlags=/lib /OUT:imgui.lib /nologo /SUBSYSTEM:WINDOWS
 set Includes=/I %BasePath%imgui /I ../../GLFW/include /I ../../GLEW/include

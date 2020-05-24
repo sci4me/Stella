@@ -184,20 +184,23 @@ s32 Game::run() {
     crafting::init();
 
 
-    world = new World;
-    world->init();
+    {
+        void *mem = malloc(sizeof(World));
+        world = new(mem) World;
+        world->init();
+    }
 
-
-    player = new Player;
-    player->init(this, world);
-    player->pos = {496, 3637};
+    {
+        void *mem = malloc(sizeof(Player));
+        player = new(mem) Player;
+        player->init(this, world);
+        player->pos = {496, 3637};
+    }
 
 
 
     {
         // TODO REMOVEME TESTING
-        
-
         player->inventory.insert({ ITEM_COBBLESTONE, MAX_ITEM_SLOT_SIZE });
         player->inventory.insert({ ITEM_IRON_ORE, MAX_ITEM_SLOT_SIZE });
         player->inventory.insert({ ITEM_GOLD_ORE, MAX_ITEM_SLOT_SIZE });
@@ -206,26 +209,6 @@ s32 Game::run() {
         player->inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
         player->inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
         player->inventory.insert({ ITEM_MINING_MACHINE, MAX_ITEM_SLOT_SIZE });
-
-        auto f = [&](s32 x, s32 y) {
-            auto c = world->get_chunk_containing(x, y);
-
-            auto t = new Tile_Furnace;
-            t->type = TILE_FURNACE;
-            t->x = x;
-            t->y = y;
-            t->init();
-
-            ivec2 key = {
-                t->x & (Chunk::SIZE - 1),
-                t->y & (Chunk::SIZE - 1)
-            };
-            c->layer2.set(key, t);
-        };
-
-        f(135, -4);
-        f(135, -5);
-        f(136, -5);
     }
 
 
@@ -254,16 +237,15 @@ s32 Game::run() {
         if(fullscreen_changed) {
             fullscreen_changed = false;
 
-            static s32 wx, wy, ww, wh;
             if(fullscreen) {
-                glfwGetWindowPos(window, &wx, &wy);
-                glfwGetWindowSize(window, &ww, &wh);
+                glfwGetWindowPos(window, &saved_window_x, &saved_window_y);
+                glfwGetWindowSize(window, &saved_window_w, &saved_window_h);
 
                 auto monitor = glfwGetPrimaryMonitor();
                 auto mode = glfwGetVideoMode(monitor);
                 glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, 0);
             } else {
-                glfwSetWindowMonitor(window, nullptr, wx, wy, ww, wh, 0);
+                glfwSetWindowMonitor(window, nullptr, saved_window_x, saved_window_y, saved_window_w, saved_window_h, 0);
             }
 
             continue;
@@ -385,10 +367,10 @@ s32 Game::run() {
     batch_renderer->deinit();
 
     world->deinit();
-    delete world;
+    free(world);
 
     player->deinit();
-    delete player;
+    free(player);
 
     crafting::deinit();
 

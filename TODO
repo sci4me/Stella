@@ -123,6 +123,14 @@ Code/Dev Features/Quality:
  - Better Build System
 
 Quality/Optimization:
+ - Remove libc
+   - We were able to remove libstdc++ "trivially".
+     - Took a small change to imgui
+       - Don't fully understand why that change was all that was needed but whatever, it works
+   - Remove libc will be harder than removing libstdc++
+     - But I think we can do it. We just have to change all calls to libc
+       to either call the OS or our own functions. Obviously this means we'll
+       start needing to write OS-dependent code, for things like file I/O, etc. 
  - Verify that we only have _one_ copy of GLEW being build
    into our executable! I _think_ this is the case.. but..
    - I'm really not sure if .. like..
