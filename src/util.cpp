@@ -67,7 +67,7 @@ void dump_gl_info() {
 
     GLint major, minor; 
     glGetIntegerv(GL_MAJOR_VERSION, &major); 
-    glGetIntegerv(GL_MINOR_VERSION, &minor); 
+    glGetIntegerv(GL_MINOR_VERSION, &minor);
     printf("  GL_MAJOR_VERSION              %d\n", major);
     printf("  GL_MINOR_VERSION              %d\n", minor);
 

@@ -3,31 +3,42 @@
 #define GL_MINOR 4
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
+// #include <stdlib.h>
+// #include <stdio.h>
+// #include <math.h>
+// #include <time.h>
 
-#define SCI_H_IMPL
-#define SCI_H_TEMP_STORAGE_ASSERT_NO_OVERRUN
-#include "sci.h"
+// #define SCI_H_IMPL
+// #define SCI_H_TEMP_STORAGE_ASSERT_NO_OVERRUN
+// #include "sci.h"
 
-#define GLEW_STATIC
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+// #define GLEW_STATIC
+// #define GLEW_NO_GLU
+// #include "GL/glew.h"
+// #include "GLFW/glfw3.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #define IMGUI_IMPL_OPENGL_LOADER_GLEW
 #include "imgui/imgui_impl_opengl3.h"
 
-// NOTE TODO: We will need to do this for hot code reloading!
-// #define STBI_MALLOC(sz)           malloc(sz)
-// #define STBI_REALLOC(p,newsz)     realloc(p,newsz)
-// #define STBI_FREE(p)              free(p)
-
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#define STBI_NO_GIF
+#define STBI_NO_LIBC
+// NOTE TODO: implement assert
+#define STBI_ASSERT(x)
+#define STBI_MALLOC(n)           	mlc_malloc(n)
+#define STBI_REALLOC(p, n)     		mlc_realloc(p, n)
+#define STBI_FREE(p)              	mlc_free(p)
+#define STBI_LDEXPF(a, b) 		 	mlc_ldexpf(a, b)
+#define STBI_POWF(a, b) 			mlc_powf(a, b)
+#define STBI_MEMSET(p, x, n)		mlc_memset(p, x, n)
+#define STBI_MEMCPY(d, s, n)		mlc_memcpy(d, s, n)
+#define STBI_ABS(x)					mlc_abs(x)
+#define STBI_STRCMP(a, b)			mlc_strcmp(a, b)
+#define STBI_STRNCMP(a, b, n)		mlc_strncmp(a, b, n)
+#define STBI_STRTOL(s, e, b)		mlc_strtol(s, e, b)
+#include "stb_image.h" 
 
 #define RND_U32 u32
 #define RND_U64 u64
