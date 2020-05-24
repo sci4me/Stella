@@ -14,10 +14,9 @@
 // #include "sci.h"
 
 
-// #define GLEW_STATIC
+#define GLEW_STATIC
 #define GLEW_NO_GLU
-//#include "GL/glew.h"
-// #include "GLFW/glfw3.h"
+#include "GL/glew.h"
 
 
 // NOTE TODO: implement assert
@@ -59,8 +58,6 @@ static inline double ImPow(double b, double e) { return mlc_powf(b, e); }
 
 #include "imgui/imgui.cpp"
 #include "imgui/imgui_draw.cpp"
-//#include "imgui/imgui_impl_glfw.cpp"
-//#include "imgui/imgui_impl_opengl3.cpp"
 #include "imgui/imgui_widgets.cpp"
 
 
