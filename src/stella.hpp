@@ -1,17 +1,10 @@
+#include "intrinsics.cpp"
+
+#define APP_NAME "Stella"
+
 #define GL_DEBUG
 #define GL_MAJOR 4
 #define GL_MINOR 4
-
-
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <math.h>
-// #include <time.h>
-
-
-// #define SCI_H_IMPL
-// #define SCI_H_TEMP_STORAGE_ASSERT_NO_OVERRUN
-// #include "sci.h"
 
 
 #define GLEW_STATIC
@@ -19,8 +12,11 @@
 #include "GL/glew.h"
 
 
-// NOTE TODO: implement assert
+// #define IMGUI_DISABLE
+
+
 #define IMGUI_NO_LIBC
+// NOTE TODO: implement assert
 #define IM_ASSERT(x)
 #define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
 #define IM_MEMMOVE(d, s, n)         mlc_memmove(d, s, n)
@@ -30,11 +26,11 @@
 #define IM_STRCHR(s, c)             mlc_strchr(s, c)
 #define IM_STRCPY(d, s)             mlc_strcpy(d, s)
 #define IM_STRCMP(a, b)             mlc_strcmp(a, b)
-#define ImFabs(x)					mlc_fabsf(x)
-#define ImSqrt(x)					mlc_sqrtf(x)
+#define ImFabs(x)					absf32(x)
+#define ImSqrt(x)					sqrtf32(x)
 #define ImFmod(a, b)				mlc_fmodf(a, b)
-#define ImCos(x)					mlc_cos(x)
-#define ImSin(x)					mlc_sin(x)
+#define ImCos(x)					cosf64(x)
+#define ImSin(x)					sinf64(x)
 #define ImAcos(x)					mlc_acos(x)
 #define ImAtan2(y, x)				mlc_atan2(y, x)
 #define ImFloorStd(x)				mlc_floorf(x)
@@ -52,10 +48,6 @@ static inline double ImPow(double b, double e) { return mlc_powf(b, e); }
 #define IM_SSCANF(s, f, ...)		mlc_sscanf(s, f, __VA_ARGS__)
 #define IM_VSNPRINTF(b, s, f, a)	mlc_vsnprintf(b, s, f, a)
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
-#define IMGUI_IMPL_OPENGL_LOADER_GLEW
-#include "imgui/imgui_impl_opengl3.h"
-
 #include "imgui/imgui.cpp"
 #include "imgui/imgui_draw.cpp"
 #include "imgui/imgui_widgets.cpp"
@@ -87,8 +79,6 @@ static inline double ImPow(double b, double e) { return mlc_powf(b, e); }
 
 
 struct Game {
-	GLFWwindow *window;
-
 	s32 window_width = 1280;
 	s32 window_height = 720;
 
@@ -126,6 +116,11 @@ struct Game {
 	void scroll_callback(f64 x, f64 y);
 	void key_callback(s32 key, s32 scancode, s32 action, s32 mods);
 	void window_size_callback(s32 width, s32 height);
+	
+	void init();
+	void deinit();
+	void update_and_render();
 
+	// TODO: REMOVE ME
 	s32 run();
 };

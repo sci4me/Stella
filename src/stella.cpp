@@ -1,3 +1,4 @@
+/*
 #include "off_the_rails.cpp"
 #include "math.cpp"
 #include "static_bitset.cpp"
@@ -21,8 +22,10 @@
 #include "world.cpp"
 #include "ui.cpp"
 #include "player.cpp"
+*/
 
-
+// TODO:
+/*
 #ifdef GL_DEBUG
 void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
 	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION || severity == GL_DEBUG_SEVERITY_LOW) {
@@ -33,40 +36,19 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
     fflush(stdout);
 }
 #endif
-
-
-// NOTE: We _think_ these are called from the main thread,
-// however, we don't _really_ know...
-// For now, sticking with the generic non-thread-aware version,
-// but, later on, we may want/need to do something where we
-// add these events to a ring buffer and process them in
-// our main loop. Maybe. *shrugs*
-//					- sci4me, 5/23/20
-
-void scroll_callback(GLFWwindow *window, f64 x, f64 y) {
-	auto g = (Game*) glfwGetWindowUserPointer(window);
-	g->scroll_callback(x, y);
-}
-
-void key_callback(GLFWwindow *window, s32 key, s32 scancode, s32 action, s32 mods) {
-	auto g = (Game*) glfwGetWindowUserPointer(window);
-	g->key_callback(key, scancode, action, mods);
-}
-
-void window_size_callback(GLFWwindow *window, s32 width, s32 height) {
-	auto g = (Game*) glfwGetWindowUserPointer(window);
-	g->window_size_callback(width, height);
-}
-
+*/
 
 void Game::scroll_callback(f64 x, f64 y) {
+    /*
 	ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse) {
         scale = clamp<f32>(scale + y * 0.05f, 0.1f, 5.0f);
     }
+    */
 }
 
 void Game::key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
+    /*
 	if(action == GLFW_PRESS) {
         switch(key) {
         	case GLFW_KEY_F2: {
@@ -97,6 +79,7 @@ void Game::key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
 	// 					- sci4me, 5/23/20
 
 	player->key_callback(key, scancode, action, mods);
+    */
 }
 
 void Game::window_size_callback(s32 width, s32 height) {
@@ -105,6 +88,19 @@ void Game::window_size_callback(s32 width, s32 height) {
     window_resized = true;
 }
 
+void Game::init() {
+
+}
+
+void Game::deinit() {
+
+}
+
+void Game::update_and_render() {
+
+}
+
+/*
 s32 Game::run() {
 	tinit();
 
@@ -383,3 +379,4 @@ s32 Game::run() {
     tfree();
     return 0;
 }
+*/

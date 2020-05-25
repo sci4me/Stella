@@ -121,32 +121,12 @@ extern "C" {
 		return 0;
 	}
 
-	double mlc_sin(double x) {
-		// TODO
-		return 0;
-	}
-
-	double mlc_cos(double x) {
-		// TODO
-		return 0;
-	}
-
 	double mlc_acos(double x) {
 		// TODO
 		return 0;
 	}
 
 	double mlc_atan2(double y, double x) {
-		// TODO
-		return 0;
-	}
-
-	float mlc_sqrtf(float x) {
-		// TODO
-		return 0;
-	}
-
-	float mlc_fabsf(float x) {
 		// TODO
 		return 0;
 	}
