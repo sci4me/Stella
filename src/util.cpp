@@ -1,7 +1,54 @@
 #define array_length(a) ((sizeof(a))/(sizeof(a[0])))
 
 
+void tprintf(char const* fmt, ...) {
+    va_list args, args2;
+    va_start(args, fmt);
+    va_copy(args2, args);
+    s32 len = stbsp_vsnprintf(0, 0, fmt, args);
+    va_end(args);
+
+    char *buf = (char*) talloc(len);
+
+    va_start(args2, fmt);
+    stbsp_vsprintf(buf, fmt, args2);
+    va_end(args2);
+
+    buf[len] = 0;
+
+    sc_write(1, buf, len + 1);
+}
+
+
 char* read_entire_file(char *name) {
+    // TODO: make this non-os-dependent!
+    // er.. isolate all os-dependent code.
+
+    s32 fd = sc_open(name, O_RDONLY);
+    if(fd == -1) return 0;
+
+    struct stat statbuf;
+    sc_fstat(fd, &statbuf);
+
+    u64 rem = (u64) statbuf.st_size;
+    char *data = (char*) mlc_malloc(rem);
+
+    char *ptr = data;
+    while(rem) {
+        s64 n = sc_read(fd, ptr, rem);
+        
+        if(n == -1) {
+            mlc_free(data);
+            sc_close(fd);
+            return 0;
+        }
+
+        ptr += n;
+        rem -= n;
+    }
+
+    sc_close(fd);
+
     /*
     FILE *fp = fopen(name, "rb");
     if (!fp) {

@@ -11,24 +11,12 @@ void tprintf(char const* fmt, ...);
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-
-void tprintf(char const* fmt, ...) {
-	char buf[2048]; // TODO
-
-	va_list args;
-    va_start(args, fmt);
-    s32 len = stbsp_vsprintf(buf, fmt, args);
-    va_end(args);
-
-    buf[len] = 0;
-
-    sc_write(1, buf, len + 1);
-}
-
-
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
 s32 main(s32 argc, char **argv) {
+	// char *f = read_entire_file((char*)"src/linux_syscall.s");
+	// tprintf("%s\n", f);
+
 	Display *dsp = XOpenDisplay(0);
     if(!dsp) {
     	// TODO: log
