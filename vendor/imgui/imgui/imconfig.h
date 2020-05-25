@@ -12,6 +12,3 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-
-// NOTE: Needed since we're building imgui as a static library
-#define GLEW_STATIC

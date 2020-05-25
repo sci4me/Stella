@@ -61,6 +61,28 @@ Index of this file:
 // Header mess
 //-----------------------------------------------------------------------------
 
+// We support stb_sprintf which is much faster (see: https://github.com/nothings/stb/blob/master/stb_sprintf.h)
+// You may set IMGUI_USE_STB_SPRINTF to use our default wrapper, or set IMGUI_DISABLE_DEFAULT_FORMAT_FUNCTIONS
+// and setup the wrapper yourself. (FIXME-OPT: Some of our high-level operations such as ImGuiTextBuffer::appendfv() are
+// designed using two-passes worst case, which probably could be improved using the stbsp_vsprintfcb() function.)
+#ifdef IMGUI_USE_STB_SPRINTF
+
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb_sprintf.h"
+
+#define IM_VSNPRINTF(b, s, f, a) stbsp_vsnprintf(b, (int)s, f, a)
+
+#else
+
+#if defined(_MSC_VER) && !defined(vsnprintf)
+#define vsnprintf _vsnprintf
+#endif
+
+#define IM_VSNPRINTF(b, s, f, a) vsnprintf(b, s, f, a)
+
+#endif
+
+
 #if !defined(IMGUI_NO_LIBC)
 
 // Includes
@@ -85,31 +107,9 @@ Index of this file:
 #define IM_STRSTR(a, b)             strstr(a, b)
 #define IM_SSCANF(s, f, ...)        sscanf(s, f, __VA_ARGS__)
 
-// We support stb_sprintf which is much faster (see: https://github.com/nothings/stb/blob/master/stb_sprintf.h)
-// You may set IMGUI_USE_STB_SPRINTF to use our default wrapper, or set IMGUI_DISABLE_DEFAULT_FORMAT_FUNCTIONS
-// and setup the wrapper yourself. (FIXME-OPT: Some of our high-level operations such as ImGuiTextBuffer::appendfv() are
-// designed using two-passes worst case, which probably could be improved using the stbsp_vsprintfcb() function.)
-#ifdef IMGUI_USE_STB_SPRINTF
-
-#define STB_SPRINTF_IMPLEMENTATION
-#include "stb_sprintf.h"
-
-#define IM_VSNPRINTF(b, s, f, a) stbsp_vsprintf(b, (int)s, f, a)
-
-#else
-
-#if defined(_MSC_VER) && !defined(vsnprintf)
-#define vsnprintf _vsnprintf
-#endif
-
-#define IM_VSNPRINTF(b, s, f, a) vsnprintf(b, s, f, a)
-
-#endif
-
 #else
 
 #define IMGUI_DISABLE_DEFAULT_MATH_FUNCTIONS
-// #define IMGUI_DISABLE_DEFAULT_FORMAT_FUNCTIONS
 #define IMGUI_DISABLE_FILE_FUNCTIONS
 
 #if !defined(IM_MEMSET)
@@ -216,7 +216,7 @@ Index of this file:
 #error "IM_SSCANF must be defined if IMGUI_NO_LIBC is used."
 #endif
 
-#if !defined(IM_VSNPRINTF)
+#if !defined(IM_VSNPRINTF) && !defined(IMGUI_USE_STB_SPRINTF)
 #error "IM_VSNPRINTF must be defined if IMGUI_NO_LIBC is used."
 #endif
 

@@ -17,11 +17,13 @@ struct vec2 {
     constexpr vec2() : x(0), y(0) {}
     constexpr vec2(f32 _x, f32 _y) : x(_x), y(_y) {}
 
+#ifndef IMGUI_DISABLE
     vec2(ImVec2 const& v) : x(v.x), y(v.y) {}
     operator ImVec2() const { return ImVec2(x, y); }
+#endif
 
     f32 length_squared() { return x*x + y*y; }
-    f32 length() { return sqrtf(length_squared()); }
+    f32 length() { return sqrtf32(length_squared()); }
 
     vec2& operator+=(vec2 const& b) {
         x += b.x;
@@ -60,11 +62,13 @@ struct vec4 {
     constexpr vec4() : x(0), y(0), z(0), w(0) {}
     constexpr vec4(f32 _x, f32 _y, f32 _z, f32 _w) : x(_x), y(_y), z(_z), w(_w) {}
 
+#ifndef IMGUI_DISABLE
     vec4(ImVec4 const& v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
     operator ImVec4() const { return ImVec4(x, y, z, w); }
+#endif
 
     f32 length_squared() { return x*x + y*y + z*z + w*w; }
-    f32 length() { return sqrtf(length_squared()); }
+    f32 length() { return sqrtf32(length_squared()); }
 
     vec4& operator+=(vec4 const& b) {
         x += b.x;
@@ -102,7 +106,7 @@ struct mat4 {
     mat4 operator*(mat4 const& b) {
         // NOTE TODO: We may want to optimize this eventually.
         mat4 r;
-        memset(&r, 0, sizeof(mat4));
+        mlc_memset(&r, 0, sizeof(mat4));
 
         for(int i = 0; i < 4; i++) {
             for(int j = 0; j < 4; j++) {
@@ -209,10 +213,10 @@ inline vec4 rgba255_to_rgba1(u32 c) {
 }
 
 inline u32 rgba1_to_rgba255(vec4 c) {
-    u8 r = (u8) roundf(c.x * 255.0f);
-    u8 g = (u8) roundf(c.y * 255.0f);
-    u8 b = (u8) roundf(c.z * 255.0f);
-    u8 a = (u8) roundf(c.w * 255.0f);
+    u8 r = (u8) roundf32(c.x * 255.0f);
+    u8 g = (u8) roundf32(c.y * 255.0f);
+    u8 b = (u8) roundf32(c.z * 255.0f);
+    u8 a = (u8) roundf32(c.w * 255.0f);
     return a << 24 | b << 16 | g << 8 | r;
 }
 
@@ -227,9 +231,9 @@ inline vec4 rgba1_to_linear(vec4 c) {
 
 inline vec4 linear_to_rgba1(vec4 c) {
     return {
-        sqrtf(c.x),
-        sqrtf(c.y),
-        sqrtf(c.z),
+        sqrtf32(c.x),
+        sqrtf32(c.y),
+        sqrtf32(c.z),
         c.w
     };
 }

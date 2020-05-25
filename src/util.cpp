@@ -2,6 +2,7 @@
 
 
 char* read_entire_file(char *name) {
+    /*
     FILE *fp = fopen(name, "rb");
     if (!fp) {
         return 0;
@@ -17,16 +18,19 @@ char* read_entire_file(char *name) {
     code[size] = 0;
 
     return code;
+    */
+    return 0;
 }
 
 
 void dump_gl_extensions() {
-    printf("  GL_EXTENSIONS\n");
+    tprintf("  GL_EXTENSIONS\n");
         
     s32 n_ext;
     glGetIntegerv(GL_NUM_EXTENSIONS, &n_ext);
     
-    char const** exts = (char const**) talloc(n_ext * sizeof(char const*));
+    // char const** exts = (char const**) talloc(n_ext * sizeof(char const*));
+    char const** exts = (char const**) alloca(n_ext * sizeof(char const*));
 
     u32 max_len = 0;
     for(s32 i = 0; i < n_ext; i++) {
@@ -34,7 +38,7 @@ void dump_gl_extensions() {
 
         exts[i] = ext;
 
-        u32 len = strlen(ext);
+        u32 len = mlc_strlen(ext);
         if(len > max_len) {
             max_len = len;
         }
@@ -45,36 +49,36 @@ void dump_gl_extensions() {
     u32 column = 0;
     for(u32 i = 0; i < n_ext; i++) {
         char const* ext = exts[i];
-        u32 padding = column_length - strlen(ext);
+        u32 padding = column_length - mlc_strlen(ext);
 
-        printf("%s", ext);
-        for(u32 j = 0; j < padding; j++) printf(" ");
+        tprintf("%s", ext);
+        for(u32 j = 0; j < padding; j++) tprintf(" ");
 
         column++;
         if(column > (cols - 1)) {
             column = 0;
-            printf("\n");
+            tprintf("\n");
         }
     }
 
-    if(column <= (cols - 1)) printf("\n");
+    if(column <= (cols - 1)) tprintf("\n");
 }
 
 void dump_gl_info() {
     // TODO: some kind of logging!!!
 
-    printf("OpenGL Info:\n");
+    tprintf("OpenGL Info:\n");
 
     GLint major, minor; 
     glGetIntegerv(GL_MAJOR_VERSION, &major); 
     glGetIntegerv(GL_MINOR_VERSION, &minor);
-    printf("  GL_MAJOR_VERSION              %d\n", major);
-    printf("  GL_MINOR_VERSION              %d\n", minor);
+    tprintf("  GL_MAJOR_VERSION              %d\n", major);
+    tprintf("  GL_MINOR_VERSION              %d\n", minor);
 
-    printf("  GL_VENDOR                     %s\n", glGetString(GL_VENDOR));
-    printf("  GL_RENDERER                   %s\n", glGetString(GL_RENDERER));
-    printf("  GL_VERSION                    %s\n", glGetString(GL_VERSION));
-    printf("  GL_SHADING_LANGUAGE_VERSION   %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    tprintf("  GL_VENDOR                     %s\n", glGetString(GL_VENDOR));
+    tprintf("  GL_RENDERER                   %s\n", glGetString(GL_RENDERER));
+    tprintf("  GL_VERSION                    %s\n", glGetString(GL_VERSION));
+    tprintf("  GL_SHADING_LANGUAGE_VERSION   %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
 

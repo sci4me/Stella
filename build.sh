@@ -16,7 +16,7 @@ INCLUDES="-I$VENDOR_DIR/GLEW/include -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/im
 
 mkdir -p $BUILD_DIR
 
-g++ $CXXFLAGS $INCLUDES $SRC_DIR/linux_platform.s $SRC_DIR/linux_platform.cpp -o $BUILD_DIR/stella $LDFLAGS
+g++ $CXXFLAGS $INCLUDES $SRC_DIR/linux_syscall.s $SRC_DIR/linux_platform.s $SRC_DIR/linux_platform.cpp -o $BUILD_DIR/stella $LDFLAGS
 STATUS=$?
 
 ctime -end stella_linux.ctm $STATUS

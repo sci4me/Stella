@@ -15,6 +15,7 @@ f32 powf32(f32 b, f32 e) { return powf(b, e); }
 f32 ldexpf32(f32 a, s32 b) { return ldexpf(a, b); }
 f32 atan2f32(f32 y, f32 x) { return atan2f(y, x); }
 f32 fmodf32(f32 a, f32 b) { return fmodf(a, b); }
+f32 roundf32(f32 x) { return roundf(x); }
 
 f64 sqrtf64(f64 x) { return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set_sd(x))); }
 f64 floorf64(f64 x) { return _mm_cvtsd_f64(_mm_floor_sd(_mm_setzero_pd(), _mm_set_sd(x))); }
@@ -30,6 +31,7 @@ f64 powf64(f64 b, f64 e) { return pow(b, e); }
 f64 ldexpf64(f64 a, s32 b) { return ldexp(a, b); }
 f64 atan2f64(f64 y, f64 x) { return atan2(y, x); }
 f64 fmodf64(f64 a, f64 b) { return fmod(a, b); }
+f64 roundf64(f64 x) { return round(x); }
 
 s32 abs32(s32 x) { return x < 0 ? -x : x; }
 s64 abs64(s64 x) { return x < 0 ? -x : x; }

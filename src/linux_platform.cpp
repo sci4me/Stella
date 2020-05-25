@@ -1,5 +1,8 @@
 #include "mylibc.cpp"
 
+// TODO: Remove this.. er .. something.
+void tprintf(char const* fmt, ...);
+
 #include "stella.hpp"
 #include "stella.cpp"
 
@@ -7,6 +10,21 @@
 #include <X11/Xlib.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
+
+
+void tprintf(char const* fmt, ...) {
+	char buf[2048]; // TODO
+
+	va_list args;
+    va_start(args, fmt);
+    s32 len = stbsp_vsprintf(buf, fmt, args);
+    va_end(args);
+
+    buf[len] = 0;
+
+    sc_write(1, buf, len + 1);
+}
+
 
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
@@ -103,6 +121,8 @@ s32 main(s32 argc, char **argv) {
     }
 
     glXMakeCurrent(dsp, win, glc);
+
+    dump_gl_info();
 
     GLint gl_major, gl_minor; 
     glGetIntegerv(GL_MAJOR_VERSION, &gl_major); 

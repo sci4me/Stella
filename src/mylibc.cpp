@@ -9,6 +9,11 @@ typedef signed long long s64;
 typedef float f32;
 typedef double f64;
 
+
+// TODO: Conditional includes for Winderps and Linux.
+#include "linux_syscall.cpp"
+
+
 // TODO: some (much) of this needs to be temporary.
 #define NULL 0
 typedef long unsigned int size_t;
@@ -16,10 +21,12 @@ typedef long int ptrdiff_t;
 typedef long int intptr_t;
 typedef long unsigned int uintptr_t;
 
+
 #include <stdarg.h>
 #include <limits.h>
 #include <float.h>
 #include <alloca.h>
+
 
 extern "C" {
 	void* mlc_malloc(u64 n) {
@@ -116,11 +123,6 @@ extern "C" {
 	}
 
 	int mlc_sscanf(char const* s, char const* format, ...) {
-		// TODO
-		return 0;
-	}
-
-	int mlc_vsnprintf(char *buf, size_t size, char const* fmt, va_list args) {
 		// TODO
 		return 0;
 	}

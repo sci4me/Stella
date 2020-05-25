@@ -12,12 +12,15 @@
 #include "GL/glew.h"
 
 
-// #define IMGUI_DISABLE
+#define IMGUI_DISABLE
+
+// NOTE TODO: implement assert
+#define assert(x)
 
 
 #define IMGUI_NO_LIBC
-// NOTE TODO: implement assert
-#define IM_ASSERT(x)
+#define IMGUI_USE_STB_SPRINTF
+#define IM_ASSERT(x)				assert(x)
 #define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
 #define IM_MEMMOVE(d, s, n)         mlc_memmove(d, s, n)
 #define IM_MEMCPY(d, s, n)          mlc_memcpy(d, s, n)
@@ -46,18 +49,22 @@ static inline double ImPow(double b, double e) { return powf64(b, e); }
 #define IM_MEMCHR(p, v, n)			mlc_memchr(p, v, n)
 #define IM_STRSTR(a, b)				mlc_strstr(a, b)
 #define IM_SSCANF(s, f, ...)		mlc_sscanf(s, f, __VA_ARGS__)
-#define IM_VSNPRINTF(b, s, f, a)	mlc_vsnprintf(b, s, f, a)
 #include "imgui/imgui.h"
 #include "imgui/imgui.cpp"
 #include "imgui/imgui_draw.cpp"
 #include "imgui/imgui_widgets.cpp"
 
 
+#ifdef IMGUI_DISABLE
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb_sprintf.h"
+#endif
+
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_GIF
 #define STBI_NO_LIBC
-// NOTE TODO: implement assert
-#define STBI_ASSERT(x)
+#define STBI_ASSERT(x)				assert(x)
 #define STBI_MALLOC(n)           	mlc_malloc(n)
 #define STBI_REALLOC(p, n)     		mlc_realloc(p, n)
 #define STBI_FREE(p)              	mlc_free(p)

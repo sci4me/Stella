@@ -9,11 +9,11 @@ struct Dynamic_Array {
 	void init(u32 size = DYNAMIC_ARRAY_DEFAULT_SIZE) {
 		this->count = 0;
 		this->size = size;
-		this->data = (T*) malloc(size * sizeof(T));
+		this->data = (T*) mlc_malloc(size * sizeof(T));
 	}
 
 	void deinit() {
-		free(data);
+		mlc_free(data);
 	}
 
 	void resize(u32 size) {
@@ -21,7 +21,7 @@ struct Dynamic_Array {
 
 		assert(size >= count);
 		
-		data = (T*) realloc(data, size * sizeof(T));
+		data = (T*) mlc_realloc(data, size * sizeof(T));
 		assert(data);
 		
 		this->size = size;
