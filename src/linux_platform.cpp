@@ -65,8 +65,6 @@ s32 main(s32 argc, char **argv) {
     	tprintf("Failed to choose framebuffer config!\n");
         XCloseDisplay(dsp);
         return 1;
-    } else {
-        tprintf("Found %d possible framebuffer configs.\n", fb_count);
     }
 
     // TODO: Pick the best out of fbcs
