@@ -27,6 +27,7 @@ typedef long unsigned int uintptr_t;
 #include <float.h>
 #include <alloca.h>
 
+// TODO: Get rid of all these weird types!
 
 extern "C" {
 	void* mlc_malloc(u64 n) {
@@ -44,7 +45,9 @@ extern "C" {
 	}
 
 	void* mlc_memset(void *p, int v, u64 n) {
-		// TODO
+		// TODO: SIMD version of this!!!!!
+		u8 *real_p = (u8*) p;
+		for(u64 i = 0; i < n; i++) real_p[i] = v;
 		return p;
 	}
 
@@ -74,8 +77,10 @@ extern "C" {
 	}
 
 	size_t mlc_strlen(char const* s) {
-		// TODO
-		return 0;
+		// TODO: Better version of this?
+		size_t xd = 0;
+		for(char const* c = s; *c; c++) xd++;
+		return xd;
 	}
 
 	char const* mlc_strchr(char const* s, int c) {
@@ -89,13 +94,26 @@ extern "C" {
 	}
 
 	char* mlc_strcpy(char *dst, char const* src) {
-		// TODO
-		return 0;
+		char *d = dst;
+		for(char const* c = src; *c; c++) *d++ = *c;
+		return dst;
 	}
 
 	char* mlc_strncpy(char *dst, char const* src, size_t n) {
-		// TODO
-		return 0;
+		// TODO: More efficient version of this!!!
+		// No need to call strlen!!! Should probably(?)
+		// be able to remove that branch too.
+		auto len = mlc_strlen(src);
+		for(size_t i = 0; i < n; i++) {
+			if(i < len) {
+				dst[i] = src[i];
+			} else {
+				dst[i] = 0;
+			}
+		}
+		// NODE TODO: If we need to zero the last N bytes, 
+		// why not just use memset to do this?
+		return dst;
 	}
 
 	int mlc_strncmp(char const* a, char const* b, u64 n) {

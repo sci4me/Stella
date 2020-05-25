@@ -1,22 +1,33 @@
 #define array_length(a) ((sizeof(a))/(sizeof(a[0])))
 
 
-void tprintf(char const* fmt, ...) {
-    va_list args, args2;
-    va_start(args, fmt);
+char* tvsprintf(char const* fmt, va_list args) {
+    va_list args2;
     va_copy(args2, args);
     s32 len = stbsp_vsnprintf(0, 0, fmt, args);
     va_end(args);
 
     char *buf = (char*) talloc(len);
 
-    va_start(args2, fmt);
     stbsp_vsprintf(buf, fmt, args2);
     va_end(args2);
 
     buf[len] = 0;
 
-    sc_write(1, buf, len + 1);
+    return buf;
+}
+
+char* tsprintf(char const* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    return tvsprintf(fmt, args);
+}
+
+void tprintf(char const* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char *buf = tvsprintf(fmt, args);
+    sc_write(1, buf, mlc_strlen(buf) + 1);
 }
 
 
@@ -31,7 +42,7 @@ char* read_entire_file(char *name) {
     sc_fstat(fd, &statbuf);
 
     u64 rem = (u64) statbuf.st_size;
-    char *data = (char*) mlc_malloc(rem);
+    char *data = (char*) mlc_malloc(rem + 1);
 
     char *ptr = data;
     while(rem) {
@@ -47,26 +58,11 @@ char* read_entire_file(char *name) {
         rem -= n;
     }
 
+    data[statbuf.st_size] = 0;
+
     sc_close(fd);
 
-    /*
-    FILE *fp = fopen(name, "rb");
-    if (!fp) {
-        return 0;
-    }
-
-    fseek(fp, 0L, SEEK_END);
-    u64 size = ftell(fp);
-    rewind(fp);
-
-    char *code = (char*) malloc(size + 1);
-
-    assert(fread(code, sizeof(char), size, fp) == size);
-    code[size] = 0;
-
-    return code;
-    */
-    return 0;
+    return data;
 }
 
 
@@ -76,8 +72,7 @@ void dump_gl_extensions() {
     s32 n_ext;
     glGetIntegerv(GL_NUM_EXTENSIONS, &n_ext);
     
-    // char const** exts = (char const**) talloc(n_ext * sizeof(char const*));
-    char const** exts = (char const**) alloca(n_ext * sizeof(char const*));
+    char const** exts = (char const**) talloc(n_ext * sizeof(char const*));
 
     u32 max_len = 0;
     for(s32 i = 0; i < n_ext; i++) {
@@ -98,6 +93,7 @@ void dump_gl_extensions() {
         char const* ext = exts[i];
         u32 padding = column_length - mlc_strlen(ext);
 
+        tmark();
         tprintf("%s", ext);
         for(u32 j = 0; j < padding; j++) tprintf(" ");
 
@@ -106,6 +102,7 @@ void dump_gl_extensions() {
             column = 0;
             tprintf("\n");
         }
+        treset();
     }
 
     if(column <= (cols - 1)) tprintf("\n");

@@ -110,7 +110,18 @@ s32 main(s32 argc, char **argv) {
 
     glXMakeCurrent(dsp, win, glc);
 
+    if(glewInit() != GLEW_OK) {
+        tprintf("Failed to initialize GLEW!\n");
+
+        glXMakeCurrent(dsp, None, 0);
+        glXDestroyContext(dsp, glc);
+        XDestroyWindow(dsp, win);
+        XCloseDisplay(dsp);
+        return 1;
+    }
+
     dump_gl_info();
+    // dump_gl_extensions();
 
     GLint gl_major, gl_minor; 
     glGetIntegerv(GL_MAJOR_VERSION, &gl_major); 
@@ -156,6 +167,8 @@ s32 main(s32 argc, char **argv) {
 	        
 
         glXSwapBuffers(dsp, win);
+
+        tclear();
     }
 
     glXMakeCurrent(dsp, None, 0);

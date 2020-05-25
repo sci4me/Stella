@@ -59,7 +59,7 @@ u32 default_hash_fn(T const& v) {
 
 template<typename T>
 bool default_eq_fn(T const& a, T const& b) {
-	return memcmp((void const*) &a, (void const*) &b, sizeof(T)) == 0;
+	return mlc_memcmp((void const*) &a, (void const*) &b, sizeof(T)) == 0;
 }
 
 

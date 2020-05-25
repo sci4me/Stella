@@ -5,8 +5,8 @@
 #include "static_array.cpp"
 #include "dynamic_array.cpp"
 #include "util.cpp"
-/*
 #include "hash_table.cpp"
+/*
 #include "profiler.cpp"
 #include "imgui_support.cpp"
 #include "perlin_noise.cpp"

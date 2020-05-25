@@ -230,20 +230,11 @@ namespace prof {
 		f32 ms = (f32)ns / 1000000.0f;
 
 		if(ms > 1) {
-			u64 len = snprintf(nullptr, 0, "%0.3f ms", ms);
-			char *r = (char*) talloc(len + 1);
-			snprintf(r, len + 1, "%0.3f ms", ms);
-			return r;
+			return tsprintf("%0.3f ms", ms);
 		} else if(us > 1) {
-			u64 len = snprintf(nullptr, 0, "%0.3f us", us);
-			char *r = (char*) talloc(len + 1);
-			snprintf(r, len + 1, "%0.3f us", us);
-			return r;
+			return tsprintf("%0.3f us", us);
 		} else {
-			u64 len = snprintf(nullptr, 0, "%llu ns", ns);
-			char *r = (char*) talloc(len + 1);
-			snprintf(r, len + 1, "%llu ns", ns);
-			return r;
+			return tsprintf("%llu ns", ns);
 		}
 	}
 

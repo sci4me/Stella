@@ -17,10 +17,8 @@ struct vec2 {
     constexpr vec2() : x(0), y(0) {}
     constexpr vec2(f32 _x, f32 _y) : x(_x), y(_y) {}
 
-#ifndef IMGUI_DISABLE
     vec2(ImVec2 const& v) : x(v.x), y(v.y) {}
     operator ImVec2() const { return ImVec2(x, y); }
-#endif
 
     f32 length_squared() { return x*x + y*y; }
     f32 length() { return sqrtf32(length_squared()); }
@@ -62,10 +60,8 @@ struct vec4 {
     constexpr vec4() : x(0), y(0), z(0), w(0) {}
     constexpr vec4(f32 _x, f32 _y, f32 _z, f32 _w) : x(_x), y(_y), z(_z), w(_w) {}
 
-#ifndef IMGUI_DISABLE
     vec4(ImVec4 const& v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
     operator ImVec4() const { return ImVec4(x, y, z, w); }
-#endif
 
     f32 length_squared() { return x*x + y*y + z*z + w*w; }
     f32 length() { return sqrtf32(length_squared()); }
