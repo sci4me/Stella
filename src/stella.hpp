@@ -7,11 +7,6 @@
 #define GL_MINOR 4
 
 
-#define GLEW_STATIC
-#define GLEW_NO_GLU
-#include "GL/glew.h"
-
-
 #define IMGUI_DISABLE
 
 // NOTE TODO: implement assert

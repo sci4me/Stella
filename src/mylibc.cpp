@@ -13,9 +13,11 @@ typedef double f64;
 // TODO: Conditional includes for Winderps and Linux.
 #include "linux_syscall.cpp"
 
+#ifndef NULL
+#define NULL 0
+#endif
 
 // TODO: some (much) of this needs to be temporary.
-#define NULL 0
 typedef long unsigned int size_t;
 typedef long int ptrdiff_t;
 typedef long int intptr_t;

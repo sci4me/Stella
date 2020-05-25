@@ -1,3 +1,7 @@
+#define GLEW_STATIC
+#define GLEW_NO_GLU
+#include "GL/glew.h"
+
 #include "mylibc.cpp"
 
 // TODO: Remove this.. er .. something.
@@ -11,22 +15,29 @@ void tprintf(char const* fmt, ...);
 #include <GL/gl.h>
 #include <GL/glx.h>
 
+
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
-s32 main(s32 argc, char **argv) {
-	// char *f = read_entire_file((char*)"src/linux_syscall.s");
-	// tprintf("%s\n", f);
 
+// NOTE: This is hacky but meh, it's what we've got.
+bool x_error_occurred = false;
+int x_error_handler(Display *dsp, XErrorEvent *ev) {
+    x_error_occurred = true;
+    return 0;
+}
+
+
+s32 main(s32 argc, char **argv) {
 	Display *dsp = XOpenDisplay(0);
     if(!dsp) {
-    	// TODO: log
+    	tprintf("Failed to open X display!\n");
         return 1;
     }
 
     GLint glx_major, glx_minor;
     glXQueryVersion(dsp, &glx_major, &glx_minor);
     if(glx_major < 1 || glx_minor < 4) {
-    	// TODO: log
+    	tprintf("GLX version too old! Got %d.%d, want 1.4+\n", glx_major, glx_minor);
         XCloseDisplay(dsp);
         return 1;
     }
@@ -51,15 +62,17 @@ s32 main(s32 argc, char **argv) {
     int fb_count;
     GLXFBConfig *fbcs = glXChooseFBConfig(dsp, DefaultScreen(dsp), att, &fb_count);
     if(fbcs == 0) {
-    	// TODO: log
+    	tprintf("Failed to choose framebuffer config!\n");
         XCloseDisplay(dsp);
         return 1;
+    } else {
+        tprintf("Found %d possible framebuffer configs.\n", fb_count);
     }
 
     // TODO: Pick the best out of fbcs
     XVisualInfo *vi = glXGetVisualFromFBConfig(dsp, fbcs[0]);
     if(!vi) {
-    	// TODO: log
+    	tprintf("Failed to get XVisualInfo from framebuffer config!\n");
         XCloseDisplay(dsp);
         return 1;
     }
@@ -72,7 +85,7 @@ s32 main(s32 argc, char **argv) {
 
     Window win = XCreateWindow(dsp, root, 0, 0, 600, 600, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
     if(!win) {
-    	// TODO: log
+    	tprintf("Failed to create X window!\n");
         XCloseDisplay(dsp);
         return 1;
     }
@@ -82,17 +95,31 @@ s32 main(s32 argc, char **argv) {
     XStoreName(dsp, win, APP_NAME);
 
     auto glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((GLubyte const*)"glXCreateContextAttribsARB");
+    if(!glXCreateContextAttribsARB) {
+        tprintf("glXCreateContextAttribsARB is not available!\n");
+        XDestroyWindow(dsp, win);
+        XCloseDisplay(dsp);
+        return 1;
+    }
 
-    // NOTE: Calling this directly isn't "safe" if we're running with
-    // an ancient version of GLX. (I say ancient, but, according to the
-    // docs it requires 1.4 which is the version I have. *shrugs*)
     int ctx_att[] = {
         GLX_CONTEXT_MAJOR_VERSION_ARB, GL_MAJOR,
         GLX_CONTEXT_MINOR_VERSION_ARB, GL_MINOR,
         GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
         None
     };
+
+    auto eh = XSetErrorHandler(x_error_handler);
     GLXContext glc = glXCreateContextAttribsARB(dsp, fbcs[0], 0, True, ctx_att);
+    XSetErrorHandler(eh);
+
+    if(x_error_occurred) {
+        tprintf("Failed to create GLX context!\n");
+        XDestroyWindow(dsp, win);
+        XCloseDisplay(dsp);
+        return 1;
+    }
+
     XSync(dsp, False);
 
     // TODO X error handler thing...
@@ -101,7 +128,7 @@ s32 main(s32 argc, char **argv) {
     XSetWMProtocols(dsp, win, &atomWmDeleteWindow, 1);
 
     if(!glXIsDirect(dsp, glc)) {
-    	// TODO: log
+    	tprintf("GLX gave us an indirect GL context even though we asked for a direct one! :(\n");
         glXDestroyContext(dsp, glc);
         XDestroyWindow(dsp, win);
         XCloseDisplay(dsp);
@@ -126,17 +153,14 @@ s32 main(s32 argc, char **argv) {
     GLint gl_major, gl_minor; 
     glGetIntegerv(GL_MAJOR_VERSION, &gl_major); 
     glGetIntegerv(GL_MINOR_VERSION, &gl_minor);
+    // NOTE We assert here because it should be impossible to get 
+    // this far if we weren't able to get a GL context at or 
+    // above the requested version.
+    assert(gl_major >= GL_MAJOR && gl_minor >= GL_MINOR);
 
-    if(gl_major < GL_MAJOR || gl_minor < GL_MINOR) {
-    	// TODO: log
-        glXMakeCurrent(dsp, None, 0);
-        glXDestroyContext(dsp, glc);
-        XDestroyWindow(dsp, win);
-        XCloseDisplay(dsp);
-        return 1;
-    }
 
     XMapRaised(dsp, win);
+
 
     bool running = true;
     while(running) {
@@ -170,6 +194,7 @@ s32 main(s32 argc, char **argv) {
 
         tclear();
     }
+
 
     glXMakeCurrent(dsp, None, 0);
     glXDestroyContext(dsp, glc);

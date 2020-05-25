@@ -1,5 +1,7 @@
-#include <math.h>
 #include <immintrin.h>
+
+// TODO: Remove dependency on libm
+ #include <math.h>
 
 f32 sqrtf32(f32 x) { return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(x))); }
 f32 floorf32(f32 x) { return _mm_cvtss_f32(_mm_floor_ss(_mm_setzero_ps(), _mm_set_ss(x))); }
