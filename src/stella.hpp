@@ -12,7 +12,7 @@
 #include "GL/glew.h"
 
 
-// #define IMGUI_DISABLE
+#define IMGUI_DISABLE
 
 // NOTE TODO: implement assert
 #define assert(x)

@@ -177,7 +177,7 @@ namespace prof {
 					Block_Profile *this_block_profile;
 					auto bpi = block_profiles.index_of(event.guid);
 					if(bpi == -1) {
-						this_block_profile = (Block_Profile*) malloc(sizeof(Block_Profile));
+						this_block_profile = (Block_Profile*) mlc_malloc(sizeof(Block_Profile));
 						this_block_profile->init(event.guid, event.name, event.file, event.line);
 
 						if(current_block_profile) {
@@ -274,7 +274,7 @@ namespace prof {
 		constexpr f32 FRAME_HEIGHT = 40.0f;
 		constexpr vec2 OFFSET = vec2(10.0f, 30.0f);
 
-		vec2 min = window_pos + OFFSET;
+		vec2 min = vec2(window_pos) + OFFSET;
 		vec2 max = min + vec2(FRAME_WIDTH * MAX_FRAME_PROFILES, 0) + vec2(0, FRAME_HEIGHT);
 
 		ImGui::Dummy(max - min + vec2(10.0f, 10.0f));
