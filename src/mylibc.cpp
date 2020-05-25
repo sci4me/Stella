@@ -61,11 +61,6 @@ extern "C" {
 		return 0;
 	}
 
-	int mlc_abs(int x) {
-		// TODO
-		return x;
-	}
-
 	int mlc_strcmp(char const* a, char const* b) {
 		// TODO
 		return 0;
@@ -107,16 +102,6 @@ extern "C" {
 	}
 
 	float mlc_ldexpf(float f, int x) {
-		// TODO
-		return 0;
-	}
-
-	float mlc_powf(float base, float exp) {
-		// TODO
-		return 0;
-	}
-
-	double mlc_pow(double base, double exp) {
 		// TODO
 		return 0;
 	}

@@ -36,8 +36,8 @@
 #define ImFloorStd(x)				mlc_floorf(x)
 #define ImCeil(x)					mlc_ceilf(x)
 #define ImAtof(s)					mlc_atof(s)
-static inline float ImPow(float b, float e) { return mlc_powf(b, e); }
-static inline double ImPow(double b, double e) { return mlc_powf(b, e); }
+static inline float ImPow(float b, float e) { return powf32(b, e); }
+static inline double ImPow(double b, double e) { return powf64(b, e); }
 #define ImQsort(b, n, s, c)			mlc_qsort(b, n, s, c)
 #define IM_MALLOC_FN(n)				mlc_malloc(n)
 #define IM_FREE_FN(p)				mlc_free(p)
@@ -62,10 +62,10 @@ static inline double ImPow(double b, double e) { return mlc_powf(b, e); }
 #define STBI_REALLOC(p, n)     		mlc_realloc(p, n)
 #define STBI_FREE(p)              	mlc_free(p)
 #define STBI_LDEXPF(a, b) 		 	mlc_ldexpf(a, b)
-#define STBI_POWF(a, b) 			mlc_powf(a, b)
+#define STBI_POWF(a, b) 			powf32(a, b)
 #define STBI_MEMSET(p, x, n)		mlc_memset(p, x, n)
 #define STBI_MEMCPY(d, s, n)		mlc_memcpy(d, s, n)
-#define STBI_ABS(x)					mlc_abs(x)
+#define STBI_ABS(x)					abs32(x)
 #define STBI_STRCMP(a, b)			mlc_strcmp(a, b)
 #define STBI_STRNCMP(a, b, n)		mlc_strncmp(a, b, n)
 #define STBI_STRTOL(s, e, b)		mlc_strtol(s, e, b)
