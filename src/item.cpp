@@ -113,11 +113,11 @@ struct Item_Container {
         assert(size > 0);
         this->size = size;
 
-        slots = (Item_Stack*) calloc(size, sizeof(Item_Stack));
+        slots = (Item_Stack*) mlc_calloc(size, sizeof(Item_Stack));
     }
 
     void deinit() {
-        ::free(slots);
+        mlc_free(slots);
     }
 
     void sort() {
@@ -148,7 +148,7 @@ struct Item_Container {
             }
         }
 
-        memset(slots, 0, size * sizeof(Item_Stack));
+        mlc_memset(slots, 0, size * sizeof(Item_Stack));
 
         u32 slot = 0;
         for(u32 i = 0; i < stacks.size; i++) {
@@ -225,7 +225,7 @@ struct Item_Container {
     void clear_slot(u32 index) {
         assert(index < size);
 
-        memset(&slots[index], 0, sizeof(Item_Stack));
+        mlc_memset(&slots[index], 0, sizeof(Item_Stack));
         sort();
     }
 

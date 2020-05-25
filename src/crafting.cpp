@@ -41,7 +41,7 @@ namespace crafting {
         // have a configurable block size, consider using that here
         // instead of malloc.
         //              - sci4me, 5/14/20
-        auto r = (Recipe*) malloc(sizeof(Recipe) + sizeof(Item_Stack) * n_inputs);
+        auto r = (Recipe*) mlc_malloc(sizeof(Recipe) + sizeof(Item_Stack) * n_inputs);
 
         r->inputs = (Item_Stack*) (r + 1); // inputs are right after the Recipe struct
         r->n_inputs = n_inputs;
@@ -68,7 +68,7 @@ namespace crafting {
 
     void deinit() {
         for(u32 i = 0; i < recipes.count; i++) {
-            ::free(recipes[i]);
+            mlc_free(recipes[i]);
         }
         
         recipes.deinit();

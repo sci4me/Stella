@@ -43,6 +43,7 @@ struct Player {
     }
 
     void key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
+        /*
         if(action == GLFW_PRESS) {
             switch(key) {
                 case GLFW_KEY_C: {
@@ -61,6 +62,7 @@ struct Player {
                 }
             }
         }   
+        */
     }
 
     void update() {
@@ -76,6 +78,7 @@ struct Player {
 
         ImGuiIO& io = ImGui::GetIO(); 
 
+        /*
         if(!io.WantCaptureKeyboard) {
             vec2 delta = {0, 0};
             if(glfwGetKey(game->window, GLFW_KEY_W) == GLFW_PRESS) delta.y = -1.0f;
@@ -89,8 +92,10 @@ struct Player {
             
             move(delta);
         }
+        */
 
 
+        /*
         if(!io.WantCaptureMouse) {
             f64 mx, my;
             glfwGetCursorPos(game->window, &mx, &my);
@@ -192,6 +197,7 @@ struct Player {
                 }
             }
         }
+        */
 
         if(!is_mining) mining_progress = 0.0f;
     }

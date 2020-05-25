@@ -6,7 +6,6 @@
 #include "dynamic_array.cpp"
 #include "util.cpp"
 #include "hash_table.cpp"
-/*
 #include "profiler.cpp"
 #include "imgui_support.cpp"
 #include "perlin_noise.cpp"
@@ -14,7 +13,6 @@
 #include "shader.cpp"
 #include "texture.cpp"
 #include "buffer_objects.cpp"
-#include "texture_atlas.cpp"
 #include "batch_renderer.cpp"
 #include "assets.cpp"
 #include "item.cpp"
@@ -23,7 +21,6 @@
 #include "world.cpp"
 #include "ui.cpp"
 #include "player.cpp"
-*/
 
 // TODO:
 /*

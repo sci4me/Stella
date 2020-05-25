@@ -1,9 +1,8 @@
-// NOTE: We may want to switch to rdtsc;
-// things like clock_gettime are likely
-// much more expensive?
+#define PROFILER_DISABLE
 
-// NOTE: 1. this is not cross-platform
-//       2. we should (?) put it elsewhere
+#ifndef PROFILER_DISABLE
+// TODO: Switch to rdtsc
+
 u64 get_time_ns() {
 	struct timespec t;
 	clock_gettime(CLOCK_REALTIME, &t);
@@ -97,7 +96,7 @@ namespace prof {
 		void deinit() {
 			for(u32 i = 0; i < children.count; i++) {
 				children[i]->deinit();
-				free(children[i]);
+				mlc_free(children[i]);
 			}
 
 			children.deinit();
@@ -165,7 +164,7 @@ namespace prof {
 
 		for(u32 i = 0; i < fp.block_profiles.count; i++) {
 			fp.block_profiles[i]->deinit();
-			free(fp.block_profiles[i]);
+			mlc_free(fp.block_profiles[i]);
 		}
 		fp.block_profiles.clear();
 
@@ -329,3 +328,17 @@ namespace prof {
 // NOTE TODO: __PRETTY_FUNCTION__ is compiler-specific; we'll
 // have to use uh.. __FUNCSIG__ on MSVC, I believe.
 #define TIMED_FUNCTION() TIMED_BLOCK_(__PRETTY_FUNCTION__, __FILE__, __LINE__)
+
+#else
+
+namespace prof {
+	void init() {}
+	void deinit() {}
+	void begin_frame() {}
+	void end_frame() {}
+	void show() {}
+}
+
+#define TIMED_FUNCTION()
+
+#endif

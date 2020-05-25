@@ -7,10 +7,7 @@
 #define GL_MINOR 4
 
 
-#define IMGUI_DISABLE
-
-// NOTE TODO: implement assert
-#define assert(x)
+// #define IMGUI_DISABLE
 
 
 #define IMGUI_NO_LIBC

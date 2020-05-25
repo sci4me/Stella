@@ -142,7 +142,7 @@ public:
     Per_Frame_Stats end_frame() {
         end();
         auto stats = per_frame_stats;
-        memset(&per_frame_stats, 0, sizeof(Per_Frame_Stats));
+        mlc_memset(&per_frame_stats, 0, sizeof(Per_Frame_Stats));
         return stats;
     }
 
@@ -192,10 +192,5 @@ public:
 
     void push_textured_quad(f32 x, f32 y, f32 w, f32 h, Texture *texture) {
         push_quad(x, y, w, h, vec4(1.0f, 1.0f, 1.0f, 1.0f), texture->id);
-    }
-
-    void push_textured_quad(f32 x, f32 y, f32 w, f32 h, Texture_Atlas *atlas, u32 id) {
-        auto entry = atlas->entries[id];
-        push_quad(x, y, w, h, vec4(1.0f, 1.0f, 1.0f, 1.0f), entry.uvs, atlas->id);
     }
 };

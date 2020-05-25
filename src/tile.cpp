@@ -85,7 +85,7 @@ struct Tile_Ore : public Tile {
         f32 invp = 1.0f - p;
 
         vec2 uvs[4];
-        memcpy(&uvs, QUAD_UVS[rot], sizeof(vec2) * 4);
+        mlc_memcpy(&uvs, QUAD_UVS[rot], sizeof(vec2) * 4);
 
         f32 h = invp * 0.5f;
         for(u32 i = 0; i < array_length(uvs); i++) {
@@ -324,7 +324,7 @@ struct Tile_Mining_Machine : public Tile {
 
 template<typename T>
 T* make_tile() {
-    void *t = malloc(sizeof(T));
+    void *t = mlc_malloc(sizeof(T));
     return new(t) T;
 }
 

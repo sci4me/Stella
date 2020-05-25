@@ -27,7 +27,14 @@ void tprintf(char const* fmt, ...) {
     va_list args;
     va_start(args, fmt);
     char *buf = tvsprintf(fmt, args);
-    sc_write(1, buf, mlc_strlen(buf) + 1);
+    sc_write(STDOUT, buf, mlc_strlen(buf) + 1);
+}
+
+void tfprintf(s32 fd, char const* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char *buf = tvsprintf(fmt, args);
+    sc_write(fd, buf, mlc_strlen(buf) + 1);
 }
 
 
@@ -123,6 +130,15 @@ void dump_gl_info() {
     tprintf("  GL_RENDERER                   %s\n", glGetString(GL_RENDERER));
     tprintf("  GL_VERSION                    %s\n", glGetString(GL_VERSION));
     tprintf("  GL_SHADING_LANGUAGE_VERSION   %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+}
+
+
+void __assert_fail(char const* msg, char const* file, s32 line) {
+    tfprintf(STDERR, "Assertion failed: %s at %s, line %d\n", msg, file, line);
+
+    s32 pid = sc_getpid();
+    s32 tid = sc_gettid();
+    sc_tgkill(pid, tid, 6); // SIGABRT
 }
 
 

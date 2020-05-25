@@ -20,7 +20,7 @@ namespace ui {
         );
 
         char buf[8];
-        snprintf(buf, 8, "%d", held_item_container->slots[held_item_index].count);
+        stbsp_snprintf(buf, 8, "%d", held_item_container->slots[held_item_index].count);
 
         auto tsize = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, buf);
         drawlist->AddText(
@@ -49,7 +49,7 @@ namespace ui {
             clicked = ImGui::ImageButton((ImTextureID)(u64)item_textures[slot.type].id, { SLOT_SIZE, SLOT_SIZE });
             
             char buf[8];
-            snprintf(buf, 8, "%d", slot.count);
+            stbsp_snprintf(buf, 8, "%d", slot.count);
 
             auto tpos = ImGui::GetItemRectMax();
             auto tsize = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, buf);
@@ -301,7 +301,7 @@ namespace ui {
                         ImGui::Image((ImTextureID)(u64)item_textures[input.type].id, { SLOT_SIZE, SLOT_SIZE });
 
                         char buf[8];
-                        snprintf(buf, 8, "%d", input.count);
+                        stbsp_snprintf(buf, 8, "%d", input.count);
 
                         auto tpos = ImGui::GetItemRectMax();
                         auto tsize = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, buf);

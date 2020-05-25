@@ -162,25 +162,27 @@ s32 main(s32 argc, char **argv) {
 
     bool running = true;
     while(running) {
-        XEvent xev;
-        XNextEvent(dsp, &xev);
+        while(XPending(dsp)) {
+            XEvent xev;
+            XNextEvent(dsp, &xev);
 
-        switch(xev.type) {
-            case Expose: {
-                XWindowAttributes gwa;
-                XGetWindowAttributes(dsp, win, &gwa);
+            switch(xev.type) {
+                case Expose: {
+                    XWindowAttributes gwa;
+                    XGetWindowAttributes(dsp, win, &gwa);
 
-                glViewport(0, 0, gwa.width, gwa.height);
-                break;
-            }
-            case ClientMessage: {
-                if(xev.xclient.data.l[0] == atomWmDeleteWindow) {
-                    running = false;
+                    glViewport(0, 0, gwa.width, gwa.height);
+                    break;
                 }
-                break;
-            }
-            case KeyPress: {
-                break;
+                case ClientMessage: {
+                    if(xev.xclient.data.l[0] == atomWmDeleteWindow) {
+                        running = false;
+                    }
+                    break;
+                }
+                case KeyPress: {
+                    break;
+                }
             }
         }
 

@@ -14,8 +14,8 @@ void program_attach_shader(GLuint program, char *name, GLenum type) {
         GLchar *info_log = (GLchar*) alloca(sizeof(GLchar) * (info_log_length + 1));
         glGetShaderInfoLog(id, info_log_length, 0, info_log);
 
-        fprintf(stderr, "Error compiling shader `%s`:\n%s\n", name, info_log);
-        exit(1);
+        tfprintf(STDERR, "Error compiling shader `%s`:\n%s\n", name, info_log);
+        sc_exit(1);
     }
 
     glAttachShader(program, id);
@@ -34,7 +34,7 @@ GLuint load_shader_program(const char *name, GLenum flags) {
 
     #define SHADER_TYPE(t, n, s)\
         if(flags & t) {\
-            sprintf(buffer, "assets/shaders/%s/%s.glsl", name, n);\
+            stbsp_sprintf(buffer, "assets/shaders/%s/%s.glsl", name, n);\
             program_attach_shader(p, buffer, s);\
         }
 
@@ -54,8 +54,8 @@ GLuint load_shader_program(const char *name, GLenum flags) {
         GLchar *info_log = (GLchar*)alloca(sizeof(GLchar) * (info_log_length + 1));
         glGetProgramInfoLog(p, info_log_length, 0, info_log);
 
-        fprintf(stderr, "%s\n", info_log);
-        exit(1);
+        tfprintf(STDERR, "%s\n", info_log);
+        sc_exit(1);
     }
 
     return p;

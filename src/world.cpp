@@ -75,7 +75,7 @@ struct World {
         for(u32 i = 0; i < chunks.size; i++) {
             if(chunks.slots[i].hash == 0) continue;
             chunks.slots[i].value->deinit();
-            ::free(chunks.slots[i].value);
+            mlc_free(chunks.slots[i].value);
         }
         chunks.deinit();
     }
@@ -89,7 +89,7 @@ struct World {
         s32 i = chunks.index_of(key);
 
         if(i == -1) {
-            Chunk *c = (Chunk*) calloc(1, sizeof(Chunk));
+            Chunk *c = (Chunk*) mlc_calloc(1, sizeof(Chunk));
             c->init(this, x, y);
 
             c->generate();
@@ -200,12 +200,12 @@ void Chunk::deinit() {
     for(u32 i = 0; i < layer1.size; i++) {
         if(layer1.slots[i].hash == 0) continue;
         layer1.slots[i].value->deinit();
-        ::free(layer1.slots[i].value);
+        mlc_free(layer1.slots[i].value);
     }
     for(u32 i = 0; i < layer2.size; i++) {
         if(layer2.slots[i].hash == 0) continue;
         layer2.slots[i].value->deinit();
-        ::free(layer2.slots[i].value);
+        mlc_free(layer2.slots[i].value);
     }    
     layer1.deinit();
     layer2.deinit();

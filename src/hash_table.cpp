@@ -214,7 +214,7 @@ struct Hash_Table {
 			s32 epd = (k + size - (slots[k].hash & mask)) & mask;
 			if(epd == 0) break;
 
-			memcpy(&slots[i], &slots[k], sizeof(Slot));
+			mlc_memcpy(&slots[i], &slots[k], sizeof(Slot));
 
 			i = (i + 1) & mask;
 		}

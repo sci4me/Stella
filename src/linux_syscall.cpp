@@ -21,6 +21,10 @@ extern "C" {
 #define STDOUT				1
 #define STDERR				2
 
+#define SEEK_SET			0
+#define SEEK_CUR			1
+#define SEEK_END			2
+
 #define SYS_read			0
 #define SYS_write 			1
 #define SYS_open			2
@@ -28,6 +32,12 @@ extern "C" {
 #define SYS_stat			4
 #define SYS_fstat			5
 #define SYS_lstat			6
+#define SYS_lseek			8
+
+#define SYS_getpid			39
+#define SYS_exit 			60
+#define SYS_gettid			186
+#define SYS_tgkill			234
 
 // TODO: Force these to be inlined!
 
@@ -61,4 +71,24 @@ s32 sc_fstat(s32 fd, struct stat *statbuf) {
 
 s32 sc_lstat(char const* path, struct stat *statbuf) {
 	return (s32)(s64) SYSCALL2(SYS_lstat, path, statbuf);
+}
+
+s64 sc_lseek(s32 fd, s64 offset, s32 whence) {
+	return (s64) SYSCALL3(SYS_lseek, (s64)fd, offset, (s64)whence);
+}
+
+s32 sc_getpid() {
+	return (s32)(s64) SYSCALL0(SYS_getpid);
+}
+
+void sc_exit(s32 code) {
+	SYSCALL1(SYS_exit, (s64)code);
+}
+
+s32 sc_gettid() {
+	return (s32)(s64) SYSCALL0(SYS_gettid);
+}
+
+s32 sc_tgkill(s32 tgid, s32 tid, s32 sig) {
+	return (s32)(s64) SYSCALL3(SYS_tgkill, (s64)tgid, (s64)tid, (s64)sig);
 }
