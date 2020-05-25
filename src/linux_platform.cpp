@@ -160,6 +160,13 @@ s32 main(s32 argc, char **argv) {
     XMapRaised(dsp, win);
 
 
+    Game game;
+    game.init();
+
+    XWindowAttributes gwa;
+    XGetWindowAttributes(dsp, win, &gwa);
+    game.window_size_callback(gwa.width, gwa.height);
+
     bool running = true;
     while(running) {
         while(XPending(dsp)) {
@@ -168,10 +175,16 @@ s32 main(s32 argc, char **argv) {
 
             switch(xev.type) {
                 case Expose: {
-                    XWindowAttributes gwa;
-                    XGetWindowAttributes(dsp, win, &gwa);
-
-                    glViewport(0, 0, gwa.width, gwa.height);
+                    // TODO ???
+                    break;
+                }
+                case ConfigureNotify: {
+                    if(xev.xconfigure.width != game.window_width || xev.xconfigure.height != game.window_height) {
+                        game.window_size_callback(xev.xconfigure.width, xev.xconfigure.height);
+                    }
+                    break;
+                }
+                case MotionNotify: {
                     break;
                 }
                 case ClientMessage: {
@@ -187,13 +200,16 @@ s32 main(s32 argc, char **argv) {
         }
 
 
-        // game stuff here :P
+        game.update_and_render();
 	        
 
         glXSwapBuffers(dsp, win);
 
         tclear();
     }
+
+
+    game.deinit();
 
 
     glXMakeCurrent(dsp, None, 0);

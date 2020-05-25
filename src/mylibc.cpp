@@ -32,30 +32,10 @@ void __assert_fail(char const* msg, char const* file, s32 line);
 
 // TODO: Get rid of all these weird types!
 
+// NOTE TODO: Query this...
+constexpr u64 PAGE_SIZE = 4096;
+
 extern "C" {
-	void* mlc_malloc(u64 n) {
-		assert(0);
-		// TODO
-		return 0;
-	}
-
-	void* mlc_calloc(u64 n, u64 s) {
-		assert(0);
-		// TODO
-		return 0;
-	}
-
-	void* mlc_realloc(void *p, u64 n) {
-		assert(0);
-		// TODO
-		return 0;
-	}
-
-	void mlc_free(void *p) {
-		assert(0);
-		// TODO
-	}
-
 	void* mlc_memset(void *p, int v, u64 n) {
 		// TODO: SIMD version of this!!!!!
 		u8 *real_p = (u8*) p;
@@ -69,6 +49,49 @@ extern "C" {
 		u8 const* s = (u8 const*) src;
 		for(u64 i = 0; i < n; i++) d[i] = s[i];
 		return dst;
+	}
+	
+	void* mlc_malloc(u64 n) {
+		n += sizeof(u64); // NOTE: This is so we can store the size.
+		
+		u64 r = n % PAGE_SIZE;
+		if(r > 0) {
+			// NOTE: Align to page boundary.
+			n += PAGE_SIZE - r;
+		}
+
+		void *ptr = sc_mmap(0, n, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+		if(ptr == MAP_FAILED) return 0;
+
+		*((u64*)ptr) = n;
+		return ((u64*)ptr) + 1;
+	}
+
+	void* mlc_calloc(u64 n, u64 s) {
+		// NOTE: We can do this since mlc_malloc is using mmap
+		// w/ MAP_ANONYMOUS, which zero-initializes its results.
+		return mlc_malloc(n * s);
+	}
+
+	void mlc_free(void *p) {
+		if(p == 0) return;
+
+		u64 *x = ((u64*)p) - 1;
+		sc_munmap(x, *x);
+	}
+
+	void* mlc_realloc(void *p, u64 n) {
+		void *p2 = mlc_malloc(n);
+		if(!p2) return 0;
+		
+		if(!p) return p2;
+
+		u64 old_n = *(((u64*) p) - 1) - sizeof(u64);
+		if(n < old_n) n = old_n;
+		mlc_memcpy(p2, p, n);
+
+		mlc_free(p);
+		return p2;
 	}
 
 	int mlc_memcmp(void const* a, void const* b, u64 n) {

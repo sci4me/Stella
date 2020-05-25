@@ -35,6 +35,9 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - OH MY GOD FIX THE FKIN BUILD TIME
+   - Just had a build take 3.679 (ayyy! ... i'm like yeaaaa she's fine.... no? .. okay)
+     - WTF imgui y u do dis
  - Merge the ctime files!
    - I split them because the linux version
      of ctime wouldn't handle the Casey version
@@ -63,7 +66,7 @@ Code/Dev Features/Quality:
      extension querying and function pointer
      lookup that we need, on a function-by-function
      basis.
- - Build GLEW and GLFW from source!
+ - Build GLEW from source!
    - Difficult to do on Windows (maybe)
      - Not going to use VS!!!
        - So we'll just write our own
@@ -123,14 +126,18 @@ Code/Dev Features/Quality:
  - Better Build System
 
 Quality/Optimization:
+ - Dynamically load everything instead of dynamically linking
+   - i.e. remove -lX11 -lGL etc.
+     - Is this worth doing? Why? etc.
  - Remove libc
-   - We were able to remove libstdc++ "trivially".
-     - Took a small change to imgui
-       - Don't fully understand why that change was all that was needed but whatever, it works
-   - Remove libc will be harder than removing libstdc++
-     - But I think we can do it. We just have to change all calls to libc
-       to either call the OS or our own functions. Obviously this means we'll
-       start needing to write OS-dependent code, for things like file I/O, etc. 
+   - We have done this, but, well, we're not done yet lol.
+   - Going to be a fair bit more work.
+     - X code isn't robust
+     - No win32 code yet
+     - Replacing libc with our own code
+     - Making imgui work
+       - We got it compiling but.. damn.
+         - What a mess!
  - Verify that we only have _one_ copy of GLEW being build
    into our executable! I _think_ this is the case.. but..
    - I'm really not sure if .. like..

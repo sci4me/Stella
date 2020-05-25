@@ -24,18 +24,18 @@ void imgui_shutdown() {
     // TODO replace this
     // ImGui_ImplOpenGL3_Shutdown();
     // ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    // ImGui::DestroyContext();
 }
 
 void imgui_begin_frame() {
     // TODO replace this
     // ImGui_ImplOpenGL3_NewFrame();
     // ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    // ImGui::NewFrame();
 }
 
 void imgui_end_frame() {
-    ImGui::Render();
+    // ImGui::Render();
     // TODO replace this
     // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
