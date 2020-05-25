@@ -101,36 +101,6 @@ extern "C" {
 		return 0;
 	}
 
-	float mlc_ldexpf(float f, int x) {
-		// TODO
-		return 0;
-	}
-
-	double mlc_acos(double x) {
-		// TODO
-		return 0;
-	}
-
-	double mlc_atan2(double y, double x) {
-		// TODO
-		return 0;
-	}
-
-	float mlc_fmodf(float a, float b) {
-		// TODO
-		return 0;
-	}
-
-	float mlc_floorf(float x) {
-		// TODO
-		return 0;
-	}
-
-	float mlc_ceilf(float x) {
-		// TODO
-		return 0;
-	}
-
 	float mlc_atof(char const* s) {
 		// TODO
 		return 0;
