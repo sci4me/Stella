@@ -29,6 +29,31 @@ int x_error_handler(Display *dsp, XErrorEvent *ev) {
 }
 
 
+enum {
+    _NET_WM_STATE_REMOVE    = 0,
+    _NET_WM_STATE_ADD       = 1,
+    _NET_WM_STATE_TOGGLE    = 2
+};
+
+void set_fullscreen(Display *display, Window window, bool fullscreen) {
+    XEvent event = {};
+
+    event.xclient.type = ClientMessage;
+    event.xclient.serial = 0;
+    event.xclient.send_event = True;
+    // event.xclient.display = display;
+    event.xclient.window = window;
+    event.xclient.message_type = XInternAtom(display, "_NET_WM_STATE", False);
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = (fullscreen ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE);
+    event.xclient.data.l[1] = (long) XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+    event.xclient.data.l[2] = 0;
+    
+    XSendEvent(display, DefaultRootWindow(display), False, SubstructureNotifyMask | SubstructureRedirectMask, &event);
+    XFlush(display);
+}
+
+
 s32 main(s32 argc, char **argv) {
 	Display *dsp = XOpenDisplay(0);
     if(!dsp) {
@@ -83,7 +108,7 @@ s32 main(s32 argc, char **argv) {
     swa.colormap = cmap;
     swa.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
 
-    Window win = XCreateWindow(dsp, root, 0, 0, 600, 600, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
+    Window win = XCreateWindow(dsp, root, 0, 0, 1280, 720, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
     if(!win) {
     	tprintf("Failed to create X window!\n");
         XCloseDisplay(dsp);
@@ -165,9 +190,15 @@ s32 main(s32 argc, char **argv) {
     Game game;
     game.init();
 
+
     XWindowAttributes gwa;
     XGetWindowAttributes(dsp, win, &gwa);
     game.window_size_callback(gwa.width, gwa.height);
+
+
+    bool fullscreen = false;
+    s32 saved_window_x, saved_window_y, saved_window_w, saved_window_h;
+
 
     bool running = true;
     while(running) {
@@ -200,7 +231,12 @@ s32 main(s32 argc, char **argv) {
                         }
                     }
 
-                    game.key_callback(xev.xkey.keycode, xev.type == KeyPress);
+                    if(xev.type == KeyPress && xev.xkey.keycode == KEYCODE_F11) {
+                        fullscreen = !fullscreen;
+                        set_fullscreen(dsp, win, fullscreen);
+                    } else {
+                        game.key_callback(xev.xkey.keycode, xev.type == KeyPress);
+                    }
                     break;
                 }
                 case ButtonPress:

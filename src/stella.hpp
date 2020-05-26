@@ -77,13 +77,10 @@ static inline double ImPow(double b, double e) { return powf64(b, e); }
 
 
 struct Game {
-	s32 window_width = 1280;
-	s32 window_height = 720;
+	s32 window_width;
+	s32 window_height;
 
-	// NOTE: Set to true so that we don't have to 
-	// do any sizing code before the main loop.
-	//          - sci4me, 5/7/20
-	bool window_resized = true;
+	bool window_resized;
 
 	f32 scale = 1.0f;
 
@@ -91,10 +88,6 @@ struct Game {
 
 	bool show_debug_window = false;
 	bool show_imgui_metrics_window = false;
-
-	bool fullscreen_changed = false;
-	bool fullscreen = false;
-	s32 saved_window_x, saved_window_y, saved_window_w, saved_window_h;
 
 	bool vsync = true;
 	bool fast_mining = false;

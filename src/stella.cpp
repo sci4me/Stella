@@ -52,11 +52,6 @@ void Game::key_callback(u32 keycode, bool is_press) {
                 show_debug_window = !show_debug_window;
                 break;
             }
-            case KEYCODE_F11: {
-                fullscreen = !fullscreen;
-                fullscreen_changed = true;
-                break;
-            }
             case KEYCODE_F12: {
                 debug_pause = !debug_pause;
                 break;
