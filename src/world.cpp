@@ -388,8 +388,8 @@ void Chunk::render() {
     assert(chunk_vertex_buffer.count == MAX_VERTICES);
     assert(chunk_index_buffer.count == MAX_INDICES);
 
-    vbo.set_data(&chunk_vertex_buffer.data, MAX_VERTICES * sizeof(Vertex));
-    ibo.set_data(&chunk_index_buffer.data, MAX_INDICES * sizeof(u32));
+    vbo.set_subdata(&chunk_vertex_buffer.data, MAX_VERTICES * sizeof(Vertex));
+    ibo.set_subdata(&chunk_index_buffer.data, MAX_INDICES * sizeof(u32));
 }
 
 void Chunk::draw(Batch_Renderer *r) {

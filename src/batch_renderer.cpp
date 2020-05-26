@@ -98,8 +98,8 @@ public:
         per_frame_stats.indices += indices.count;
         per_frame_stats.draw_calls++;
 
-        vbo.set_data(&vertices.data, vertices.count * sizeof(Vertex));
-        ibo.set_data(&indices.data, indices.count * sizeof(u32));
+        vbo.set_subdata(&vertices.data, vertices.count * sizeof(Vertex));
+        ibo.set_subdata(&indices.data, indices.count * sizeof(u32));
 
         glUseProgram(shader);
         vao.bind();

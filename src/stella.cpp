@@ -7,14 +7,14 @@
 #include "util.cpp"
 #include "hash_table.cpp"
 #include "profiler.cpp"
-#include "imgui_support.cpp"
 #include "perlin_noise.cpp"
 #include "slot_allocator.cpp"
 #include "shader.cpp"
 #include "texture.cpp"
 #include "buffer_objects.cpp"
-#include "batch_renderer.cpp"
 #include "assets.cpp"
+#include "imgui_support.cpp"
+#include "batch_renderer.cpp"
 #include "item.cpp"
 #include "crafting.cpp"
 #include "tile.cpp"
@@ -86,7 +86,7 @@ void Game::init() {
     prof::init();
 
 
-    imgui_init();
+    imsupport::init();
 
 
     glClearColor(0, 0, 0, 0);
@@ -137,7 +137,9 @@ void Game::init() {
 }
 
 void Game::deinit() {
+    // TODO
 
+    imsupport::deinit();
 }
 
 void Game::update_and_render() {
@@ -183,7 +185,7 @@ void Game::update_and_render() {
     }    
 
 
-    imgui_begin_frame();
+    imsupport::begin_frame(vec2(window_width, window_height));
 
 
     //
@@ -268,7 +270,7 @@ void Game::update_and_render() {
     // if(!is_paused) prof::end_frame(); else prof::frame_events.clear();
     if(show_profiler) prof::show();
 
-    imgui_end_frame();
+    imsupport::end_frame();
 }
 
 /*

@@ -210,9 +210,44 @@ extern "C" {
 		return x;
 	}
 
-	void mlc_qsort(void* base, u64 num, u64 size, int (*compar)(void const*, void const*)) {
-		assert(0);
-		// TODO
+	void _mlc_qsort_swap(void *base, s64 size, s64 a, u64 b) {
+		u8 *pa = ((u8*) base) + (a * size);
+		u8 *pb = ((u8*) base) + (b * size);
+		for(s64 i = 0; i < size; i++) {
+			u8 t = *pa;
+			*pa = *pb;
+			*pb = t;
+			pa++;
+			pb++;
+		}
+	}
+
+	s64 _mlc_qsort_partition(void *base, u64 size, s64 l, s64 h, s32 (*compar)(void const*, void const*)) {
+		u8 *p_pivot = ((u8*) base) + (h * size);
+		s64 i = l - 1;
+		
+		for(s64 j = l; j < h; j++) {
+			u8 *pj = ((u8*) base) + (j * size);
+			if(compar(pj, p_pivot) <= 0) {
+				i++;
+				_mlc_qsort_swap(base, size, i, j);
+			}
+		}
+
+		_mlc_qsort_swap(base, size, i + 1, h);
+		return i + 1;
+	}
+
+	void _mlc_qsort(void *base, u64 size, s64 p, s64 r, s32 (*compar)(void const*, void const*)) {
+		if(p < r) {
+			s64 q = _mlc_qsort_partition(base, size, p, r, compar);
+			_mlc_qsort(base, size, p, q - 1, compar);
+        	_mlc_qsort(base, size, q + 1, r, compar);
+		}
+	}
+
+	void mlc_qsort(void* base, u64 num, u64 size, s32 (*compar)(void const*, void const*)) {
+		_mlc_qsort(base, size, 0, (s64)num - 1, compar);
 	}
 
 	int mlc_sscanf(char const* s, char const* format, ...) {

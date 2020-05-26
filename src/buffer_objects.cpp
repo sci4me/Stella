@@ -2,8 +2,12 @@ template<GLenum type>
 struct GL_Buffer {
     GLuint id;
 
-    void init(u64 size, GLenum usage) {
+    void init() {
         glCreateBuffers(1, &id);
+    }
+
+    void init(u64 size, GLenum usage) {
+        init();
         glNamedBufferData(id, size, nullptr, usage);
     }
 
@@ -19,8 +23,12 @@ struct GL_Buffer {
         glBindBuffer(type, 0);
     }
 
-    void set_data(void *data, u32 size) {
-        glNamedBufferSubData(id, 0, size, data);
+    void set_data(void *data, u32 size, GLenum usage) {
+        glNamedBufferData(id, size, data, usage);
+    }
+
+    void set_subdata(void *data, u32 size, u32 offset = 0) {
+        glNamedBufferSubData(id, offset, size, data);
     }
 };
 
@@ -30,14 +38,19 @@ using Index_Buffer = GL_Buffer<GL_ELEMENT_ARRAY_BUFFER>;
 struct Vertex_Element {
     GLenum type;
     s32 count;
+    bool normalized;
 
-    Vertex_Element(GLenum _type, s32 _count) : type(_type), count(_count) {}
+    Vertex_Element(GLenum _type, s32 _count, bool _normalized = false) : type(_type), count(_count), normalized(_normalized) {}
 
     s64 size() const {
         switch(type) {
             case GL_FLOAT:
             case GL_INT:
+            case GL_UNSIGNED_INT:
                 return count * 4;
+            case GL_BYTE:
+            case GL_UNSIGNED_BYTE:
+                return count;
         }
         
         assert(0);
@@ -88,10 +101,18 @@ struct Vertex_Array {
             auto const& e = format[i];
             switch(e.type) {
                 case GL_FLOAT:
+                    assert(!e.normalized);
                     glVertexArrayAttribFormat(id, i, e.count, e.type, GL_FALSE, offset);
                     break;
+                case GL_BYTE:
+                case GL_UNSIGNED_BYTE:
                 case GL_INT:
-                    glVertexArrayAttribIFormat(id, i, e.count, e.type, offset);
+                case GL_UNSIGNED_INT:
+                    if(e.normalized) {
+                        glVertexArrayAttribFormat(id, i, e.count, e.type, GL_TRUE, offset);
+                    } else {
+                        glVertexArrayAttribIFormat(id, i, e.count, e.type, offset);
+                    }
                     break;
                 default:
                     assert(0);
