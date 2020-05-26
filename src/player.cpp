@@ -103,8 +103,8 @@ struct Player {
 
                 // NOTE: `10 * TILE_SIZE` is the max distance the player can "reach".
                 if(distance(mouse_world_pos, pos) < 10 * TILE_SIZE) {
-                    hovered_tile_x = floor(mouse_world_pos.x / TILE_SIZE);
-                    hovered_tile_y = floor(mouse_world_pos.y / TILE_SIZE);
+                    hovered_tile_x = floorf32(mouse_world_pos.x / TILE_SIZE);
+                    hovered_tile_y = floorf32(mouse_world_pos.y / TILE_SIZE);
                     
                     Chunk *chunk = world->get_chunk_containing(hovered_tile_x, hovered_tile_y);
 
@@ -253,7 +253,7 @@ private:
         // NOTE: Don't forget to floor these divisions! Once up on a time
         // I forgot to floor and spent like 10 minutes wondering why I had
         // 0 and -0 as separate tile coords!
-        return world->get_chunk_containing(floor(pos.x / TILE_SIZE), floor(pos.y / TILE_SIZE));
+        return world->get_chunk_containing(floorf32(pos.x / TILE_SIZE), floorf32(pos.y / TILE_SIZE));
     }
 
     void open_tile_ui(Tile *t) {

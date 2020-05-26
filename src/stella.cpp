@@ -235,7 +235,7 @@ void Game::update_and_render() {
 
             if(ImGui::CollapsingHeader("Player")) {
                 ImGui::Text("Position: (%0.3f, %0.3f)", player->pos.x, player->pos.y);
-                ImGui::Text("Tile Position: (%d, %d)", (s32) floor(player->pos.x / TILE_SIZE), (s32) floor(player->pos.y / TILE_SIZE));
+                ImGui::Text("Tile Position: (%d, %d)", (s32) floorf32(player->pos.x / TILE_SIZE), (s32) floorf32(player->pos.y / TILE_SIZE));
             }
 
             if(ImGui::CollapsingHeader("World")) {

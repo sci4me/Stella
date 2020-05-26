@@ -1,4 +1,4 @@
-#include "intrinsics.cpp"
+#include "maths.cpp"
 
 #define APP_NAME "Stella"
 

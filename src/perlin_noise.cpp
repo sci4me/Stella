@@ -77,13 +77,13 @@ struct PerlinNoise {
 	}
 
 	f32 noise3D(f32 x, f32 y, f32 z) const noexcept {
-		const s32 X = ((s32)(floorf(x))) & 255;
-		const s32 Y = ((s32)(floorf(y))) & 255;
-		const s32 Z = ((s32)(floorf(z))) & 255;
+		const s32 X = ((s32)(floorf32(x))) & 255;
+		const s32 Y = ((s32)(floorf32(y))) & 255;
+		const s32 Z = ((s32)(floorf32(z))) & 255;
 
-		x -= floorf(x);
-		y -= floorf(y);
-		z -= floorf(z);
+		x -= floorf32(x);
+		y -= floorf32(y);
+		z -= floorf32(z);
 
 		const f32 u = fade(x);
 		const f32 v = fade(y);

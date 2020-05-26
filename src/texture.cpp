@@ -29,7 +29,7 @@ struct Texture {
     }
 
     void set_data(void *image, u32 level = 0) {
-        u32 denom = (u32)pow(2, level);
+        u32 denom = (u32)powf32(2, level);
         glTextureSubImage2D(id, level, 0, 0, width / denom, height / denom, GL_RGBA, GL_UNSIGNED_BYTE, image);
     }
 
@@ -136,7 +136,7 @@ Texture load_texture_from_file(const char *path, bool generate_mipmaps = false) 
         assert((h & (h - 1)) == 0);
         assert(w == h);
 
-        levels = (u32) log2(w) + 1;
+        levels = (u32) log2f32(w) + 1;
     }
 
     result.init(w, h, levels);

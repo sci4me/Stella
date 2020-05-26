@@ -104,8 +104,8 @@ struct World {
     }
 
     Chunk* get_chunk_containing(s32 x, s32 y) {
-        s32 cx = (s32)floor(x / (f32)Chunk::SIZE);
-        s32 cy = (s32)floor(y / (f32)Chunk::SIZE);
+        s32 cx = (s32)floorf32(x / (f32)Chunk::SIZE);
+        s32 cy = (s32)floorf32(y / (f32)Chunk::SIZE);
         return get_chunk(cx, cy);
     }
 
@@ -145,15 +145,15 @@ struct World {
         s32 half_window_width = window_width / 2;
         s32 half_window_height = window_height / 2;
 
-        s32 vp_min_x = (s32) floor(((x - half_window_width) / scale) / TILE_SIZE);
-        s32 vp_min_y = (s32) floor(((y - half_window_height) / scale) / TILE_SIZE);
-        s32 vp_max_x = (s32) ceil(((x + half_window_width) / scale) / TILE_SIZE);
-        s32 vp_max_y = (s32) ceil(((y + half_window_height) / scale) / TILE_SIZE);
+        s32 vp_min_x = (s32) floorf32(((x - half_window_width) / scale) / TILE_SIZE);
+        s32 vp_min_y = (s32) floorf32(((y - half_window_height) / scale) / TILE_SIZE);
+        s32 vp_max_x = (s32) ceilf32(((x + half_window_width) / scale) / TILE_SIZE);
+        s32 vp_max_y = (s32) ceilf32(((y + half_window_height) / scale) / TILE_SIZE);
 
-        s32 vp_min_cx = (s32) floor((f32)vp_min_x / (f32)Chunk::SIZE);
-        s32 vp_min_cy = (s32) floor((f32)vp_min_y / (f32)Chunk::SIZE);
-        s32 vp_max_cx = (s32) ceil((f32)vp_max_x / (f32)Chunk::SIZE);
-        s32 vp_max_cy = (s32) ceil((f32)vp_max_y / (f32)Chunk::SIZE);
+        s32 vp_min_cx = (s32) floorf32((f32)vp_min_x / (f32)Chunk::SIZE);
+        s32 vp_min_cy = (s32) floorf32((f32)vp_min_y / (f32)Chunk::SIZE);
+        s32 vp_max_cx = (s32) ceilf32((f32)vp_max_x / (f32)Chunk::SIZE);
+        s32 vp_max_cy = (s32) ceilf32((f32)vp_max_y / (f32)Chunk::SIZE);
 
         // TODO: instead of taking `view` as a parameter, we could technically just get it from Batch_Renderer?
         glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, view.value_ptr());
