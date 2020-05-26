@@ -113,7 +113,7 @@ struct Game {
 	struct Player *player;
 
 	void scroll_callback(f64 x, f64 y);
-	void key_callback(s32 key, s32 scancode, s32 action, s32 mods);
+	void key_callback(u32 keycode, bool is_press);
 	void window_size_callback(s32 width, s32 height);
 	
 	void init();

@@ -1,3 +1,5 @@
+#include "linux_platform.hpp"
+
 #define GLEW_STATIC
 #define GLEW_NO_GLU
 #include "GL/glew.h"
@@ -79,7 +81,7 @@ s32 main(s32 argc, char **argv) {
 
     XSetWindowAttributes swa;
     swa.colormap = cmap;
-    swa.event_mask = ExposureMask | KeyPressMask | StructureNotifyMask;
+    swa.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
 
     Window win = XCreateWindow(dsp, root, 0, 0, 600, 600, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
     if(!win) {
@@ -174,17 +176,10 @@ s32 main(s32 argc, char **argv) {
             XNextEvent(dsp, &xev);
 
             switch(xev.type) {
-                case Expose: {
-                    // TODO ???
-                    break;
-                }
                 case ConfigureNotify: {
                     if(xev.xconfigure.width != game.window_width || xev.xconfigure.height != game.window_height) {
                         game.window_size_callback(xev.xconfigure.width, xev.xconfigure.height);
                     }
-                    break;
-                }
-                case MotionNotify: {
                     break;
                 }
                 case ClientMessage: {
@@ -193,7 +188,26 @@ s32 main(s32 argc, char **argv) {
                     }
                     break;
                 }
-                case KeyPress: {
+                case KeyPress:
+                case KeyRelease: {
+                    // NOTE: Skip key repeat events.
+                    if(xev.type == KeyRelease && XEventsQueued(dsp, QueuedAfterReading)) {
+                        XEvent next;
+                        XPeekEvent(dsp, &next);
+                        if ((next.type == KeyPress) && (next.xkey.time == xev.xkey.time) && (next.xkey.keycode == xev.xkey.keycode)) {
+                            XNextEvent(dsp, &xev);
+                            continue;
+                        }
+                    }
+
+                    game.key_callback(xev.xkey.keycode, xev.type == KeyPress);
+                    break;
+                }
+                case ButtonPress:
+                case ButtonRelease: {
+                    break;
+                }
+                case MotionNotify: {
                     break;
                 }
             }

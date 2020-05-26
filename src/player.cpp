@@ -29,6 +29,9 @@ struct Player {
     bool show_crafting_queue = false;
 
 
+    bool pressing_w, pressing_s, pressing_a, pressing_d;
+
+
     void init(Game *game, World *world) {
         this->game = game;;
         this->world = world;
@@ -42,27 +45,32 @@ struct Player {
         crafting_queue.deinit();
     }
 
-    void key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
-        /*
-        if(action == GLFW_PRESS) {
-            switch(key) {
-                case GLFW_KEY_C: {
+    void key_callback(u32 keycode, bool is_press) {
+        switch(keycode) {
+            case KEYCODE_W: pressing_w = is_press; return;
+            case KEYCODE_S: pressing_s = is_press; return;
+            case KEYCODE_A: pressing_a = is_press; return;
+            case KEYCODE_D: pressing_d = is_press; return;
+        }
+
+        if(is_press) {
+            switch(keycode) {
+                case KEYCODE_C: {
                     show_crafting_queue = !show_crafting_queue;
                     break;
                 }
-                case GLFW_KEY_E: {
+                case KEYCODE_E: {
                     show_inventory = !show_inventory;
                     if(show_inventory) active_ui_tile = nullptr;
                     break;
                 }
-                case GLFW_KEY_ESCAPE: {
+                case KEYCODE_ESC: {
                     // TODO: un-hold held items
                     // TODO: close UIs?
                     break;
                 }
             }
         }   
-        */
     }
 
     void update() {
@@ -78,21 +86,8 @@ struct Player {
 
         ImGuiIO& io = ImGui::GetIO(); 
 
-        /*
-        if(!io.WantCaptureKeyboard) {
-            vec2 delta = {0, 0};
-            if(glfwGetKey(game->window, GLFW_KEY_W) == GLFW_PRESS) delta.y = -1.0f;
-            if(glfwGetKey(game->window, GLFW_KEY_S) == GLFW_PRESS) delta.y = 1.0f;
-            if(glfwGetKey(game->window, GLFW_KEY_A) == GLFW_PRESS) delta.x = -1.0f;
-            if(glfwGetKey(game->window, GLFW_KEY_D) == GLFW_PRESS) delta.x = 1.0f;
-            
-            auto speed = SPEED;
-            if(glfwGetKey(game->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
-            delta = normalize(delta) * speed;
-            
-            move(delta);
-        }
-        */
+        
+        handle_movement();
 
 
         /*
@@ -264,6 +259,20 @@ private:
     void open_tile_ui(Tile *t) {
         active_ui_tile = t;
         show_inventory = false;
+    }
+
+    void handle_movement() {
+        vec2 delta = {0, 0};
+        if(pressing_w) delta.y = -1.0f;
+        if(pressing_s) delta.y = 1.0f;
+        if(pressing_a) delta.x = -1.0f;
+        if(pressing_d) delta.x = 1.0f;
+        
+        auto speed = SPEED;
+        // if(glfwGetKey(game->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
+        delta = normalize(delta) * speed;
+        
+        move(delta);
     }
 
     void move(vec2 delta) {

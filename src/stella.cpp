@@ -41,29 +41,28 @@ void Game::scroll_callback(f64 x, f64 y) {
     */
 }
 
-void Game::key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
-    /*
-	if(action == GLFW_PRESS) {
-        switch(key) {
-        	case GLFW_KEY_F2: {
-        		show_profiler = !show_profiler;
-        		return;
-        	}
-            case GLFW_KEY_F3: {
-                show_debug_window = !show_debug_window;
-                return;
+void Game::key_callback(u32 keycode, bool is_press) {
+    if(is_press) {
+        switch(keycode) {
+            case KEYCODE_F2: {
+                show_profiler = !show_profiler;
+                break;
             }
-            case GLFW_KEY_F11: {
+            case KEYCODE_F3: {
+                show_debug_window = !show_debug_window;
+                break;
+            }
+            case KEYCODE_F11: {
                 fullscreen = !fullscreen;
                 fullscreen_changed = true;
-                return;
+                break;
             }
-            case GLFW_KEY_F12: {
+            case KEYCODE_F12: {
                 debug_pause = !debug_pause;
-                return;
+                break;
             }
         }
-	}
+    }
 
 	// NOTE: Here is where we dispatch this event to
 	// "listeners". Trying to avoid the function-pointer
@@ -72,8 +71,7 @@ void Game::key_callback(s32 key, s32 scancode, s32 action, s32 mods) {
     // to make the code nicer, later on.
 	// 					- sci4me, 5/23/20
 
-	player->key_callback(key, scancode, action, mods);
-    */
+	player->key_callback(keycode, is_press);
 }
 
 void Game::window_size_callback(s32 width, s32 height) {
@@ -226,7 +224,7 @@ void Game::update_and_render() {
 
     if(show_debug_window) {
         ImGuiIO& io = ImGui::GetIO();
-        
+
         if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
             ImGui::Dummy({ 130, 0 });
 
