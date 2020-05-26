@@ -1,13 +1,9 @@
 #include "maths.cpp"
 
-#define APP_NAME "Stella"
 
 #define GL_DEBUG
 #define GL_MAJOR 4
 #define GL_MINOR 4
-
-
-// #define IMGUI_DISABLE
 
 
 #define IMGUI_NO_LIBC
@@ -77,6 +73,9 @@ static inline double ImPow(double b, double e) { return powf64(b, e); }
 #include "rnd.h"
 
 
+#define APP_NAME "Stella"
+
+
 struct Game {
 	s32 window_width = 1280;
 	s32 window_height = 720;
@@ -112,14 +111,11 @@ struct Game {
 	struct World *world;
 	struct Player *player;
 
-	void scroll_callback(f64 x, f64 y);
+	void scroll_callback(s32 delta);
 	void key_callback(u32 keycode, bool is_press);
 	void window_size_callback(s32 width, s32 height);
 	
 	void init();
 	void deinit();
 	void update_and_render();
-
-	// TODO: REMOVE ME
-	s32 run();
 };

@@ -205,6 +205,11 @@ s32 main(s32 argc, char **argv) {
                 }
                 case ButtonPress:
                 case ButtonRelease: {
+                    if(xev.xbutton.button == Button4 && xev.type == ButtonPress) {
+                        game.scroll_callback(1);
+                    } else if(xev.xbutton.button == Button5 && xev.type == ButtonPress) {
+                        game.scroll_callback(-1);
+                    }
                     break;
                 }
                 case MotionNotify: {
