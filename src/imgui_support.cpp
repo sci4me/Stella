@@ -34,7 +34,7 @@ namespace imsupport {
 
         ImGuiIO& io = ImGui::GetIO();
         io.IniFilename = nullptr;
-        io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+        // io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
         io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
         io.BackendPlatformName = "Stella_imsupoort";
 
@@ -114,6 +114,33 @@ namespace imsupport {
         glDeleteProgram(shader);
 
         font_texture.deinit();
+    }
+
+    void mouse_position_callback(s32 x, s32 y, bool valid) {
+        ImGuiIO& io = ImGui::GetIO();
+        if(valid) io.MousePos = vec2(x, y);
+        else      io.MousePos = vec2(-FLT_MAX, -FLT_MAX);
+    }
+
+    void mouse_button_callback(s32 button, bool is_press) {
+        static constexpr s32 mouse_map[5] = { 4, 0, 2, 1, 5 };
+
+        ImGuiIO& io = ImGui::GetIO();
+        if(button >= 0 && button < array_length(mouse_map)) {
+            io.MouseDown[mouse_map[button]] = is_press;
+        }
+    }
+
+    void scroll_callback(f64 deltaX, f64 deltaY) {
+        ImGuiIO& io = ImGui::GetIO();
+        io.MouseWheelH += (f32)deltaX;
+        io.MouseWheel += (f32)deltaY;
+    }
+
+    void key_callback(s32 keycode, bool is_press) {
+        ImGuiIO& io = ImGui::GetIO();
+        io.KeysDown[keycode] = is_press;
+        // TODO: ctrl, shift, alt, super
     }
 
     void begin_frame(vec2 display_size) {

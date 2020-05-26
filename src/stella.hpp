@@ -104,7 +104,9 @@ struct Game {
 	struct World *world;
 	struct Player *player;
 
-	void scroll_callback(s32 delta);
+	void mouse_position_callback(s32 x, s32 y, bool valid);
+	void mouse_button_callback(s32 button, bool is_press);
+	void scroll_callback(f64 deltaX, f64 deltaY);
 	void key_callback(u32 keycode, bool is_press);
 	void window_size_callback(s32 width, s32 height);
 	

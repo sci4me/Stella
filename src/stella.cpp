@@ -32,13 +32,21 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 }
 #endif
 
-void Game::scroll_callback(s32 delta) {
-    /*
+void Game::mouse_position_callback(s32 x, s32 y, bool valid) {
+    imsupport::mouse_position_callback(x, y, valid);
+}
+
+void Game::mouse_button_callback(s32 button, bool is_press) {
+    imsupport::mouse_button_callback(button, is_press);
+}
+
+void Game::scroll_callback(f64 deltaX, f64 deltaY) {
+    imsupport::scroll_callback(deltaX, deltaY);
+
 	ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse) {
+        scale = clamp<f32>(scale + deltaY * 0.05f, 0.1f, 5.0f);
     }
-    */
-    scale = clamp<f32>(scale + delta * 0.05f, 0.1f, 5.0f);
 }
 
 void Game::key_callback(u32 keycode, bool is_press) {

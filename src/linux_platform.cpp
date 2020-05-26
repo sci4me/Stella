@@ -243,10 +243,14 @@ s32 main(s32 argc, char **argv) {
                 }
                 case ButtonPress:
                 case ButtonRelease: {
+                    // TODO: horizontal scroll and also, 1?
+
                     if(xev.xbutton.button == Button4 && xev.type == ButtonPress) {
-                        game.scroll_callback(1);
+                        game.scroll_callback(0, 1);
                     } else if(xev.xbutton.button == Button5 && xev.type == ButtonPress) {
-                        game.scroll_callback(-1);
+                        game.scroll_callback(0, -1);
+                    } else {
+                        game.mouse_button_callback(xev.xbutton.button, xev.type == ButtonPress);
                     }
                     break;
                 }
@@ -254,6 +258,15 @@ s32 main(s32 argc, char **argv) {
                     break;
                 }
             }
+        }
+
+
+        Window root_r, child_r;
+        s32 root_x, root_y;
+        s32 win_x, win_y;
+        u32 mask_r;
+        if(XQueryPointer(dsp, win, &root_r, &child_r, &root_x, &root_y, &win_x, &win_y, &mask_r)) {
+            game.mouse_position_callback(win_x, win_y, win_x >= 0 && win_y >= 0 && win_x < game.window_width && win_y < game.window_height);
         }
 
 
