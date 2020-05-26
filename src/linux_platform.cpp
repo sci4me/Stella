@@ -197,9 +197,6 @@ s32 main(s32 argc, char **argv) {
 
 
     bool fullscreen = false;
-    s32 saved_window_x, saved_window_y, saved_window_w, saved_window_h;
-
-
     bool running = true;
     while(running) {
         while(XPending(dsp)) {
