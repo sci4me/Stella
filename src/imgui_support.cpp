@@ -114,6 +114,10 @@ namespace imsupport {
         glDeleteProgram(shader);
 
         font_texture.deinit();
+
+        vao.deinit();
+        vbo.deinit();
+        ibo.deinit();
     }
 
     void mouse_position_callback(s32 x, s32 y, bool valid) {
