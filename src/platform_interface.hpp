@@ -1,3 +1,18 @@
+// NOTE: Currently this depends on our standard numeric types
+// being defined before this file is included.
+
+// NOTE: We explicitly do the ifdef version of pragma once here
+// whereas most of the code never does any such thing;
+// This isn't strictly necessary at the time of writing this note,
+// but it likely will be if I can ever figure out how to structure
+// the code such that I can either do dynamic loading or
+// link it all together statically when doing a relase build.
+//					- sci4me, 5/28/20
+
+#ifndef PLATFORM_INTERFACE_H
+#define PLATFORM_INTERFACE_H
+
+
 // NOTE: Virtual_Key is our "virtual" representation of all the different
 // keyboard keys that we want to be able to keep track of, etc.
 // When indexing the `key_state` array in PlatformIO, use these as the indices.
@@ -20,7 +35,7 @@ enum Virtual_Mouse_Button {
 	VMB_RIGHT,
 	VMB_EXT0,
 	VMB_EXT1
-}
+};
 
 // NOTE: The PlatformIO struct is the central interface point
 // between the game and the platform layer. It is intended to be a
@@ -41,3 +56,12 @@ struct PlatformIO {
 	f32 delta_time; // NOTE TODO: Make sure this is "well-defined"
 };
 
+
+#define GAME_INIT(name) void name(PlatformIO *pio)
+typedef GAME_INIT(Game_Init);
+
+#define GAME_UPDATE_AND_RENDER(name) void name(PlatformIO *pio)
+typedef GAME_UPDATE_AND_RENDER(Game_Update_And_Render);
+
+
+#endif

@@ -35,6 +35,44 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Fun idea that we won't do any time soon:
+   - Write a sort of uh... eh...
+     A preprocessor of our own that looks for things
+     marked up with some no-op macro with a specific name
+     By things I mean 1. structs and 2. struct members
+     It would generate serialization and deserialization code for us.
+     Wouldn't really be all that hard.. I think..
+ - Force Inline "attribute" (macro)
+   - Compiler-dependent
+ - Okay, I'm going to put this in "TODO", but...
+   I'm definitely not convinced that this should be done
+   or that it shouldn't be done.
+     - Replace imgui with our own immediate-mode UI code
+       - On the one hand, it gives us all the benefits of using 
+         handmade code rather than depending on a library...
+       - On the other hand, it's some amount of work to approach
+         an acceptable level of quality relative to Dear ImGui.
+       - On yet another hand though, uh, it'd be fun and educational...
+       - Don't necessarily have to do it any time soon!
+         - Especially since I'm so unsure about it right now
+         - Plenty of other work to do that is probably more important.
+ - Do something about our library situation
+   - First of all, we almost certainly won't
+     be able to avoid modifying some/all of them
+     in order not to depend on libc; maybe(???!!!)
+     we could.. like.. just.. define the libc symbols
+     ourselves? Errrhhhhh... yeaahhhh..... hmh. Would
+     be GREAT if we could get away with not modifying
+     the libraries... but... yknow. I don't know.
+   - Regardless of the prior point, we should like,
+     actually track the version of the library. For
+     example, I have NO IDEA what commit of imgui I have.
+     For all I know, I may have just downloaded master from
+     GH and called it a day! So... yeah, we should do something
+     better about that while maintaining only having the
+     minimum set of files in the repo.
+ - Do something about the fact that we have
+   maths.cpp and also math.cpp...
  - Format strings with %
    - Because fuck printf and friends
  - OH MY GOD FIX THE FKIN BUILD TIME
@@ -180,3 +218,13 @@ Quality/Optimization:
    - So, yeah uhm, maybe don't combine them? I don't even know.
    - Although... if I eventually want the ability to tint chunk tiles anyway,
      then the shaders become equivalent, so, yes.
+
+
+So, I found this in Handmade Hero:
+  extern "C" {
+      int NvOptimusEnablement = 0x01;
+      int AmdPowerXpressRequestHighPerformance = 0x01;
+  }
+Supposedly this is to suggest to graphics drivers
+that we want to use the discrete GPU rather than
+the iGPU. #Wack

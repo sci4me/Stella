@@ -1,10 +1,11 @@
+#include "mylibc.cpp"
+
 #include "linux_platform.hpp"
+#include "platform_interface.hpp"
 
 #define GLEW_STATIC
 #define GLEW_NO_GLU
 #include "GL/glew.h"
-
-#include "mylibc.cpp"
 
 // TODO: Remove this.. er .. something.
 void tprintf(char const* fmt, ...);
@@ -63,7 +64,7 @@ s32 main(s32 argc, char **argv) {
 
     GLint glx_major, glx_minor;
     glXQueryVersion(dsp, &glx_major, &glx_minor);
-    if(glx_major < 1 || glx_minor < 4) {
+    if(glx_major < 1 || glx_minor < 4) { // NOTE TODO: Don't hardcode the desired GLX version
     	tprintf("GLX version too old! Got %d.%d, want 1.4+\n", glx_major, glx_minor);
         XCloseDisplay(dsp);
         return 1;
@@ -197,6 +198,11 @@ s32 main(s32 argc, char **argv) {
     game.window_size_callback(gwa.width, gwa.height);
 
 
+    PlatformIO pio;
+
+    stella_init(&pio);
+
+
     bool fullscreen = false;
     bool running = true;
     while(running) {
@@ -272,6 +278,9 @@ s32 main(s32 argc, char **argv) {
 
         game.update_and_render();
 	        
+
+        stella_update_and_render(&pio);
+
 
         glXSwapBuffers(dsp, win);
 
