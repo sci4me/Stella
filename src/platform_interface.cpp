@@ -1,6 +1,7 @@
 // NOTE: Virtual_Key is our "virtual" representation of all the different
 // keyboard keys that we want to be able to keep track of, etc.
 // When indexing the `key_state` array in PlatformIO, use these as the indices.
+// TODO: Make this more complete!
 enum Virtual_Key {
 	VK_ESC,
 
@@ -15,7 +16,10 @@ enum Virtual_Key {
 // NOTE: Same as above.
 enum Virtual_Mouse_Button {
 	VMB_LEFT,
-	VMB_RIGHT
+	VMB_MIDDLE,
+	VMB_RIGHT,
+	VMB_EXT0,
+	VMB_EXT1
 }
 
 // NOTE: The PlatformIO struct is the central interface point
@@ -30,7 +34,10 @@ enum Virtual_Mouse_Button {
 // Currently there are no members intended to be written by the game, but
 // there probably will be eventually™.
 struct PlatformIO {
-	bool key_state[512];	
-	bool mouse_button_state[5];
+	bool key_state[512]; // NOTE: Just picked a large number here; how many do we really want?
+	bool mouse_button_state[5]; // NOTE: Just picked 5 because I saw it done that way elsewhere...
 	f32 mouse_x, mouse_y;
+
+	f32 delta_time; // NOTE TODO: Make sure this is "well-defined"
 };
+

@@ -35,6 +35,8 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Format strings with %
+   - Because fuck printf and friends
  - OH MY GOD FIX THE FKIN BUILD TIME
    - Just had a build take 3.679 (ayyy! ... i'm like yeaaaa she's fine.... no? .. okay)
      - WTF imgui y u do dis
