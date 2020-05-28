@@ -11,7 +11,7 @@
 constexpr u64 PAGE_SIZE = 4096;
 
 extern "C" {
-	void* mlc_memset(void *p, int v, u64 n) {
+	void* mlc_memset(void *p, s32 v, u64 n) {
 		// TODO: SIMD version of this!!!!!
 		u8 *real_p = (u8*) p;
 		for(u64 i = 0; i < n; i++) real_p[i] = v;
@@ -69,7 +69,7 @@ extern "C" {
 		return p2;
 	}
 
-	int mlc_memcmp(void const* a, void const* b, u64 n) {
+	s32 mlc_memcmp(void const* a, void const* b, u64 n) {
 		u8 const* l = (u8 const*) a;
 		u8 const* r = (u8 const*) b;
 		for(u64 i = 0; i < n; i++) {
@@ -93,7 +93,7 @@ extern "C" {
 		return dst;
 	}
 
-	void const* mlc_memchr(void const* p, int v, u64 n) {
+	void const* mlc_memchr(void const* p, s32 v, u64 n) {
 		u8 const* d = (u8 const*) p;
 		for(u64 i = 0; i < n; i++) {
 			if(*d == v) return d;
@@ -102,7 +102,7 @@ extern "C" {
 		return 0;
 	}
 
-	int mlc_strcmp(char const* a, char const* b) {
+	s32 mlc_strcmp(char const* a, char const* b) {
 		for(; *a == *b && *a; a++, b++);
   		return *(u8 const*)a - *(u8 const*)b;
 	}
@@ -115,7 +115,7 @@ extern "C" {
 		return xd;
 	}
 
-	char const* mlc_strchr(char const* s, int c) {
+	char const* mlc_strchr(char const* s, s32 c) {
 		do {
 			if(*s == c) return s;
 		} while(*s++);
@@ -156,7 +156,7 @@ extern "C" {
 		return dst;
 	}
 
-	int mlc_strncmp(char const* a, char const* b, u64 n) {
+	s32 mlc_strncmp(char const* a, char const* b, u64 n) {
 		for(u64 i = 0; i < n; i++) {
 			u8 x = *a++;
 			u8 y = *b++;
@@ -173,13 +173,13 @@ extern "C" {
 		return 0;
 	}
 
-	float mlc_atof(char const* s) {
+	f32 mlc_atof(char const* s) {
 		assert(0);
 		// TODO
 		return 0;
 	}
 
-	int mlc_toupper(int x) {
+	s32 mlc_toupper(s32 x) {
 		assert(0);
 		// TODO
 		return x;

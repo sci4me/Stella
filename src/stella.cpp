@@ -261,9 +261,9 @@ void Game::update_and_render(PlatformIO *pio) {
     }
 
 
-    if(pio->is_button_pressed(VK_F2))  show_profiler = !show_profiler;
-    if(pio->is_button_pressed(VK_F3))  show_debug_window = !show_debug_window;
-    if(pio->is_button_pressed(VK_F12)) debug_pause = !debug_pause;
+    if(pio->was_button_pressed(VK_F2))  show_profiler = !show_profiler;
+    if(pio->was_button_pressed(VK_F3))  show_debug_window = !show_debug_window;
+    if(pio->was_button_pressed(VK_F12)) debug_pause = !debug_pause;
 
 
     glClear(GL_COLOR_BUFFER_BIT);

@@ -392,6 +392,7 @@ s32 main(s32 argc, char **argv) {
             pio.button_state[i] &= ~(BTN_FLAG_PRESSED | BTN_FLAG_RELEASED);
         }
 
+
         while(XPending(dsp)) {
             XEvent xev;
             XNextEvent(dsp, &xev);

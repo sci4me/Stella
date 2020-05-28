@@ -61,29 +61,28 @@ struct Player {
         
         handle_movement(pio);
 
-        if(pio->is_button_pressed(VK_C)) {
+        if(pio->was_button_pressed(VK_C)) {
             show_crafting_queue = !show_crafting_queue;
         }
 
-        if(pio->is_button_pressed(VK_E)) {
+        if(pio->was_button_pressed(VK_E)) {
             show_inventory = !show_inventory;
             if(show_inventory) active_ui_tile = nullptr;
         }
 
-        if(pio->is_button_pressed(VK_ESC)) {
+        if(pio->was_button_pressed(VK_ESC)) {
             // TODO: un-hold held items
             // TODO: close UIs?
         }
 
-        /*
         if(!io.WantCaptureMouse) {
-            f64 mx, my;
-            glfwGetCursorPos(game->window, &mx, &my);
+            auto mx = pio->mouse_x;
+            auto my = pio->mouse_y;
 
-            if(mx >= 0 && my >= 0 && mx < game->window_width && my < game->window_height) {
+            if(mx >= 0 && my >= 0 && mx < pio->window_width && my < pio->window_height) {
                 vec2 mouse_world_pos = {
-                    pos.x + (f32)((mx - (game->window_width / 2)) / game->scale),
-                    pos.y + (f32)((my - (game->window_height / 2)) / game->scale)
+                    pos.x + (f32)((mx - (pio->window_width / 2)) / game->scale),
+                    pos.y + (f32)((my - (pio->window_height / 2)) / game->scale)
                 };
 
                 // NOTE: `10 * TILE_SIZE` is the max distance the player can "reach".
@@ -109,7 +108,7 @@ struct Player {
 
                             // TODO: Instead of polling the mouse, we want to do this stuff
                             // in a mouse event handler!
-                            if(glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                            if(pio->was_button_pressed(VMB_LEFT)) {
                                 Tile *tile;
 
                                 switch(held_stack->type) {
@@ -151,7 +150,7 @@ struct Player {
 
                             // TODO: Instead of polling the mouse, we want to do this stuff
                             // in a mouse event handler!
-                            if(l2i != -1 && glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+                            if(l2i != -1 && pio->was_button_pressed(VMB_LEFT)) {
                                 // NOTE TODO: This shit is fkin hardcoded asf yo. But I don't want to go through
                                 // the pain of making all these fkin hpp files and .. goddamn.. uh.. forward declaring
                                 // my ass. So fuck it, for now it's this way, future me will suffer through fixing it.
@@ -169,7 +168,7 @@ struct Player {
                                         break;
                                 }
                             } else {
-                                is_mining = glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+                                is_mining = pio->is_button_down(VMB_RIGHT);
                                 if(is_mining) handle_mining();    
                             }
                         }
@@ -177,7 +176,6 @@ struct Player {
                 }
             }
         }
-        */
 
         if(!is_mining) mining_progress = 0.0f;
     }
@@ -378,7 +376,7 @@ private:
                 if(ore->count == 1) {
                     assert(layer->remove(key));
                     ore->deinit();
-                    ::free(ore);
+                    mlc_free(ore);
                 } else {
                     ore->count--;
                 }
@@ -430,7 +428,7 @@ private:
 
                 layer->remove(key);
                 chest->deinit();
-                ::free(chest);
+                mlc_free(chest);
                 break;
             }
             case TILE_FURNACE: {

@@ -24,7 +24,8 @@ if [ "$BUILD_MODE" = "static" ]; then
 	g++ $CXXFLAGS $INCLUDES $SRC_DIR/linux_syscall.s $SRC_DIR/linux_platform.s $SRC_DIR/linux_platform.cpp $SRC_DIR/stella.cpp -o $BUILD_DIR/stella $LDFLAGS
 	STATUS=$?
 elif [ "$BUILD_MODE" = "dynamic" ]; then
-	echo "F"
+	echo "dynamic build not yet implemented!"
+	STATUS=1
 else
 	echo "Invalid build mode: $BUILD_MODE"
 	STATUS=1
