@@ -15,6 +15,7 @@
 
 #include "types.hpp"
 
+
 #define GLEW_STATIC
 #define GLEW_NO_GLU
 #include "GL/glew.h"
@@ -43,7 +44,6 @@
 #define KEYCODE_P           33
 #define KEYCODE_L           46
 #define KEYCODE_C 			54
-
 #define KEYCODE_SHIFT_L     50
 #define KEYCODE_SHIFT_R     62
 #define KEYCODE_CTRL_L      37
@@ -51,10 +51,8 @@
 #define KEYCODE_ALT_L       64
 #define KEYCODE_ALT_R       108
 #define KEYCODE_SUPER       133
-
 #define KEYCODE_PLUS        21
 #define KEYCODE_MINUS       20
-
 #define KEYCODE_F1          67
 #define KEYCODE_F2          68
 #define KEYCODE_F3          69
@@ -62,7 +60,6 @@
 #define KEYCODE_F10         76
 #define KEYCODE_F11         95
 #define KEYCODE_F12         96
-
 #define KEYCODE_ESC 		9
 
 
@@ -88,7 +85,9 @@ enum Virtual_Mouse_Button {
 	VMB_MIDDLE,
 	VMB_RIGHT,
 	VMB_EXT0,
-	VMB_EXT1
+	VMB_EXT1,
+
+	VMB_COUNT
 };
 
 // NOTE: The PlatformIO struct is the central interface point
@@ -103,16 +102,25 @@ enum Virtual_Mouse_Button {
 // Currently there are no members intended to be written by the game, but
 // there probably will be eventually™.
 struct PlatformIO {
+	s32 window_width;
+	s32 window_height;
+	bool window_just_resized;
+
 	bool key_state[512]; // NOTE: Just picked a large number here; how many do we really want?
-	bool mouse_button_state[5]; // NOTE: Just picked 5 because I saw it done that way elsewhere...
+	bool mouse_button_state[VMB_COUNT];
 	f32 mouse_x, mouse_y;
 
 	f32 delta_time; // NOTE TODO: Make sure this is "well-defined"
+
+	void *game_memory;
 };
 
 
 #define GAME_INIT(name) void name(PlatformIO *pio)
 typedef GAME_INIT(Game_Init);
+
+#define GAME_DEINIT(name) void name(PlatformIO *pio)
+typedef GAME_DEINIT(Game_Deinit);
 
 #define GAME_UPDATE_AND_RENDER(name) void name(PlatformIO *pio)
 typedef GAME_UPDATE_AND_RENDER(Game_Update_And_Render);

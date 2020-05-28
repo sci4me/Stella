@@ -65,9 +65,6 @@ static inline double ImPow(double b, double e) { return powf64(b, e); }
 
 
 struct Game {
-	s32 window_width;
-	s32 window_height;
-
 	f32 scale = 1.0f;
 
 	bool show_profiler = false;
@@ -93,9 +90,8 @@ struct Game {
 	void mouse_button_callback(s32 button, bool is_press);
 	void scroll_callback(f64 deltaX, f64 deltaY);
 	void key_callback(u32 keycode, bool is_press);
-	void window_size_callback(s32 width, s32 height);
 	
 	void init();
 	void deinit();
-	void update_and_render();
+	void update_and_render(PlatformIO *pio);
 };

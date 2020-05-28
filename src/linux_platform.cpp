@@ -15,6 +15,7 @@ void tprintf(char const* fmt, ...);
 
 
 extern "C" GAME_INIT(stella_init);
+extern "C" GAME_DEINIT(stella_deinit);
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render);
 
 
@@ -205,10 +206,11 @@ s32 main(s32 argc, char **argv) {
 
             switch(xev.type) {
                 case ConfigureNotify: {
-                    // if(xev.xconfigure.width != game.window_width || xev.xconfigure.height != game.window_height) {
-                        // TODO
-                        // game.window_size_callback(xev.xconfigure.width, xev.xconfigure.height);
-                    // }
+                    if(xev.xconfigure.width != pio.window_width || xev.xconfigure.height != pio.window_height) {
+                        pio.window_width = xev.xconfigure.width;
+                        pio.window_height = xev.xconfigure.height;
+                        pio.window_just_resized = true;
+                    }
                     break;
                 }
                 case ClientMessage: {
@@ -276,12 +278,14 @@ s32 main(s32 argc, char **argv) {
         stella_update_and_render(&pio);
 
 
+        pio.window_just_resized = false;
+
+
         glXSwapBuffers(dsp, win);
     }
 
 
-    // game.deinit();
-    // TODO stella_deinit();
+    stella_deinit(&pio);
 
 
     glXMakeCurrent(dsp, None, 0);

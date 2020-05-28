@@ -1,8 +1,13 @@
 void program_attach_shader(GLuint program, char *name, GLenum type) {
     Entire_File source = read_entire_file(name);
 
+    if(!source.data) {
+        tfprintf(STDERR, "Unable to read file: %s\n", name);
+        mlc_exit(1);
+    }
+
     GLuint id = glCreateShader(type);
-    glShaderSource(id, 1, (char const* const*) source.data, 0);
+    glShaderSource(id, 1, (char const* const*) &source.data, 0);
     glCompileShader(id);
 
     source.deinit();
@@ -13,6 +18,7 @@ void program_attach_shader(GLuint program, char *name, GLenum type) {
         GLint info_log_length;
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &info_log_length);
 
+        // TODO: maybe _don't_ use alloca here lol
         GLchar *info_log = (GLchar*) alloca(sizeof(GLchar) * (info_log_length + 1));
         glGetShaderInfoLog(id, info_log_length, 0, info_log);
 
@@ -53,6 +59,7 @@ GLuint load_shader_program(const char *name, GLenum flags) {
         GLint info_log_length;
         glGetProgramiv(p, GL_INFO_LOG_LENGTH, &info_log_length);
 
+        // TODO: maybe _don't_ use alloca here lol
         GLchar *info_log = (GLchar*)alloca(sizeof(GLchar) * (info_log_length + 1));
         glGetProgramInfoLog(p, info_log_length, 0, info_log);
 

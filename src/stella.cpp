@@ -143,18 +143,6 @@ void Game::key_callback(u32 keycode, bool is_press) {
 	player->key_callback(keycode, is_press);
 }
 
-void Game::window_size_callback(s32 width, s32 height) {
-	window_width = width;
-    window_height = height;
-    
-    glViewport(0, 0, window_width, window_height);
-        
-    auto projection_matrix = mat4::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
-
-    batch_renderer->set_projection(projection_matrix);
-    world->set_projection(projection_matrix);
-}
-
 void Game::init() {
     #ifdef GL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
@@ -162,6 +150,11 @@ void Game::init() {
         glDebugMessageCallback((GLDEBUGPROCARB) ::gl_debug_callback, 0);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     #endif
+
+
+    dump_gl_info();
+    // dump_gl_extensions();
+
 
     prof::init();
 
@@ -222,9 +215,18 @@ void Game::deinit() {
     imsupport::deinit();
 }
 
-void Game::update_and_render() {
+void Game::update_and_render(PlatformIO *pio) {
     bool is_paused = debug_pause;
     if(!is_paused) prof::begin_frame();
+
+
+    if(pio->window_just_resized) {
+        glViewport(0, 0, pio->window_width, pio->window_height);
+        
+        auto projection_matrix = mat4::ortho(0.0f, (f32)pio->window_width, (f32)pio->window_height, 0.0f, 0.0f, 10000.0f);
+        batch_renderer->set_projection(projection_matrix);
+        world->set_projection(projection_matrix);
+    }
 
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -252,7 +254,7 @@ void Game::update_and_render() {
     }    
 
 
-    imsupport::begin_frame(vec2(window_width, window_height));
+    imsupport::begin_frame(pio);
 
 
     //
@@ -271,7 +273,7 @@ void Game::update_and_render() {
 
     u32 chunk_draw_calls;
     auto s = mat4::scale(scale, scale, 1.0f);
-    auto t = mat4::translate((window_width / 2 / scale) - player->pos.x, (window_height / 2 / scale) - player->pos.y, 0.0f);
+    auto t = mat4::translate((pio->window_width / 2 / scale) - player->pos.x, (pio->window_height / 2 / scale) - player->pos.y, 0.0f);
     auto view = t * s;
     batch_renderer->begin(view);
     {
@@ -279,7 +281,7 @@ void Game::update_and_render() {
         // we are currently using the Batch_Renderer for any tiles that
         // aren't on layer 0.
         //              - sci4me, 5/9/20
-        chunk_draw_calls = world->draw_around(batch_renderer, player->pos, scale, window_width, window_height, view);
+        chunk_draw_calls = world->draw_around(batch_renderer, player->pos, scale, pio->window_width, pio->window_height, view);
 
         player->draw(batch_renderer);
 
@@ -339,12 +341,18 @@ void Game::update_and_render() {
 
 
 extern "C" GAME_INIT(stella_init) {
-    dump_gl_info();
-    // dump_gl_extensions();
+    void *mem = mlc_malloc(sizeof(Game));
+    Game* g = new(mem) Game;
+    g->init();
+    pio->game_memory = g;
+}
 
-    // TODO
+extern "C" GAME_DEINIT(stella_deinit) {
+    Game *g = (Game*) pio->game_memory;
+    g->deinit();
 }
 
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
-    // TODO
+    Game *g = (Game*) pio->game_memory;
+    g->update_and_render(pio);
 }

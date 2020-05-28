@@ -147,11 +147,11 @@ namespace imsupport {
         // TODO: ctrl, shift, alt, super
     }
 
-    void begin_frame(vec2 display_size) {
+    void begin_frame(PlatformIO *pio) {
         ImGuiIO& io = ImGui::GetIO();
         IM_ASSERT(io.Fonts->IsBuilt());
 
-        io.DisplaySize = display_size;
+        io.DisplaySize = vec2(pio->window_width, pio->window_height);
 
         ImGui::NewFrame();
     }
