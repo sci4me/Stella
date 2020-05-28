@@ -26,44 +26,6 @@
 #define APP_NAME "Stella"
 
 
-
-// TODO: Remove these defines!
-#define KEYCODE_W           25
-#define KEYCODE_A           38
-#define KEYCODE_S           39
-#define KEYCODE_D           40
-#define KEYCODE_Q           24
-#define KEYCODE_E           26
-#define KEYCODE_UP          111
-#define KEYCODE_DOWN        116
-#define KEYCODE_LEFT        113
-#define KEYCODE_RIGHT       114
-#define KEYCODE_ESCAPE      9
-#define KEYCODE_ENTER       36
-#define KEYCODE_SPACE       65
-#define KEYCODE_P           33
-#define KEYCODE_L           46
-#define KEYCODE_C 			54
-#define KEYCODE_SHIFT_L     50
-#define KEYCODE_SHIFT_R     62
-#define KEYCODE_CTRL_L      37
-#define KEYCODE_CTRL_R      105
-#define KEYCODE_ALT_L       64
-#define KEYCODE_ALT_R       108
-#define KEYCODE_SUPER       133
-#define KEYCODE_PLUS        21
-#define KEYCODE_MINUS       20
-#define KEYCODE_F1          67
-#define KEYCODE_F2          68
-#define KEYCODE_F3          69
-#define KEYCODE_F4          70
-#define KEYCODE_F10         76
-#define KEYCODE_F11         95
-#define KEYCODE_F12         96
-#define KEYCODE_ESC 		9
-
-
-
 // NOTE: Virtual_Key is our "virtual" representation of all the different
 // keyboard keys that we want to be able to keep track of, etc.
 // When indexing the `key_state` array in PlatformIO, use these as the indices.
@@ -90,6 +52,23 @@ enum Virtual_Mouse_Button {
 	VMB_COUNT
 };
 
+typedef u8 Button_Flags;
+enum Button_Flags_ : Button_Flags {
+	BTN_FLAG_NONE		= 0,
+
+	BTN_FLAG_DOWN		= 1,
+	BTN_FLAG_PRESSED 	= 2,
+	BTN_FLAG_RELEASED 	= 4,
+
+	BTN_FLAG_RESERVED0	= 8,
+	BTN_FLAG_RESERVED1	= 16,
+	BTN_FLAG_RESERVED2	= 32,
+	BTN_FLAG_RESERVED3	= 64,
+
+	// NOTE: Meant for internal use only!
+	BTN_FLAG_LAST_DOWN  = 128
+};
+
 // NOTE: The PlatformIO struct is the central interface point
 // between the game and the platform layer. It is intended to be a
 // 100% cross-platform interface that any platform layer can implement
@@ -106,13 +85,21 @@ struct PlatformIO {
 	s32 window_height;
 	bool window_just_resized;
 
-	bool key_state[512]; // NOTE: Just picked a large number here; how many do we really want?
-	bool mouse_button_state[VMB_COUNT];
+	u8 key_state[512]; // NOTE: Just picked a large number here; how many do we really want?
+	u8 mouse_button_state[VMB_COUNT];
 	f32 mouse_x, mouse_y;
+	f32 mouse_wheel_x, mouse_wheel_y;
 
 	f32 delta_time; // NOTE TODO: Make sure this is "well-defined"
 
 	void *game_memory;
+
+	inline bool is_key_down(Virtual_Key key) { return (key_state[key] & BTN_FLAG_DOWN) != 0; }
+	inline bool is_key_pressed(Virtual_Key key) { return (key_state[key] & BTN_FLAG_PRESSED) != 0; }
+	inline bool is_key_released(Virtual_Key key) { return (key_state[key] & BTN_FLAG_RELEASED) != 0; }
+	inline bool is_mouse_button_down(Virtual_Mouse_Button key) { return (mouse_button_state[key] & BTN_FLAG_DOWN) != 0; }
+	inline bool is_mouse_button_pressed(Virtual_Mouse_Button key) { return (mouse_button_state[key] & BTN_FLAG_PRESSED) != 0; }
+	inline bool is_mouse_button_released(Virtual_Mouse_Button key) { return (mouse_button_state[key] & BTN_FLAG_RELEASED) != 0; }
 };
 
 

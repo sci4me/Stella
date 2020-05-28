@@ -45,35 +45,7 @@ struct Player {
         crafting_queue.deinit();
     }
 
-    void key_callback(u32 keycode, bool is_press) {
-        switch(keycode) {
-            case KEYCODE_W: pressing_w = is_press; return;
-            case KEYCODE_S: pressing_s = is_press; return;
-            case KEYCODE_A: pressing_a = is_press; return;
-            case KEYCODE_D: pressing_d = is_press; return;
-        }
-
-        if(is_press) {
-            switch(keycode) {
-                case KEYCODE_C: {
-                    show_crafting_queue = !show_crafting_queue;
-                    break;
-                }
-                case KEYCODE_E: {
-                    show_inventory = !show_inventory;
-                    if(show_inventory) active_ui_tile = nullptr;
-                    break;
-                }
-                case KEYCODE_ESC: {
-                    // TODO: un-hold held items
-                    // TODO: close UIs?
-                    break;
-                }
-            }
-        }   
-    }
-
-    void update() {
+    void update(PlatformIO *pio) {
         TIMED_FUNCTION();
 
         crafting_queue.update();
@@ -87,8 +59,21 @@ struct Player {
         ImGuiIO& io = ImGui::GetIO(); 
 
         
-        handle_movement();
+        handle_movement(pio);
 
+        if(pio->is_key_pressed(VK_C)) {
+            show_crafting_queue = !show_crafting_queue;
+        }
+
+        if(pio->is_key_pressed(VK_E)) {
+            show_inventory = !show_inventory;
+            if(show_inventory) active_ui_tile = nullptr;
+        }
+
+        if(pio->is_key_pressed(VK_ESC)) {
+            // TODO: un-hold held items
+            // TODO: close UIs?
+        }
 
         /*
         if(!io.WantCaptureMouse) {
@@ -261,14 +246,15 @@ private:
         show_inventory = false;
     }
 
-    void handle_movement() {
+    void handle_movement(PlatformIO *pio) {
         vec2 delta = {0, 0};
-        if(pressing_w) delta.y = -1.0f;
-        if(pressing_s) delta.y = 1.0f;
-        if(pressing_a) delta.x = -1.0f;
-        if(pressing_d) delta.x = 1.0f;
+        if(pio->is_key_down(VK_W)) delta.y = -1.0f;
+        if(pio->is_key_down(VK_S)) delta.y = 1.0f;
+        if(pio->is_key_down(VK_A)) delta.x = -1.0f;
+        if(pio->is_key_down(VK_D)) delta.x = 1.0f;
         
         auto speed = SPEED;
+        // TODO?
         // if(glfwGetKey(game->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
         delta = normalize(delta) * speed;
         

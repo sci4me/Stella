@@ -86,11 +86,6 @@ struct Game {
 	struct World *world;
 	struct Player *player;
 
-	void mouse_position_callback(s32 x, s32 y, bool valid);
-	void mouse_button_callback(s32 button, bool is_press);
-	void scroll_callback(f64 deltaX, f64 deltaY);
-	void key_callback(u32 keycode, bool is_press);
-	
 	void init();
 	void deinit();
 	void update_and_render(PlatformIO *pio);

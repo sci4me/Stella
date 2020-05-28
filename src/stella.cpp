@@ -97,7 +97,8 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 }
 #endif
 
-
+// TODO: Remove these:
+/*
 void Game::mouse_position_callback(s32 x, s32 y, bool valid) {
     imsupport::mouse_position_callback(x, y, valid);
 }
@@ -142,6 +143,7 @@ void Game::key_callback(u32 keycode, bool is_press) {
 
 	player->key_callback(keycode, is_press);
 }
+*/
 
 void Game::init() {
     #ifdef GL_DEBUG
@@ -250,7 +252,7 @@ void Game::update_and_render(PlatformIO *pio) {
 
     if(!is_paused) {
         world->update();
-        player->update();
+        player->update(pio);
     }    
 
 
