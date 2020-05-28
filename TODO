@@ -42,6 +42,7 @@ Code/Dev Features/Quality:
      By things I mean 1. structs and 2. struct members
      It would generate serialization and deserialization code for us.
      Wouldn't really be all that hard.. I think..
+   - Not sure if we really _want_ this..... so.. idk. Maybe?
  - Force Inline "attribute" (macro)
    - Compiler-dependent
  - Okay, I'm going to put this in "TODO", but...

@@ -72,7 +72,7 @@ Index of this file:
 
 #define IM_VSNPRINTF(b, s, f, a) stbsp_vsnprintf(b, (int)s, f, a)
 
-#else
+#elif !defined(IMGUI_NO_LIBC)
 
 #if defined(_MSC_VER) && !defined(vsnprintf)
 #define vsnprintf _vsnprintf
@@ -217,7 +217,7 @@ Index of this file:
 #endif
 
 #if !defined(IM_VSNPRINTF) && !defined(IMGUI_USE_STB_SPRINTF)
-#error "IM_VSNPRINTF must be defined if IMGUI_NO_LIBC is used."
+#error "IM_VSNPRINTF must be defined if IMGUI_NO_LIBC is used and IMGUI_USE_STB_SPRINTF is not."
 #endif
 
 #endif

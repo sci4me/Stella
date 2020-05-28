@@ -13,6 +13,11 @@
 #define PLATFORM_INTERFACE_H
 
 
+#define GL_MAJOR 4
+#define GL_MINOR 4
+#define APP_NAME "Stella"
+
+
 // NOTE: Virtual_Key is our "virtual" representation of all the different
 // keyboard keys that we want to be able to keep track of, etc.
 // When indexing the `key_state` array in PlatformIO, use these as the indices.

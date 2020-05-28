@@ -1,4 +1,3 @@
-#include "temporary_storage.cpp"
 #include "off_the_rails.cpp"
 #include "math.cpp"
 #include "static_bitset.cpp"
@@ -22,6 +21,70 @@
 #include "ui.cpp"
 #include "player.cpp"
 
+
+#define GL_DEBUG
+
+
+void dump_gl_extensions() {
+    tprintf("  GL_EXTENSIONS\n");
+        
+    s32 n_ext;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &n_ext);
+    
+    char const** exts = (char const**) talloc(n_ext * sizeof(char const*));
+
+    u32 max_len = 0;
+    for(s32 i = 0; i < n_ext; i++) {
+        char const *ext = (char const*) glGetStringi(GL_EXTENSIONS, i);
+
+        exts[i] = ext;
+
+        u32 len = mlc_strlen(ext);
+        if(len > max_len) {
+            max_len = len;
+        }
+    }
+
+    constexpr u32 cols = 2;
+    u32 column_length = max_len + 2;
+    u32 column = 0;
+    for(u32 i = 0; i < n_ext; i++) {
+        char const* ext = exts[i];
+        u32 padding = column_length - mlc_strlen(ext);
+
+        tmark();
+        tprintf("%s", ext);
+        for(u32 j = 0; j < padding; j++) tprintf(" ");
+
+        column++;
+        if(column > (cols - 1)) {
+            column = 0;
+            tprintf("\n");
+        }
+        treset();
+    }
+
+    if(column <= (cols - 1)) tprintf("\n");
+}
+
+void dump_gl_info() {
+    // TODO: some kind of logging!!!
+
+    tprintf("OpenGL Info:\n");
+
+    GLint major, minor; 
+    glGetIntegerv(GL_MAJOR_VERSION, &major); 
+    glGetIntegerv(GL_MINOR_VERSION, &minor);
+    tprintf("  GL_MAJOR_VERSION              %d\n", major);
+    tprintf("  GL_MINOR_VERSION              %d\n", minor);
+
+    tprintf("  GL_VENDOR                     %s\n", glGetString(GL_VENDOR));
+    tprintf("  GL_RENDERER                   %s\n", glGetString(GL_RENDERER));
+    tprintf("  GL_VERSION                    %s\n", glGetString(GL_VERSION));
+    tprintf("  GL_SHADING_LANGUAGE_VERSION   %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+}
+
+
 #ifdef GL_DEBUG
 void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam) {
 	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION || severity == GL_DEBUG_SEVERITY_LOW) {
@@ -31,6 +94,7 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
     tfprintf(STDERR, "%s\n", message);
 }
 #endif
+
 
 void Game::mouse_position_callback(s32 x, s32 y, bool valid) {
     imsupport::mouse_position_callback(x, y, valid);
@@ -80,7 +144,13 @@ void Game::key_callback(u32 keycode, bool is_press) {
 void Game::window_size_callback(s32 width, s32 height) {
 	window_width = width;
     window_height = height;
-    window_resized = true;
+    
+    glViewport(0, 0, window_width, window_height);
+        
+    auto projection_matrix = mat4::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
+
+    batch_renderer->set_projection(projection_matrix);
+    world->set_projection(projection_matrix);
 }
 
 void Game::init() {
@@ -154,19 +224,6 @@ void Game::update_and_render() {
     bool is_paused = debug_pause;
     if(!is_paused) prof::begin_frame();
 
-
-    if(window_resized) {
-        window_resized = false;
-
-        glViewport(0, 0, window_width, window_height);
-        
-        auto projection_matrix = mat4::ortho(0.0f, (f32)window_width, (f32)window_height, 0.0f, 0.0f, 10000.0f);
-
-        batch_renderer->set_projection(projection_matrix);
-        world->set_projection(projection_matrix);
-    }
-
-    // TODO: Fullscreen
 
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -257,11 +314,6 @@ void Game::update_and_render() {
             }
 
             if(ImGui::CollapsingHeader("Settings")) {
-                if(ImGui::Checkbox("V-SYNC", &vsync)) {
-                    // TODO
-                    //if(vsync) glfwSwapInterval(1);
-                    //else      glfwSwapInterval(0);
-                }
                 ImGui::Checkbox("Fast Mining", &fast_mining);
                 ImGui::Checkbox("Show ImGui Metrics", &show_imgui_metrics_window);
             }
@@ -279,13 +331,18 @@ void Game::update_and_render() {
     if(show_profiler) prof::show();
 
     imsupport::end_frame();
+
+    tclear();
 }
 
 
-GAME_INIT(stella_init) {
-    tprintf("stella_init\n");
+extern "C" GAME_INIT(stella_init) {
+    dump_gl_info();
+    // dump_gl_extensions();
+
+    // TODO
 }
 
-GAME_UPDATE_AND_RENDER(stella_update_and_render) {
-    tprintf("stella_update_and_render\n");
+extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
+    // TODO
 }

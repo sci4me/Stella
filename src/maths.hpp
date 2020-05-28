@@ -38,3 +38,7 @@
 
 #define abs32(x)		PT_abs(x)
 #define abs64(x)		PT_llabs(x)
+
+// TOOD: change these to forcibly-inlined functions.
+#define rotl32(x, r) ((x << r) | (x >> (32 - r)));
+#define rotl64(x, r) ((x << r) | (x >> (64 - r)));

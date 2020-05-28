@@ -1,3 +1,6 @@
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb_sprintf.h"
+
 typedef unsigned char u8;
 typedef signed char s8;
 typedef unsigned short u16;
@@ -17,6 +20,7 @@ typedef double f64;
 #endif
 
 // TODO: some (much) of this needs to be temporary.
+// TODO: Get rid of all these weird types!
 typedef long int ptrdiff_t;
 typedef long int intptr_t;
 typedef long unsigned int uintptr_t;
@@ -27,10 +31,13 @@ typedef long unsigned int uintptr_t;
 #include <float.h>
 #include <alloca.h>
 
+
+#include "temporary_storage.cpp"
+
+
 void __assert_fail(char const* msg, char const* file, s32 line);
 #define assert(x) (static_cast<bool>(x) ? void(0) : __assert_fail(#x, __FILE__, __LINE__))
 
-// TODO: Get rid of all these weird types!
 
 // NOTE TODO: Query this...
 constexpr u64 PAGE_SIZE = 4096;
@@ -255,4 +262,50 @@ extern "C" {
 		// TODO
 		return 0;
 	}
+}
+
+
+char* tvsprintf(char const* fmt, va_list args) {
+    va_list args2;
+    va_copy(args2, args);
+    s32 len = stbsp_vsnprintf(0, 0, fmt, args);
+    va_end(args);
+
+    char *buf = (char*) talloc(len);
+
+    stbsp_vsprintf(buf, fmt, args2);
+    va_end(args2);
+
+    buf[len] = 0;
+
+    return buf;
+}
+
+char* tsprintf(char const* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    return tvsprintf(fmt, args);
+}
+
+void tprintf(char const* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char *buf = tvsprintf(fmt, args);
+    sc_write(STDOUT, buf, mlc_strlen(buf) + 1);
+}
+
+void tfprintf(s32 fd, char const* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char *buf = tvsprintf(fmt, args);
+    sc_write(fd, buf, mlc_strlen(buf) + 1);
+}
+
+
+void __assert_fail(char const* msg, char const* file, s32 line) {
+    tfprintf(STDERR, "Assertion failed: %s at %s, line %d\n", msg, file, line);
+
+    s32 pid = sc_getpid();
+    s32 tid = sc_gettid();
+    sc_tgkill(pid, tid, 6); // SIGABRT
 }

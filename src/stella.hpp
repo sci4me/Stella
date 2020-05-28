@@ -1,14 +1,8 @@
 #include "platform_interface.hpp"
-#include "maths.cpp"
-
-
-#define GL_DEBUG
-#define GL_MAJOR 4
-#define GL_MINOR 4
+#include "maths.hpp"
 
 
 #define IMGUI_NO_LIBC
-#define IMGUI_USE_STB_SPRINTF
 #define IM_ASSERT(x)				assert(x)
 #define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
 #define IM_MEMMOVE(d, s, n)         mlc_memmove(d, s, n)
@@ -38,16 +32,11 @@ static inline double ImPow(double b, double e) { return powf64(b, e); }
 #define IM_MEMCHR(p, v, n)			mlc_memchr(p, v, n)
 #define IM_STRSTR(a, b)				mlc_strstr(a, b)
 #define IM_SSCANF(s, f, ...)		mlc_sscanf(s, f, __VA_ARGS__)
+#define IM_VSNPRINTF(fmt, ...) 		stbsp_vsnprintf(fmt, __VA_ARGS__)
 #include "imgui/imgui.h"
 #include "imgui/imgui.cpp"
 #include "imgui/imgui_draw.cpp"
 #include "imgui/imgui_widgets.cpp"
-
-
-#ifdef IMGUI_DISABLE
-#define STB_SPRINTF_IMPLEMENTATION
-#include "stb_sprintf.h"
-#endif
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -74,14 +63,9 @@ static inline double ImPow(double b, double e) { return powf64(b, e); }
 #include "rnd.h"
 
 
-#define APP_NAME "Stella"
-
-
 struct Game {
 	s32 window_width;
 	s32 window_height;
-
-	bool window_resized;
 
 	f32 scale = 1.0f;
 
@@ -90,7 +74,6 @@ struct Game {
 	bool show_debug_window = false;
 	bool show_imgui_metrics_window = false;
 
-	bool vsync = true;
 	bool fast_mining = false;
 
 	// TODO: Eventually we'll want to properly separate

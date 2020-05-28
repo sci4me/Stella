@@ -19,6 +19,10 @@ void tprintf(char const* fmt, ...);
 #include <GL/glx.h>
 
 
+extern "C" GAME_INIT(stella_init);
+extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render);
+
+
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
 
@@ -174,9 +178,6 @@ s32 main(s32 argc, char **argv) {
     }
 
 
-    dump_gl_info();
-    // dump_gl_extensions();
-
     GLint gl_major, gl_minor; 
     glGetIntegerv(GL_MAJOR_VERSION, &gl_major); 
     glGetIntegerv(GL_MINOR_VERSION, &gl_minor);
@@ -189,13 +190,10 @@ s32 main(s32 argc, char **argv) {
     XMapRaised(dsp, win);
 
 
-    Game game;
-    game.init();
-
-
     XWindowAttributes gwa;
     XGetWindowAttributes(dsp, win, &gwa);
-    game.window_size_callback(gwa.width, gwa.height);
+    // TODO
+    // game.window_size_callback(gwa.width, gwa.height);
 
 
     PlatformIO pio;
@@ -212,9 +210,10 @@ s32 main(s32 argc, char **argv) {
 
             switch(xev.type) {
                 case ConfigureNotify: {
-                    if(xev.xconfigure.width != game.window_width || xev.xconfigure.height != game.window_height) {
-                        game.window_size_callback(xev.xconfigure.width, xev.xconfigure.height);
-                    }
+                    // if(xev.xconfigure.width != game.window_width || xev.xconfigure.height != game.window_height) {
+                        // TODO
+                        // game.window_size_callback(xev.xconfigure.width, xev.xconfigure.height);
+                    // }
                     break;
                 }
                 case ClientMessage: {
@@ -243,7 +242,8 @@ s32 main(s32 argc, char **argv) {
                         // in a loop.
                         set_fullscreen(dsp, win, fullscreen);
                     } else {
-                        game.key_callback(xev.xkey.keycode, xev.type == KeyPress);
+                        // TODO
+                        // game.key_callback(xev.xkey.keycode, xev.type == KeyPress);
                     }
                     break;
                 }
@@ -251,12 +251,13 @@ s32 main(s32 argc, char **argv) {
                 case ButtonRelease: {
                     // TODO: horizontal scroll and also, 1?
 
+                    // TODO
                     if(xev.xbutton.button == Button4 && xev.type == ButtonPress) {
-                        game.scroll_callback(0, 1);
+                        // game.scroll_callback(0, 1);
                     } else if(xev.xbutton.button == Button5 && xev.type == ButtonPress) {
-                        game.scroll_callback(0, -1);
+                        // game.scroll_callback(0, -1);
                     } else {
-                        game.mouse_button_callback(xev.xbutton.button, xev.type == ButtonPress);
+                        // game.mouse_button_callback(xev.xbutton.button, xev.type == ButtonPress);
                     }
                     break;
                 }
@@ -272,23 +273,20 @@ s32 main(s32 argc, char **argv) {
         s32 win_x, win_y;
         u32 mask_r;
         if(XQueryPointer(dsp, win, &root_r, &child_r, &root_x, &root_y, &win_x, &win_y, &mask_r)) {
-            game.mouse_position_callback(win_x, win_y, win_x >= 0 && win_y >= 0 && win_x < game.window_width && win_y < game.window_height);
+            // TODO
+            // game.mouse_position_callback(win_x, win_y, win_x >= 0 && win_y >= 0 && win_x < game.window_width && win_y < game.window_height);
         }
 
-
-        game.update_and_render();
-	        
 
         stella_update_and_render(&pio);
 
 
         glXSwapBuffers(dsp, win);
-
-        tclear();
     }
 
 
-    game.deinit();
+    // game.deinit();
+    // TODO stella_deinit();
 
 
     glXMakeCurrent(dsp, None, 0);
