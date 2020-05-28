@@ -1,43 +1,11 @@
-#define STB_SPRINTF_IMPLEMENTATION
-#include "stb_sprintf.h"
-
-typedef unsigned char u8;
-typedef signed char s8;
-typedef unsigned short u16;
-typedef signed short s16;
-typedef unsigned int u32;
-typedef signed int s32;
-typedef unsigned long long u64;
-typedef signed long long s64;
-typedef float f32;
-typedef double f64;
+#include "mylibc.hpp"
 
 // TODO: Conditional includes for Winderps and Linux.
 #include "linux_syscall.cpp"
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-// TODO: some (much) of this needs to be temporary.
-// TODO: Get rid of all these weird types!
-typedef long int ptrdiff_t;
-typedef long int intptr_t;
-typedef long unsigned int uintptr_t;
-
-
-#include <stdarg.h>
-#include <limits.h>
-#include <float.h>
-#include <alloca.h>
-
-
 #include "temporary_storage.cpp"
 
-
-void __assert_fail(char const* msg, char const* file, s32 line);
-#define assert(x) (static_cast<bool>(x) ? void(0) : __assert_fail(#x, __FILE__, __LINE__))
-
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb_sprintf.h"
 
 // NOTE TODO: Query this...
 constexpr u64 PAGE_SIZE = 4096;
@@ -262,6 +230,47 @@ extern "C" {
 		// TODO
 		return 0;
 	}
+
+	void mlc_exit(s32 code) {
+		sc_exit(code);
+	}
+}
+
+
+// NOTE: This always adds a null terminator to the end
+// of the data, but that is not included in `len`.
+Entire_File read_entire_file(char const* name) {
+    // TODO: make this non-os-dependent!
+    // er.. isolate all os-dependent code.
+
+    s32 fd = sc_open(name, O_RDONLY);
+    if(fd == -1) return { 0, 0 };
+
+    struct stat statbuf;
+    sc_fstat(fd, &statbuf);
+
+    u64 rem = (u64) statbuf.st_size;
+    u8 *data = (u8*) mlc_malloc(rem + 1);
+
+    u8 *ptr = data;
+    while(rem) {
+        s64 n = sc_read(fd, ptr, rem);
+        
+        if(n == -1) {
+            mlc_free(data);
+            sc_close(fd);
+            return { 0, 0 };
+        }
+
+        ptr += n;
+        rem -= n;
+    }
+
+    data[statbuf.st_size] = 0;
+
+    sc_close(fd);
+
+    return { data, (u64) statbuf.st_size };
 }
 
 

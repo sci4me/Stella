@@ -1,9 +1,11 @@
 void program_attach_shader(GLuint program, char *name, GLenum type) {
-    const char *source = read_entire_file(name);
+    Entire_File source = read_entire_file(name);
 
     GLuint id = glCreateShader(type);
-    glShaderSource(id, 1, &source, 0);
+    glShaderSource(id, 1, (char const* const*) source.data, 0);
     glCompileShader(id);
+
+    source.deinit();
 
     GLint success;
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);
@@ -15,7 +17,7 @@ void program_attach_shader(GLuint program, char *name, GLenum type) {
         glGetShaderInfoLog(id, info_log_length, 0, info_log);
 
         tfprintf(STDERR, "Error compiling shader `%s`:\n%s\n", name, info_log);
-        sc_exit(1);
+        mlc_exit(1);
     }
 
     glAttachShader(program, id);
@@ -55,7 +57,7 @@ GLuint load_shader_program(const char *name, GLenum flags) {
         glGetProgramInfoLog(p, info_log_length, 0, info_log);
 
         tfprintf(STDERR, "%s\n", info_log);
-        sc_exit(1);
+        mlc_exit(1);
     }
 
     return p;

@@ -1,17 +1,12 @@
 #include "mylibc.cpp"
 
-#include "linux_platform.hpp"
 #include "platform_interface.hpp"
-
-#define GLEW_STATIC
-#define GLEW_NO_GLU
-#include "GL/glew.h"
 
 // TODO: Remove this.. er .. something.
 void tprintf(char const* fmt, ...);
 
-#include "stella.hpp"
-#include "stella.cpp"
+// #include "stella.hpp"
+// #include "stella.cpp"
 
 #include <X11/X.h>
 #include <X11/Xlib.h>

@@ -1,3 +1,4 @@
+#include "mylibc.hpp"
 #include "platform_interface.hpp"
 #include "maths.hpp"
 

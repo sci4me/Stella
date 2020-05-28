@@ -77,54 +77,18 @@ void alpha_premultiply_in_place(u32 *image, u32 w, u32 h) {
     }
 }
 
-
-// NOTE: This stuff is untested! Also, is it faster to load from memory
-// than to use stbi's callback system??? *shrugs*
-
-struct load_texture_from_file_context {
-    s32 fd;
-    bool eof;
-};
-
-s32 load_texture_from_file_read_callback(void *u, char *d, s32 n) {
-    auto ctx = (load_texture_from_file_context*) u;
-    return sc_read(ctx->fd, d, n);
-}
-
-void load_texture_from_file_skip_callback(void *u, s32 n) {
-    auto ctx = (load_texture_from_file_context*) u;
-    sc_lseek(ctx->fd, n, SEEK_CUR);
-}
-
-s32 load_texture_from_file_eof_callback(void *u) {
-    auto ctx = (load_texture_from_file_context*) u;
-    return ctx->eof;
-}
-
-Texture load_texture_from_file(const char *path, bool generate_mipmaps = false) {
-    s32 fd = sc_open(path, O_RDONLY);
-    if(fd == -1) {
-        tfprintf(STDERR, "Failed to open texture '%s'\n", path);
-        sc_exit(1);
-    }
-
-    stbi_io_callbacks clbk = {
-        load_texture_from_file_read_callback,
-        load_texture_from_file_skip_callback,
-        load_texture_from_file_eof_callback
-    };
-
-    load_texture_from_file_context ctx = { fd, false };
+Texture load_texture_from_file(char const* path, bool generate_mipmaps = false) {
+    Entire_File file = read_entire_file(path);
 
     s32 w, h, _n;
-    u8 *image = stbi_load_from_callbacks(&clbk, &ctx, &w, &h, &_n, 4);
+    u8 *image = stbi_load_from_memory(file.data, file.len, &w, &h, &_n, 4);
 
     if(!image) {
         tfprintf(STDERR, "Failed to load texture '%s'\n", path);
-        sc_exit(1);
+        mlc_exit(1);
     }
 
-    sc_close(fd);
+    file.deinit();
 
     alpha_premultiply_in_place((u32*)image, w, h);
 

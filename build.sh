@@ -2,6 +2,9 @@
 
 ctime -begin stella_linux.ctm
 
+BUILD_MODE=static
+# BUILD_MODE=dynamic
+
 SRC_DIR=src
 BUILD_DIR=build
 VENDOR_DIR=vendor
@@ -17,8 +20,15 @@ INCLUDES="-I$VENDOR_DIR/GLEW/include -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/im
 
 mkdir -p $BUILD_DIR
 
-g++ $CXXFLAGS $INCLUDES $SRC_DIR/linux_syscall.s $SRC_DIR/linux_platform.s $SRC_DIR/linux_platform.cpp -o $BUILD_DIR/stella $LDFLAGS
-STATUS=$?
+if [ "$BUILD_MODE" = "static" ]; then
+	g++ $CXXFLAGS $INCLUDES $SRC_DIR/linux_syscall.s $SRC_DIR/linux_platform.s $SRC_DIR/linux_platform.cpp $SRC_DIR/stella.cpp -o $BUILD_DIR/stella $LDFLAGS
+	STATUS=$?
+elif [ "$BUILD_MODE" = "dynamic" ]; then
+	echo "F"
+else
+	echo "Invalid build mode: $BUILD_MODE"
+	STATUS=1
+fi
 
 ctime -end stella_linux.ctm $STATUS
 exit $STATUS

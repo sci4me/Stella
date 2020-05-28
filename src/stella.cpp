@@ -1,3 +1,5 @@
+#include "stella.hpp"
+
 #include "off_the_rails.cpp"
 #include "math.cpp"
 #include "static_bitset.cpp"

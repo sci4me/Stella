@@ -1,6 +1,8 @@
 #include <sys/fcntl.h>
 #include <sys/stat.h>
 
+#include "types.hpp"
+
 extern "C" {
 	void* syscall0(void*);
 	void* syscall1(void*, void*);
@@ -18,10 +20,6 @@ extern "C" {
 #define SYSCALL4(a, b, c, d, e)			syscall4((void*)a, (void*)b, (void*)c, (void*)d, (void*)e)
 #define SYSCALL5(a, b, c, d, e, f)		syscall5((void*)a, (void*)b, (void*)c, (void*)d, (void*)e, (void*)f)
 #define SYSCALL6(a, b, c, d, e, f, g)	syscall6((void*)a, (void*)b, (void*)c, (void*)d, (void*)e, (void*)f, (void*)g)
-
-#define STDIN 				0
-#define STDOUT				1
-#define STDERR				2
 
 #define SEEK_SET			0
 #define SEEK_CUR			1
