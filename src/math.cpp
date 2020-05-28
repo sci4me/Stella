@@ -182,7 +182,7 @@ constexpr T clamp(T x, T min, T max) noexcept {
 
 template<typename T>
 constexpr T lerp(T t, T a, T b) noexcept {
-    return a + t * (b - a);
+    return ((1.0f - t) * a) + (t * b);
 }
 
 
