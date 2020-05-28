@@ -128,6 +128,13 @@ struct Item_Container {
         // TODO: This implementation _can't_ be the most efficient/ideal one.....
         // It's kinda just the naive hacky version... I suspect.
 
+        // NOTE TODO: Maybe use qsort? I don't freaking know lol.
+        // I'm not going to mess with this until I see it being significant
+        // in profiling results, and we're nowhere near there yet. So.
+        // But yeh, I don't know what sorting algorithm would suit this task.
+        // Sometimes it do be like that.
+        //                  - sci4me, 5/28/20
+
         Hash_Table<Item_Type, u32> stacks;
 
         // NOTE: We set the size to 30% more than the number of slots we have;

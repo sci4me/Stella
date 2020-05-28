@@ -37,10 +37,6 @@ namespace crafting {
         auto n_inputs = sizeof...(_inputs);
         Item_Stack inputs[] = { _inputs... };
 
-        // TODO: Whenever I get around to making the Arena in sci.h
-        // have a configurable block size, consider using that here
-        // instead of malloc.
-        //              - sci4me, 5/14/20
         auto r = (Recipe*) mlc_malloc(sizeof(Recipe) + sizeof(Item_Stack) * n_inputs);
 
         r->inputs = (Item_Stack*) (r + 1); // inputs are right after the Recipe struct

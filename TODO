@@ -35,6 +35,11 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Structure the user input code such that we don't have to
+   constantly check ImGuiIO::WantXXX all throughout our code.
+   - Should be able to just clear the input members that get
+     consumed (potentially) by imgui as a step between imgui
+     update logic and the game logic? Probably?
  - Fun idea that we won't do any time soon:
    - Write a sort of uh... eh...
      A preprocessor of our own that looks for things
@@ -112,9 +117,12 @@ Code/Dev Features/Quality:
      - Not going to use VS!!!
        - So we'll just write our own
          build scripts...
+   - Won't have to do this if we remove it!  
  - In-Game Profiler
    - Instrumentation; use it
    - We've started on this...
+     - Need to update it to actually work
+       - Use rdtsc...
  - Make our own String type
  - Rename Tile to Tile_Entity
  - Internal
@@ -136,12 +144,10 @@ Code/Dev Features/Quality:
        about memory; all allocation must happen from within
        the platform layer so that when the dynlib reloads, it can
        just keep using that same memory.
-   - We may want to move the GLEW/GLFW stuff into platform layer?
+   - We may want to move the GLEW stuff into platform layer?
      - Well, actually, we should probably just leave GLEW in the
        dynlib and just call glewInit every time...
-     - As for GLFW, I think we'll just try leaving it in the dynlib
-       and saving the ... window...
-       - Or maybe we should just .. move it.. idk.
+       - No this is stupid... we should just remove GLEW.
    - We will absolutely have to ensure that ALL memory allocation
      goes through our own API so that we can control _where_ the
      allocations happen. i.e. you can't allocate memory in the dynlib

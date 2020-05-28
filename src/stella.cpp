@@ -253,7 +253,7 @@ void Game::update_and_render(PlatformIO *pio) {
         batch_renderer->set_projection(projection_matrix);
         world->set_projection(projection_matrix);
     }
-    
+
 
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse && pio->mouse_wheel_y != 0.0f) {

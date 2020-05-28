@@ -1,12 +1,5 @@
-#include "mylibc.cpp"
-
 #include "platform_interface.hpp"
-
-// TODO: Remove this.. er .. something.
-void tprintf(char const* fmt, ...);
-
-// #include "stella.hpp"
-// #include "stella.cpp"
+#include "mylibc.cpp"
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -24,6 +17,8 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render);
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
 
+// TODO: Move some of this to another file?
+// Also, make a freaking subdirectory oh my god.
 typedef u8 KeyCode;
 enum KeyCode_ : KeyCode {
     KC_ESC              = 9,
@@ -129,7 +124,9 @@ enum KeyCode_ : KeyCode {
     KC_CURSOR_DOWN      = 104,
     KC_CURSOR_RIGHT     = 102,
     KC_KP_0             = 90,
-    KC_KP_PERIOD        = 91
+    KC_KP_PERIOD        = 91,
+    KC_SUPER_LEFT       = 133,
+    KC_SUPER_RIGHT      = 134
 };
 
 typedef u8 MouseButtonCode;
@@ -194,6 +191,29 @@ static void init_key_map() {
     key_map[KC_F10] = VK_F10;
     key_map[KC_F11] = VK_F11;
     key_map[KC_F12] = VK_F12;
+    key_map[KC_CURSOR_LEFT] = VK_LEFT;
+    key_map[KC_CURSOR_RIGHT] = VK_RIGHT;
+    key_map[KC_CURSOR_UP] = VK_UP;
+    key_map[KC_CURSOR_DOWN] = VK_DOWN;
+    key_map[KC_PAGE_UP] = VK_PAGE_UP;
+    key_map[KC_PAGE_DOWN] = VK_PAGE_DOWN;
+    key_map[KC_INSERT] = VK_INSERT;
+    key_map[KC_DELETE] = VK_DELETE;
+    key_map[KC_HOME] = VK_HOME;
+    key_map[KC_END] = VK_END;
+    key_map[KC_BACKSPACE] = VK_BACKSPACE;
+    key_map[KC_RETURN] = VK_ENTER;
+    key_map[KC_KP_ENTER] = VK_KP_ENTER;
+    key_map[KC_TAB] = VK_TAB;
+    key_map[KC_SPACE] = VK_SPACE;
+    key_map[KC_CTRL_LEFT] = VK_CTRL_LEFT;
+    key_map[KC_CTRL_RIGHT] = VK_CTRL_RIGHT;
+    key_map[KC_SHIFT_LEFT] = VK_SHIFT_LEFT;
+    key_map[KC_SHIFT_RIGHT] = VK_SHIFT_RIGHT;
+    key_map[KC_ALT_LEFT] = VK_ALT_LEFT;
+    key_map[KC_ALT_RIGHT] = VK_ALT_RIGHT;
+    key_map[KC_SUPER_LEFT] = VK_SUPER_LEFT;
+    key_map[KC_SUPER_RIGHT] = VK_SUPER_RIGHT;
 }
 
 

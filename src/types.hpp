@@ -1,6 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+
 typedef unsigned char u8;
 typedef signed char s8;
 typedef unsigned short u16;
@@ -12,14 +13,24 @@ typedef signed long long s64;
 typedef float f32;
 typedef double f64;
 
-// TODO: some (much) of this needs to be temporary.
-// TODO: Get rid of all these weird types!
-typedef long int ptrdiff_t;
-typedef long int intptr_t;
-typedef long unsigned int uintptr_t;
+
+// NOTE: Yes, I do enjoy being this rude. Fite me.
+// (Currently I only target 64-bit architectures. x64 specifically :P)
+static_assert(sizeof(u8) == 1);
+static_assert(sizeof(s8) == 1);
+static_assert(sizeof(u16) == 2);
+static_assert(sizeof(s16) == 2);
+static_assert(sizeof(u32) == 4);
+static_assert(sizeof(s32) == 4);
+static_assert(sizeof(u64) == 8);
+static_assert(sizeof(s64) == 8);
+static_assert(sizeof(f32) == 4);
+static_assert(sizeof(f64) == 8);
+
 
 #ifndef NULL
 #define NULL 0
 #endif
+
 
 #endif
