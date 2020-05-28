@@ -61,16 +61,16 @@ struct Player {
         
         handle_movement(pio);
 
-        if(pio->is_key_pressed(VK_C)) {
+        if(pio->is_button_pressed(VK_C)) {
             show_crafting_queue = !show_crafting_queue;
         }
 
-        if(pio->is_key_pressed(VK_E)) {
+        if(pio->is_button_pressed(VK_E)) {
             show_inventory = !show_inventory;
             if(show_inventory) active_ui_tile = nullptr;
         }
 
-        if(pio->is_key_pressed(VK_ESC)) {
+        if(pio->is_button_pressed(VK_ESC)) {
             // TODO: un-hold held items
             // TODO: close UIs?
         }
@@ -248,10 +248,10 @@ private:
 
     void handle_movement(PlatformIO *pio) {
         vec2 delta = {0, 0};
-        if(pio->is_key_down(VK_W)) delta.y = -1.0f;
-        if(pio->is_key_down(VK_S)) delta.y = 1.0f;
-        if(pio->is_key_down(VK_A)) delta.x = -1.0f;
-        if(pio->is_key_down(VK_D)) delta.x = 1.0f;
+        if(pio->is_button_down(VK_W)) delta.y = -1.0f;
+        if(pio->is_button_down(VK_S)) delta.y = 1.0f;
+        if(pio->is_button_down(VK_A)) delta.x = -1.0f;
+        if(pio->is_button_down(VK_D)) delta.x = 1.0f;
         
         auto speed = SPEED;
         // TODO?

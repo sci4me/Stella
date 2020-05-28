@@ -1,5 +1,76 @@
 #include "stella.hpp"
 
+// NOTE TODO: Eventually we want to not have mylibc
+// included into the game code _at all_.
+// We probably won't be able to "remove" mylibc per se,
+// but we may be able to slim it down/reorganize and
+// just generally make things nicer...
+//                  - sci4me, 5/28/20
+#include "mylibc.hpp"
+#include "maths.hpp"
+
+
+#define IMGUI_NO_LIBC
+#define IM_ASSERT(x)                assert(x)
+#define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
+#define IM_MEMMOVE(d, s, n)         mlc_memmove(d, s, n)
+#define IM_MEMCPY(d, s, n)          mlc_memcpy(d, s, n)
+#define IM_MEMCMP(a, b, n)          mlc_memcmp(a, b, n)
+#define IM_STRLEN(s)                mlc_strlen(s)
+#define IM_STRCHR(s, c)             mlc_strchr(s, c)
+#define IM_STRCPY(d, s)             mlc_strcpy(d, s)
+#define IM_STRCMP(a, b)             mlc_strcmp(a, b)
+#define ImFabs(x)                   absf32(x)
+#define ImSqrt(x)                   sqrtf32(x)
+#define ImFmod(a, b)                fmodf32(a, b)
+#define ImCos(x)                    cosf64(x)
+#define ImSin(x)                    sinf64(x)
+#define ImAcos(x)                   acosf32(x)
+#define ImAtan2(y, x)               atan2f32(y, x)
+#define ImFloorStd(x)               floorf32(x)
+#define ImCeil(x)                   ceilf32(x)
+#define ImAtof(s)                   mlc_atof(s)
+static inline float ImPow(float b, float e) { return powf32(b, e); }
+static inline double ImPow(double b, double e) { return powf64(b, e); }
+#define ImQsort(b, n, s, c)         mlc_qsort(b, n, s, c)
+#define IM_MALLOC_FN(n)             mlc_malloc(n)
+#define IM_FREE_FN(p)               mlc_free(p)
+#define IM_TOUPPER(c)               mlc_toupper(c)
+#define IM_STRNCPY(d, s, n)         mlc_strncpy(d, s, n)
+#define IM_MEMCHR(p, v, n)          mlc_memchr(p, v, n)
+#define IM_STRSTR(a, b)             mlc_strstr(a, b)
+#define IM_SSCANF(s, f, ...)        mlc_sscanf(s, f, __VA_ARGS__)
+#define IM_VSNPRINTF(fmt, ...)      stbsp_vsnprintf(fmt, __VA_ARGS__)
+#include "imgui/imgui.h"
+#include "imgui/imgui.cpp"
+#include "imgui/imgui_draw.cpp"
+#include "imgui/imgui_widgets.cpp"
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_GIF
+#define STBI_NO_LIBC
+#define STBI_ASSERT(x)              assert(x)
+#define STBI_MALLOC(n)              mlc_malloc(n)
+#define STBI_REALLOC(p, n)          mlc_realloc(p, n)
+#define STBI_FREE(p)                mlc_free(p)
+#define STBI_LDEXPF(a, b)           ldexpf32(a, b)
+#define STBI_POWF(a, b)             powf32(a, b)
+#define STBI_MEMSET(p, x, n)        mlc_memset(p, x, n)
+#define STBI_MEMCPY(d, s, n)        mlc_memcpy(d, s, n)
+#define STBI_ABS(x)                 abs32(x)
+#define STBI_STRCMP(a, b)           mlc_strcmp(a, b)
+#define STBI_STRNCMP(a, b, n)       mlc_strncmp(a, b, n)
+#define STBI_STRTOL(s, e, b)        mlc_strtol(s, e, b)
+#include "stb_image.h" 
+
+
+#define RND_U32 u32
+#define RND_U64 u64
+#define RND_IMPLEMENTATION
+#include "rnd.h"
+
+
 #include "off_the_rails.cpp"
 #include "math.cpp"
 #include "static_bitset.cpp"
@@ -97,53 +168,6 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 }
 #endif
 
-// TODO: Remove these:
-/*
-void Game::mouse_position_callback(s32 x, s32 y, bool valid) {
-    imsupport::mouse_position_callback(x, y, valid);
-}
-
-void Game::mouse_button_callback(s32 button, bool is_press) {
-    imsupport::mouse_button_callback(button, is_press);
-}
-
-void Game::scroll_callback(f64 deltaX, f64 deltaY) {
-    imsupport::scroll_callback(deltaX, deltaY);
-
-	ImGuiIO& io = ImGui::GetIO();
-    if(!io.WantCaptureMouse) {
-        scale = clamp<f32>(scale + deltaY * 0.05f, 0.1f, 5.0f);
-    }
-}
-
-void Game::key_callback(u32 keycode, bool is_press) {
-    if(is_press) {
-        switch(keycode) {
-            case KEYCODE_F2: {
-                show_profiler = !show_profiler;
-                break;
-            }
-            case KEYCODE_F3: {
-                show_debug_window = !show_debug_window;
-                break;
-            }
-            case KEYCODE_F12: {
-                debug_pause = !debug_pause;
-                break;
-            }
-        }
-    }
-
-	// NOTE: Here is where we dispatch this event to
-	// "listeners". Trying to avoid the function-pointer
-	// dynamic event bus type of system, so, for now we
-    // hardcode the dispatch. May want to change this
-    // to make the code nicer, later on.
-	// 					- sci4me, 5/23/20
-
-	player->key_callback(keycode, is_press);
-}
-*/
 
 void Game::init() {
     #ifdef GL_DEBUG
@@ -229,6 +253,17 @@ void Game::update_and_render(PlatformIO *pio) {
         batch_renderer->set_projection(projection_matrix);
         world->set_projection(projection_matrix);
     }
+    
+
+    ImGuiIO& io = ImGui::GetIO();
+    if(!io.WantCaptureMouse && pio->mouse_wheel_y != 0.0f) {
+        scale = clamp<f32>(scale + pio->mouse_wheel_y * 0.05f, 0.1f, 5.0f);
+    }
+
+
+    if(pio->is_button_pressed(VK_F2))  show_profiler = !show_profiler;
+    if(pio->is_button_pressed(VK_F3))  show_debug_window = !show_debug_window;
+    if(pio->is_button_pressed(VK_F12)) debug_pause = !debug_pause;
 
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -291,8 +326,6 @@ void Game::update_and_render(PlatformIO *pio) {
     auto per_frame_stats = batch_renderer->end_frame();
 
     if(show_debug_window) {
-        ImGuiIO& io = ImGui::GetIO();
-
         if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
             ImGui::Dummy({ 130, 0 });
 

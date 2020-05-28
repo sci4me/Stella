@@ -62,4 +62,6 @@ void tfprintf(s32 fd, char const* fmt, ...);
 void __assert_fail(char const* msg, char const* file, s32 line);
 #define assert(x) (static_cast<bool>(x) ? void(0) : __assert_fail(#x, __FILE__, __LINE__))
 
+#define array_length(a) ((sizeof(a))/(sizeof(a[0])))
+
 #endif

@@ -120,38 +120,20 @@ namespace imsupport {
         ibo.deinit();
     }
 
-    void mouse_position_callback(s32 x, s32 y, bool valid) {
-        ImGuiIO& io = ImGui::GetIO();
-        if(valid) io.MousePos = vec2(x, y);
-        else      io.MousePos = vec2(-FLT_MAX, -FLT_MAX);
-    }
-
-    void mouse_button_callback(s32 button, bool is_press) {
-        static constexpr s32 mouse_map[5] = { 4, 0, 2, 1, 5 };
-
-        ImGuiIO& io = ImGui::GetIO();
-        if(button >= 0 && button < array_length(mouse_map)) {
-            io.MouseDown[mouse_map[button]] = is_press;
-        }
-    }
-
-    void scroll_callback(f64 deltaX, f64 deltaY) {
-        ImGuiIO& io = ImGui::GetIO();
-        io.MouseWheelH += (f32)deltaX;
-        io.MouseWheel += (f32)deltaY;
-    }
-
-    void key_callback(s32 keycode, bool is_press) {
-        ImGuiIO& io = ImGui::GetIO();
-        io.KeysDown[keycode] = is_press;
-        // TODO: ctrl, shift, alt, super
-    }
-
     void begin_frame(PlatformIO *pio) {
         ImGuiIO& io = ImGui::GetIO();
         IM_ASSERT(io.Fonts->IsBuilt());
 
         io.DisplaySize = vec2(pio->window_width, pio->window_height);
+
+        io.MousePos = vec2(pio->mouse_x, pio->mouse_y);
+        io.MouseDown[ImGuiMouseButton_Left] = pio->is_button_down(VMB_LEFT);
+        io.MouseDown[ImGuiMouseButton_Middle] = pio->is_button_down(VMB_MIDDLE);
+        io.MouseDown[ImGuiMouseButton_Right] = pio->is_button_down(VMB_RIGHT);
+        io.MouseWheelH += pio->mouse_wheel_x;
+        io.MouseWheel += pio->mouse_wheel_y;
+
+        // TODO: KeysDown
 
         ImGui::NewFrame();
     }

@@ -16,6 +16,12 @@
 #include "types.hpp"
 
 
+// NOTE TODO: We don't want to include GLEW in here.
+// However, if we don't, we'll have to create our own
+// way of calling out to GL. Even if it's still through
+// GLEW. Not sure what I want to do here yet, but, for
+// now it's fine to just leave it as is.
+//				- sci4me, 5/28/20
 #define GLEW_STATIC
 #define GLEW_NO_GLU
 #include "GL/glew.h"
@@ -30,7 +36,8 @@
 // keyboard keys that we want to be able to keep track of, etc.
 // When indexing the `key_state` array in PlatformIO, use these as the indices.
 // TODO: Make this more complete!
-enum Virtual_Key {
+typedef u8 Virtual_Button;
+enum Virtual_Button_ : Virtual_Button {
 	VK_ESC,
 
 	VK_A, VK_B, VK_C, VK_D, VK_E, VK_F, VK_G, VK_H, GK_I, VK_J, VK_K, VK_L, VK_M, 
@@ -38,18 +45,16 @@ enum Virtual_Key {
 
 	VK_0, VK_1, VK_2, VK_3, VK_4, VK_5, VK_6, VK_7, VK_8, VK_9,
 
-	VK_F1, VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9, VK_F10, VK_F11, VK_F12
-};
+	VK_F1, VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9, VK_F10, VK_F11, VK_F12,
 
-// NOTE: Same as above.
-enum Virtual_Mouse_Button {
 	VMB_LEFT,
 	VMB_MIDDLE,
 	VMB_RIGHT,
-	VMB_EXT0,
-	VMB_EXT1,
 
-	VMB_COUNT
+	VB_COUNT,
+
+	// NOTE: For platform layer use only!
+	VB_INVALID
 };
 
 typedef u8 Button_Flags;
@@ -64,9 +69,7 @@ enum Button_Flags_ : Button_Flags {
 	BTN_FLAG_RESERVED1	= 16,
 	BTN_FLAG_RESERVED2	= 32,
 	BTN_FLAG_RESERVED3	= 64,
-
-	// NOTE: Meant for internal use only!
-	BTN_FLAG_LAST_DOWN  = 128
+	BTN_FLAG_RESERVED4  = 128
 };
 
 // NOTE: The PlatformIO struct is the central interface point
@@ -85,21 +88,18 @@ struct PlatformIO {
 	s32 window_height;
 	bool window_just_resized;
 
-	u8 key_state[512]; // NOTE: Just picked a large number here; how many do we really want?
-	u8 mouse_button_state[VMB_COUNT];
+	u8 button_state[VB_COUNT];
 	f32 mouse_x, mouse_y;
-	f32 mouse_wheel_x, mouse_wheel_y;
+	f32 mouse_wheel_x, mouse_wheel_y; // TODO: Call these like, mouse_wheel_delta_x? 
 
 	f32 delta_time; // NOTE TODO: Make sure this is "well-defined"
 
 	void *game_memory;
 
-	inline bool is_key_down(Virtual_Key key) { return (key_state[key] & BTN_FLAG_DOWN) != 0; }
-	inline bool is_key_pressed(Virtual_Key key) { return (key_state[key] & BTN_FLAG_PRESSED) != 0; }
-	inline bool is_key_released(Virtual_Key key) { return (key_state[key] & BTN_FLAG_RELEASED) != 0; }
-	inline bool is_mouse_button_down(Virtual_Mouse_Button key) { return (mouse_button_state[key] & BTN_FLAG_DOWN) != 0; }
-	inline bool is_mouse_button_pressed(Virtual_Mouse_Button key) { return (mouse_button_state[key] & BTN_FLAG_PRESSED) != 0; }
-	inline bool is_mouse_button_released(Virtual_Mouse_Button key) { return (mouse_button_state[key] & BTN_FLAG_RELEASED) != 0; }
+	inline bool is_button_down(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_DOWN) != 0; }
+	// NOTE TODO(?): `was` instead of `is`? (not for the `_down` variant obv)
+	inline bool is_button_pressed(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_PRESSED) != 0; }
+	inline bool is_button_released(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_RELEASED) != 0; }
 };
 
 
