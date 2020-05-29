@@ -19,7 +19,7 @@ namespace imsupport {
         font_texture.init(width, height);
         font_texture.set_data(pixels);
 
-        io.Fonts->TexID = (ImTextureID)(intptr_t)font_texture.id;
+        io.Fonts->TexID = (ImTextureID)(s64)font_texture.id;
     }
 
     void init() {

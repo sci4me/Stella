@@ -95,6 +95,7 @@ struct PlatformIO {
 	s32 window_width;
 	s32 window_height;
 	bool window_just_resized;
+	bool window_focused;
 
 	u8 button_state[VB_COUNT];
 	f32 mouse_x, mouse_y;

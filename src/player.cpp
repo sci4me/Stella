@@ -252,7 +252,7 @@ private:
         else if(pio->is_button_down(VK_D))      delta.x =  1.0f;
         
         auto speed = SPEED;
-        // if(pio->is_button_down(VK_SHIFT_LEFT))  speed *= 0.1f;
+        if(pio->is_button_down(VK_SHIFT_LEFT))  speed *= 0.1f;
         delta = normalize(delta) * speed;
         
         move(delta);

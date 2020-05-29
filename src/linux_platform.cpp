@@ -24,6 +24,47 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render);
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const s32*);
 
 
+char const* XEvent_Type_Names[] = {
+    "<invalid>",
+    "<invalid>",
+    "KeyPress",
+    "KeyRelease",
+    "ButtonPress",
+    "ButtonRelease",
+    "MotionNotify",
+    "EnterNotify",
+    "LeaveNotify",
+    "FocusIn",
+    "FocusOut",
+    "KeymapNotify",
+    "Expose",
+    "GraphicsExpose",
+    "NoExpose",
+    "VisibilityNotify",
+    "CreateNotify",
+    "DestroyNotify",
+    "UnmapNotify",
+    "MapNotify",
+    "MapRequest",
+    "ReparentNotify",
+    "ConfigureNotify",
+    "ConfigureRequest",
+    "GravityNotify",
+    "ResizeRequest",
+    "CirculateNotify",
+    "CirculateRequest",
+    "PropertyNotify",
+    "SelectionClear",
+    "SelectionRequest",
+    "SelectionNotify",
+    "ColormapNotify",
+    "ClientMessage",
+    "MappingNotify",
+    "GenericEvent",
+    "LASTEvent"
+};
+
+
 // TODO: Move some of this to another file?
 // Also, make a freaking subdirectory oh my god.
 typedef u8 KeyCode;
@@ -320,7 +361,7 @@ s32 main(s32 argc, char **argv) {
 
     XSetWindowAttributes swa;
     swa.colormap = cmap;
-    swa.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
+    swa.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | FocusChangeMask;
 
     Window win = XCreateWindow(dsp, root, 0, 0, 1280, 720, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
     if(!win) {
@@ -407,14 +448,16 @@ s32 main(s32 argc, char **argv) {
     XMapRaised(dsp, win);
 
 
-    s64 last_nanotime = nanotime();
+    struct timespec last_time;
+    sc_clock_gettime(CLOCK_MONOTONIC, &last_time);
 
     bool fullscreen = false;
     bool running = true;
     while(running) {
-        s64 nt = nanotime();
-        pio.delta_time = (f32)((nt - last_nanotime) / 1000000000.0f);
-        last_nanotime = nt;
+        struct timespec this_time;
+        sc_clock_gettime(CLOCK_MONOTONIC, &this_time);
+        pio.delta_time = (f32) ((f64)(this_time.tv_sec - last_time.tv_sec) + ((f64)(this_time.tv_nsec - last_time.tv_nsec) * 1.0e-9));
+        last_time = this_time;
 
 
         // NOTE: Reset the necessary state so it
@@ -434,6 +477,14 @@ s32 main(s32 argc, char **argv) {
             XNextEvent(dsp, &xev);
 
             switch(xev.type) {
+                case FocusIn: {
+                    pio.window_focused = true;
+                    break;
+                }
+                case FocusOut: {
+                    pio.window_focused = false;
+                    break;
+                }
                 case ConfigureNotify: {
                     if(xev.xconfigure.width != pio.window_width || xev.xconfigure.height != pio.window_height) {
                         pio.window_width = xev.xconfigure.width;
@@ -492,25 +543,35 @@ s32 main(s32 argc, char **argv) {
                     }
                     break;
                 }
-                case MotionNotify: {
+                default: {
+                    char const* name;
+                    if(xev.type >= 0 && xev.type < array_length(XEvent_Type_Names)) name = XEvent_Type_Names[xev.type];
+                    else                                                            name = "<oob>";
+
+                    tfprintf(STDERR, "Warning: Unhandled X11 event: %s (%d)\n", name, xev.type);
                     break;
                 }
             }
         }
 
 
-        Window root_r, child_r;
-        s32 root_x, root_y;
-        s32 win_x, win_y;
-        u32 mask_r;
-        if(XQueryPointer(dsp, win, &root_r, &child_r, &root_x, &root_y, &win_x, &win_y, &mask_r)) {
-            if(win_x >= 0 && win_y >= 0 && win_x < pio.window_width && win_y < pio.window_height) {
-                pio.mouse_x = (f32) win_x;
-                pio.mouse_y = (f32) win_y;
-            } else {
-                pio.mouse_x = -FLT_MAX;
-                pio.mouse_y = -FLT_MAX;
+        pio.mouse_x = -FLT_MAX;
+        pio.mouse_y = -FLT_MAX;
+        if(pio.window_focused) {
+            Window root_r, child_r;
+            s32 root_x, root_y;
+            s32 win_x, win_y;
+            u32 mask_r;
+            if(XQueryPointer(dsp, win, &root_r, &child_r, &root_x, &root_y, &win_x, &win_y, &mask_r)) {
+                if(win_x >= 0 && win_y >= 0 && win_x < pio.window_width && win_y < pio.window_height) {
+                    pio.mouse_x = (f32) win_x;
+                    pio.mouse_y = (f32) win_y;
+                }
             }
+        } else {
+            mlc_memset(&pio.button_state, 0, sizeof(pio.button_state));
+            pio.mouse_wheel_x = 0.0f;
+            pio.mouse_wheel_y = 0.0f;
         }
 
 
