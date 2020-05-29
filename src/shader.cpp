@@ -18,8 +18,8 @@ void program_attach_shader(GLuint program, char *name, GLenum type) {
         GLint info_log_length;
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &info_log_length);
 
-        // TODO: maybe _don't_ use alloca here lol
-        GLchar *info_log = (GLchar*) alloca(sizeof(GLchar) * (info_log_length + 1));
+        GLchar *info_log = (GLchar*) talloc(sizeof(GLchar) * (info_log_length + 1));
+        assert(info_log); // NOTE: Yes I'm being lazy, fite me.
         glGetShaderInfoLog(id, info_log_length, 0, info_log);
 
         tfprintf(STDERR, "Error compiling shader `%s`:\n%s\n", name, info_log);
@@ -60,7 +60,8 @@ GLuint load_shader_program(const char *name, GLenum flags) {
         glGetProgramiv(p, GL_INFO_LOG_LENGTH, &info_log_length);
 
         // TODO: maybe _don't_ use alloca here lol
-        GLchar *info_log = (GLchar*)alloca(sizeof(GLchar) * (info_log_length + 1));
+        GLchar *info_log = (GLchar*) talloc(sizeof(GLchar) * (info_log_length + 1));
+        assert(info_log); // NOTE: Yes I'm being lazy, fite me.
         glGetProgramInfoLog(p, info_log_length, 0, info_log);
 
         tfprintf(STDERR, "%s\n", info_log);

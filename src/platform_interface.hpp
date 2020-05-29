@@ -98,12 +98,11 @@ struct PlatformIO {
 	f32 mouse_x, mouse_y;
 	f32 mouse_wheel_x, mouse_wheel_y; // TODO: Call these like, mouse_wheel_delta_x? 
 
-	f32 delta_time; // NOTE TODO: Make sure this is "well-defined"
+	f32 delta_time;
 
 	void *game_memory;
 
 	inline bool is_button_down(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_DOWN) != 0; }
-	// NOTE TODO(?): `was` instead of `is`? (not for the `_down` variant obv)
 	inline bool was_button_pressed(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_PRESSED) != 0; }
 	inline bool was_button_released(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_RELEASED) != 0; }
 };

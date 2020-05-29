@@ -7,6 +7,10 @@
 #include <GL/glx.h>
 
 
+#define GLX_MAJOR 1
+#define GLX_MINOR 4
+
+
 // TODO: These need to be surrounded by an ifdef (or similar) and
 // and else clause for the case when we're doing dynamic loading.
 extern "C" GAME_INIT(stella_init);
@@ -270,8 +274,8 @@ s32 main(s32 argc, char **argv) {
 
     GLint glx_major, glx_minor;
     glXQueryVersion(dsp, &glx_major, &glx_minor);
-    if(glx_major < 1 || glx_minor < 4) { // NOTE TODO: Don't hardcode the desired GLX version
-    	tprintf("GLX version too old! Got %d.%d, want 1.4+\n", glx_major, glx_minor);
+    if(glx_major < GLX_MAJOR || glx_minor < GLX_MINOR) {
+    	tprintf("GLX version too old! Got %d.%d, want %d.%d+\n", glx_major, glx_minor, GLX_MAJOR, GLX_MINOR);
         XCloseDisplay(dsp);
         return 1;
     }
@@ -392,19 +396,21 @@ s32 main(s32 argc, char **argv) {
     init_key_map();
 
 
-    XMapRaised(dsp, win);
-
-
     PlatformIO pio = {};
 
     stella_init(&pio);
 
 
+    XMapRaised(dsp, win);
+
+
     bool fullscreen = false;
     bool running = true;
     while(running) {
-        // NOTE: Reset the necessary input state so 
-        // it can be reset (or not) by the loop below.
+        // NOTE: Reset the necessary state so it
+        // can be reset (or not) by the loop below.
+        pio.window_just_resized = false;
+        
         pio.mouse_wheel_x = 0.0f;
         pio.mouse_wheel_y = 0.0f;
 
@@ -499,9 +505,6 @@ s32 main(s32 argc, char **argv) {
 
 
         stella_update_and_render(&pio);
-
-
-        pio.window_just_resized = false;
 
 
         glXSwapBuffers(dsp, win);

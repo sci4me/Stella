@@ -29,9 +29,6 @@ struct Player {
     bool show_crafting_queue = false;
 
 
-    bool pressing_w, pressing_s, pressing_a, pressing_d;
-
-
     void init(Game *game, World *world) {
         this->game = game;;
         this->world = world;
@@ -86,6 +83,7 @@ struct Player {
                 };
 
                 // NOTE: `10 * TILE_SIZE` is the max distance the player can "reach".
+                // TODO: Don't hardcode this "10".
                 if(distance(mouse_world_pos, pos) < 10 * TILE_SIZE) {
                     hovered_tile_x = floorf32(mouse_world_pos.x / TILE_SIZE);
                     hovered_tile_y = floorf32(mouse_world_pos.y / TILE_SIZE);
@@ -106,9 +104,7 @@ struct Player {
                         } else if(item_is_placeable[held_stack->type]) { // NOTE: Doing this check after the index_of is silly.
                             placement_valid = true;
 
-                            // TODO: Instead of polling the mouse, we want to do this stuff
-                            // in a mouse event handler!
-                            if(pio->was_button_pressed(VMB_LEFT)) {
+                            if(pio->is_button_down(VMB_LEFT)) {
                                 Tile *tile;
 
                                 switch(held_stack->type) {
@@ -148,8 +144,6 @@ struct Player {
                         if(l1i != -1 || l2i != -1) {
                             tile_hovered = true;
 
-                            // TODO: Instead of polling the mouse, we want to do this stuff
-                            // in a mouse event handler!
                             if(l2i != -1 && pio->was_button_pressed(VMB_LEFT)) {
                                 // NOTE TODO: This shit is fkin hardcoded asf yo. But I don't want to go through
                                 // the pain of making all these fkin hpp files and .. goddamn.. uh.. forward declaring
@@ -252,8 +246,7 @@ private:
         if(pio->is_button_down(VK_D)) delta.x = 1.0f;
         
         auto speed = SPEED;
-        // TODO?
-        // if(glfwGetKey(game->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed *= 0.1f;
+        if(pio->is_button_down(VK_SHIFT_LEFT)) speed *= 0.1f;
         delta = normalize(delta) * speed;
         
         move(delta);

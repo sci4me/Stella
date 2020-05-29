@@ -167,7 +167,7 @@ extern "C" {
 		return 0;
 	}
 
-	long int mlc_strtol(const char* str, char** endptr, int base) {
+	s64 mlc_strtol(const char* str, char** endptr, s32 base) {
 		assert(0);
 		// TODO
 		return 0;

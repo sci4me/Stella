@@ -34,7 +34,7 @@ extern "C" {
 	char* mlc_strcpy(char *dst, char const* src);
 	char* mlc_strncpy(char *dst, char const* src, u64 n);
 	s32 mlc_strncmp(char const* a, char const* b, u64 n);
-	long int mlc_strtol(const char* str, char** endptr, s32 base); // TODO: long int?
+	s64 mlc_strtol(const char* str, char** endptr, s32 base); // TODO: long int?
 	f32 mlc_atof(char const* s);
 	s32 mlc_toupper(s32 x);
 	void mlc_qsort(void* base, u64 num, u64 size, s32 (*compar)(void const*, void const*));
