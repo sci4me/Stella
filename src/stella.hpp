@@ -22,8 +22,4 @@ struct Game {
 
 	struct World *world;
 	struct Player *player;
-
-	void init();
-	void deinit();
-	void update_and_render(PlatformIO *pio);
 };

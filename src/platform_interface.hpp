@@ -87,8 +87,10 @@ enum Button_Flags_ : Button_Flags {
 // in certain context. For example, the game should never write to `key_state`,
 // or any of the other user input members.
 //
-// Currently there are no members intended to be written by the game, but
-// there probably will be eventually™.
+// Currently the only member meant to be written by the game is `game_memory`.
+// The game allocates its own struct which is used to store all of the game state,
+// and stores a pointer to that struct in `game_memory`. This member is only read/written
+// by the game code itself.
 struct PlatformIO {
 	s32 window_width;
 	s32 window_height;

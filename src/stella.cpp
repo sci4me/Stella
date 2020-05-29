@@ -169,7 +169,12 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 #endif
 
 
-void Game::init() {
+extern "C" GAME_INIT(stella_init) {
+    void *mem = mlc_malloc(sizeof(Game));
+    Game* g = new(mem) Game;
+    pio->game_memory = g;
+
+
     #ifdef GL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -195,8 +200,8 @@ void Game::init() {
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 
-    batch_renderer = (Batch_Renderer*) mlc_malloc(sizeof(Batch_Renderer));
-    batch_renderer->init();
+    g->batch_renderer = (Batch_Renderer*) mlc_malloc(sizeof(Batch_Renderer));
+    g->batch_renderer->init();
 
 
     assets::init();
@@ -209,40 +214,45 @@ void Game::init() {
 
     {
         void *mem = mlc_malloc(sizeof(World));
-        world = new(mem) World;
-        world->init();
+        g->world = new(mem) World;
+        g->world->init();
     }
 
 
     {
         void *mem = mlc_malloc(sizeof(Player));
-        player = new(mem) Player;
-        player->init(this, world);
-        player->pos = {496, 3637};
+        g->player = new(mem) Player;
+        g->player->init(g, g->world);
+        g->player->pos = {496, 3637};
     }
 
 
     {
         // TODO REMOVEME TESTING
-        player->inventory.insert({ ITEM_COBBLESTONE, MAX_ITEM_SLOT_SIZE });
-        player->inventory.insert({ ITEM_IRON_ORE, MAX_ITEM_SLOT_SIZE });
-        player->inventory.insert({ ITEM_GOLD_ORE, MAX_ITEM_SLOT_SIZE });
-        player->inventory.insert({ ITEM_COAL_ORE, MAX_ITEM_SLOT_SIZE });
-        player->inventory.insert({ ITEM_IRON_PLATE, MAX_ITEM_SLOT_SIZE });
-        player->inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
-        player->inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
-        player->inventory.insert({ ITEM_MINING_MACHINE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_COBBLESTONE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_IRON_ORE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_GOLD_ORE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_COAL_ORE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_IRON_PLATE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_MINING_MACHINE, MAX_ITEM_SLOT_SIZE });
     }
 }
 
-void Game::deinit() {
+extern "C" GAME_DEINIT(stella_deinit) {
+    Game *g = (Game*) pio->game_memory;
+    
     // TODO
 
     imsupport::deinit();
 }
 
-void Game::update_and_render(PlatformIO *pio) {
-    bool is_paused = debug_pause;
+extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
+    Game *g = (Game*) pio->game_memory;
+    
+
+    bool is_paused = g->debug_pause;
     if(!is_paused) prof::begin_frame();
 
 
@@ -250,20 +260,20 @@ void Game::update_and_render(PlatformIO *pio) {
         glViewport(0, 0, pio->window_width, pio->window_height);
         
         auto projection_matrix = mat4::ortho(0.0f, (f32)pio->window_width, (f32)pio->window_height, 0.0f, 0.0f, 10000.0f);
-        batch_renderer->set_projection(projection_matrix);
-        world->set_projection(projection_matrix);
+        g->batch_renderer->set_projection(projection_matrix);
+        g->world->set_projection(projection_matrix);
     }
 
 
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse && pio->mouse_wheel_y != 0.0f) {
-        scale = clamp<f32>(scale + pio->mouse_wheel_y * 0.05f, 0.1f, 5.0f);
+        g->scale = clamp<f32>(g->scale + pio->mouse_wheel_y * 0.05f, 0.1f, 5.0f);
     }
 
 
-    if(pio->was_button_pressed(VK_F2))  show_profiler = !show_profiler;
-    if(pio->was_button_pressed(VK_F3))  show_debug_window = !show_debug_window;
-    if(pio->was_button_pressed(VK_F12)) debug_pause = !debug_pause;
+    if(pio->was_button_pressed(VK_F2))  g->show_profiler = !g->show_profiler;
+    if(pio->was_button_pressed(VK_F3))  g->show_debug_window = !g->show_debug_window;
+    if(pio->was_button_pressed(VK_F12)) g->debug_pause = !g->debug_pause;
 
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -286,8 +296,8 @@ void Game::update_and_render(PlatformIO *pio) {
     //              - sci4me, 5/13/20
 
     if(!is_paused) {
-        world->update();
-        player->update(pio);
+        g->world->update();
+        g->player->update(pio);
     }    
 
 
@@ -309,23 +319,23 @@ void Game::update_and_render(PlatformIO *pio) {
     //
 
     u32 chunk_draw_calls;
-    auto s = mat4::scale(scale, scale, 1.0f);
-    auto t = mat4::translate((pio->window_width / 2 / scale) - player->pos.x, (pio->window_height / 2 / scale) - player->pos.y, 0.0f);
+    auto s = mat4::scale(g->scale, g->scale, 1.0f);
+    auto t = mat4::translate((pio->window_width / 2 / g->scale) - g->player->pos.x, (pio->window_height / 2 / g->scale) - g->player->pos.y, 0.0f);
     auto view = t * s;
-    batch_renderer->begin(view);
+    g->batch_renderer->begin(view);
     {
         // NOTE: We render the world from within the Batch_Renderer frame since
         // we are currently using the Batch_Renderer for any tiles that
         // aren't on layer 0.
         //              - sci4me, 5/9/20
-        chunk_draw_calls = world->draw_around(batch_renderer, player->pos, scale, pio->window_width, pio->window_height, view);
+        chunk_draw_calls = g->world->draw_around(g->batch_renderer, g->player->pos, g->scale, pio->window_width, pio->window_height, view);
 
-        player->draw(batch_renderer);
+        g->player->draw(g->batch_renderer);
 
     }
-    auto per_frame_stats = batch_renderer->end_frame();
+    auto per_frame_stats = g->batch_renderer->end_frame();
 
-    if(show_debug_window) {
+    if(g->show_debug_window) {
         if(ImGui::Begin("Debug Info", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav)) {
             ImGui::Dummy({ 130, 0 });
 
@@ -335,13 +345,13 @@ void Game::update_and_render(PlatformIO *pio) {
             }
 
             if(ImGui::CollapsingHeader("Player")) {
-                ImGui::Text("Position: (%0.3f, %0.3f)", player->pos.x, player->pos.y);
-                ImGui::Text("Tile Position: (%d, %d)", (s32) floorf32(player->pos.x / TILE_SIZE), (s32) floorf32(player->pos.y / TILE_SIZE));
+                ImGui::Text("Position: (%0.3f, %0.3f)", g->player->pos.x, g->player->pos.y);
+                ImGui::Text("Tile Position: (%d, %d)", (s32) floorf32(g->player->pos.x / TILE_SIZE), (s32) floorf32(g->player->pos.y / TILE_SIZE));
             }
 
             if(ImGui::CollapsingHeader("World")) {
-                ImGui::Text("Scale: %0.3f", scale);
-                ImGui::Text("Total Chunks: %d", world->chunks.count);
+                ImGui::Text("Scale: %0.3f", g->scale);
+                ImGui::Text("Total Chunks: %d", g->world->chunks.count);
                 ImGui::Text("Chunk Draw Calls: %d", chunk_draw_calls);
             }
 
@@ -353,12 +363,12 @@ void Game::update_and_render(PlatformIO *pio) {
             }
 
             if(ImGui::CollapsingHeader("Settings")) {
-                ImGui::Checkbox("Fast Mining", &fast_mining);
-                ImGui::Checkbox("Show ImGui Metrics", &show_imgui_metrics_window);
+                ImGui::Checkbox("Fast Mining", &g->fast_mining);
+                ImGui::Checkbox("Show ImGui Metrics", &g->show_imgui_metrics_window);
             }
         }
 
-        if(show_imgui_metrics_window) {
+        if(g->show_imgui_metrics_window) {
             ImGui::ShowMetricsWindow();
         }
 
@@ -367,27 +377,9 @@ void Game::update_and_render(PlatformIO *pio) {
 
     // NOTE TODO: This next line is kind of a hack...
     // if(!is_paused) prof::end_frame(); else prof::frame_events.clear();
-    if(show_profiler) prof::show();
+    if(g->show_profiler) prof::show();
 
     imsupport::end_frame();
 
     tclear();
-}
-
-
-extern "C" GAME_INIT(stella_init) {
-    void *mem = mlc_malloc(sizeof(Game));
-    Game* g = new(mem) Game;
-    g->init();
-    pio->game_memory = g;
-}
-
-extern "C" GAME_DEINIT(stella_deinit) {
-    Game *g = (Game*) pio->game_memory;
-    g->deinit();
-}
-
-extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
-    Game *g = (Game*) pio->game_memory;
-    g->update_and_render(pio);
 }
