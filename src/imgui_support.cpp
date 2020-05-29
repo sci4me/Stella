@@ -153,7 +153,7 @@ namespace imsupport {
 
         // TODO: DisplayFramebufferScale (if we ever care...)
 
-        // TODO: DeltaTime (we DEFINITELY care about this one lol)
+        io.DeltaTime = pio->delta_time;
 
         ImGui::NewFrame();
     }

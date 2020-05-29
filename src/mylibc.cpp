@@ -234,6 +234,12 @@ extern "C" {
 	void mlc_exit(s32 code) {
 		sc_exit(code);
 	}
+
+	s64 nanotime() {
+		struct timespec ts;
+		sc_clock_gettime(CLOCK_MONOTONIC, &ts);
+		return ts.tv_sec * 1000000000LL + ts.tv_nsec;
+	}
 }
 
 

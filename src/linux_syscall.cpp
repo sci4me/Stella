@@ -52,6 +52,19 @@ extern "C" {
 #define MAP_STACK      0x20000
 #define MAP_HUGETLB    0x40000
 
+#define CLOCK_REALTIME            0
+#define CLOCK_MONOTONIC           1
+#define CLOCK_PROCESS_CPUTIME_ID  2
+#define CLOCK_THREAD_CPUTIME_ID   3
+#define CLOCK_MONOTONIC_RAW       4
+#define CLOCK_REALTIME_COARSE     5
+#define CLOCK_MONOTONIC_COARSE    6
+#define CLOCK_BOOTTIME            7
+#define CLOCK_REALTIME_ALARM      8
+#define CLOCK_BOOTTIME_ALARM      9
+#define CLOCK_SGI_CYCLE          10
+#define CLOCK_TAI                11
+
 #define SYS_read			0
 #define SYS_write 			1
 #define SYS_open			2
@@ -68,6 +81,7 @@ extern "C" {
 #define SYS_getpid			39
 #define SYS_exit 			60
 #define SYS_gettid			186
+#define SYS_clock_gettime	228
 #define SYS_tgkill			234
 
 // TODO: Force these to be inlined!
@@ -130,6 +144,10 @@ void sc_exit(s32 code) {
 
 s32 sc_gettid() {
 	return (s32)(s64) SYSCALL0(SYS_gettid);
+}
+
+s32 sc_clock_gettime(s32 id, struct timespec *ts) {
+	return (s32)(s64) SYSCALL2(SYS_clock_gettime, (s64)id, (s64)ts);
 }
 
 s32 sc_tgkill(s32 tgid, s32 tid, s32 sig) {

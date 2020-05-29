@@ -7,6 +7,9 @@
 #include <GL/glx.h>
 
 
+#include <float.h> // FLT_MAX
+
+
 #define GLX_MAJOR 1
 #define GLX_MINOR 4
 
@@ -18,7 +21,7 @@ extern "C" GAME_DEINIT(stella_deinit);
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render);
 
 
-typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const s32*);
 
 
 // TODO: Move some of this to another file?
@@ -246,7 +249,7 @@ static void set_fullscreen(Display *display, Window window, bool fullscreen) {
     event.xclient.message_type = XInternAtom(display, "_NET_WM_STATE", False);
     event.xclient.format = 32;
     event.xclient.data.l[0] = (fullscreen ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE);
-    event.xclient.data.l[1] = (long) XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+    event.xclient.data.l[1] = (s64) XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
     event.xclient.data.l[2] = 0;
     
     XSendEvent(display, DefaultRootWindow(display), False, SubstructureNotifyMask | SubstructureRedirectMask, &event);
@@ -338,7 +341,7 @@ s32 main(s32 argc, char **argv) {
         return 1;
     }
 
-    int ctx_att[] = {
+    s32 ctx_att[] = {
         GLX_CONTEXT_MAJOR_VERSION_ARB, GL_MAJOR,
         GLX_CONTEXT_MINOR_VERSION_ARB, GL_MINOR,
         GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
@@ -404,13 +407,20 @@ s32 main(s32 argc, char **argv) {
     XMapRaised(dsp, win);
 
 
+    s64 last_nanotime = nanotime();
+
     bool fullscreen = false;
     bool running = true;
     while(running) {
+        s64 nt = nanotime();
+        pio.delta_time = (f32)((nt - last_nanotime) / 1000000000.0f);
+        last_nanotime = nt;
+
+
         // NOTE: Reset the necessary state so it
         // can be reset (or not) by the loop below.
         pio.window_just_resized = false;
-        
+
         pio.mouse_wheel_x = 0.0f;
         pio.mouse_wheel_y = 0.0f;
 

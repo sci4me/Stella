@@ -1,10 +1,6 @@
 #ifndef MYLIBC_H
 #define MYLIBC_H
 
-#include <stdarg.h>
-#include <limits.h>
-#include <float.h>
-
 #include "stb_sprintf.h"
 
 #include "types.hpp"

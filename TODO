@@ -183,6 +183,9 @@ Code/Dev Features/Quality:
  - Better Build System
 
 Quality/Optimization:
+ - Fix the fucking zoom oh my god it's so miserable to use!!!
+   - Too slowwwww and like, ... we don't want linear...
+     - But then, what _do_ we want? *shrugs*
  - Dynamically load everything instead of dynamically linking
    - i.e. remove -lX11 -lGL etc.
      - Is this worth doing? Why? etc.

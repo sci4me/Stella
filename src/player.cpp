@@ -29,6 +29,9 @@ struct Player {
     bool show_crafting_queue = false;
 
 
+    vec2 last_dpos;
+
+
     void init(Game *game, World *world) {
         this->game = game;;
         this->world = world;
@@ -230,7 +233,10 @@ private:
         // NOTE: Don't forget to floor these divisions! Once up on a time
         // I forgot to floor and spent like 10 minutes wondering why I had
         // 0 and -0 as separate tile coords!
-        return world->get_chunk_containing(floorf32(pos.x / TILE_SIZE), floorf32(pos.y / TILE_SIZE));
+        return world->get_chunk_containing(
+            floorf32(pos.x / TILE_SIZE),
+            floorf32(pos.y / TILE_SIZE)
+        );
     }
 
     void open_tile_ui(Tile *t) {
@@ -240,13 +246,13 @@ private:
 
     void handle_movement(PlatformIO *pio) {
         vec2 delta = {0, 0};
-        if(pio->is_button_down(VK_W)) delta.y = -1.0f;
-        if(pio->is_button_down(VK_S)) delta.y = 1.0f;
-        if(pio->is_button_down(VK_A)) delta.x = -1.0f;
-        if(pio->is_button_down(VK_D)) delta.x = 1.0f;
+        if(pio->is_button_down(VK_W))           delta.y = -1.0f;
+        else if(pio->is_button_down(VK_S))      delta.y =  1.0f;
+        if(pio->is_button_down(VK_A))           delta.x = -1.0f;
+        else if(pio->is_button_down(VK_D))      delta.x =  1.0f;
         
         auto speed = SPEED;
-        if(pio->is_button_down(VK_SHIFT_LEFT)) speed *= 0.1f;
+        // if(pio->is_button_down(VK_SHIFT_LEFT))  speed *= 0.1f;
         delta = normalize(delta) * speed;
         
         move(delta);
@@ -255,9 +261,11 @@ private:
     void move(vec2 delta) {
         TIMED_FUNCTION();
 
+        last_dpos = vec2(0.0f, 0.0f);
+
         // NOTE: We'll probably want to tweak these
         // as we go/later on!
-        constexpr f32 EPSILON = 0.00001;
+        constexpr f32 EPSILON = 0.00001f;
         constexpr u32 MAX_ITER = 6;
 
         f32 half_size = 0.5f * SIZE;
@@ -294,6 +302,7 @@ private:
             }
 
             pos += delta * best.h;
+            last_dpos += delta * best.h;
             
             if(best.hit) {
                 f32 r = 1.0f - best.h;

@@ -10,6 +10,7 @@
 #include "maths.hpp"
 
 
+/*
 #define IMGUI_NO_LIBC
 #define IM_ASSERT(x)                assert(x)
 #define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
@@ -42,10 +43,10 @@ static inline double ImPow(double b, double e) { return powf64(b, e); }
 #define IM_SSCANF(s, f, ...)        mlc_sscanf(s, f, __VA_ARGS__)
 #define IM_VSNPRINTF(fmt, ...)      stbsp_vsnprintf(fmt, __VA_ARGS__)
 #define IMGUI_DISABLE_INCLUDE_IMCONFIG_H
+*/
+
+#define IMGUI_USER_CONFIG "stella_imconfig.hpp"
 #include "imgui/imgui.h"
-// #include "imgui/imgui.cpp"
-// #include "imgui/imgui_draw.cpp"
-// #include "imgui/imgui_widgets.cpp"
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -348,6 +349,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
             if(ImGui::CollapsingHeader("Player")) {
                 ImGui::Text("Position: (%0.3f, %0.3f)", g->player->pos.x, g->player->pos.y);
                 ImGui::Text("Tile Position: (%d, %d)", (s32) floorf32(g->player->pos.x / TILE_SIZE), (s32) floorf32(g->player->pos.y / TILE_SIZE));
+                ImGui::Text("Last dPos: (%f, %f)", g->player->last_dpos.x, g->player->last_dpos.y);
             }
 
             if(ImGui::CollapsingHeader("World")) {

@@ -18,7 +18,7 @@ EXECUTABLE=stella
 
 CXXFLAGS="-std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector -Wa,--noexecstack"  # -s
 LDFLAGS="-L$VENDOR_DIR/GLEW/lib -L$VENDOR_DIR/imgui/lib -l:imgui.a -lGLEW -lGL -lX11 -lgcc -msse4.1"
-INCLUDES="-I$VENDOR_DIR/GLEW/include -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math"
+INCLUDES="-I $SRC_DIR -I$VENDOR_DIR/GLEW/include -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math"
 
 mkdir -p $BUILD_DIR
 
