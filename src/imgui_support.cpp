@@ -141,9 +141,9 @@ namespace imsupport {
             io.KeysDown[j] = pio->is_button_down(j);
         }
 
-        io.KeyCtrl = pio->is_button_down(VK_CTRL_LEFT) || pio->is_button_down(VK_CTRL_RIGHT);
+        io.KeyCtrl  = pio->is_button_down(VK_CTRL_LEFT)  || pio->is_button_down(VK_CTRL_RIGHT);
         io.KeyShift = pio->is_button_down(VK_SHIFT_LEFT) || pio->is_button_down(VK_SHIFT_RIGHT);
-        io.KeyAlt = pio->is_button_down(VK_ALT_LEFT) || pio->is_button_down(VK_ALT_RIGHT);
+        io.KeyAlt   = pio->is_button_down(VK_ALT_LEFT)   || pio->is_button_down(VK_ALT_RIGHT);
 
         #ifdef _WIN32
             io.KeySuper = false;

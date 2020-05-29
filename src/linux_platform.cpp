@@ -479,15 +479,15 @@ s32 main(s32 argc, char **argv) {
                 case ButtonRelease: {
                     // TODO: horizontal scroll and also, 1?
                     if(xev.xbutton.button == Button4 && xev.type == ButtonPress) {
-                        pio.mouse_wheel_y = 1.0f;
+                        pio.mouse_wheel_y =  1.0f;
                     } else if(xev.xbutton.button == Button5 && xev.type == ButtonPress) {
                         pio.mouse_wheel_y = -1.0f;
                     } else {
                         bool state = xev.type == ButtonPress;
                         switch(xev.xbutton.button) {
-                            case MB_LEFT: update_button_state(&pio, VMB_LEFT, state); break;
+                            case MB_LEFT:   update_button_state(&pio, VMB_LEFT, state); break;
                             case MB_MIDDLE: update_button_state(&pio, VMB_MIDDLE, state); break;
-                            case MB_RIGHT: update_button_state(&pio, VMB_RIGHT, state); break;
+                            case MB_RIGHT:  update_button_state(&pio, VMB_RIGHT, state); break;
                         }
                     }
                     break;
