@@ -84,6 +84,16 @@ Code/Dev Features/Quality:
  - OH MY GOD FIX THE FKIN BUILD TIME
    - Just had a build take 3.679 (ayyy! ... i'm like yeaaaa she's fine.... no? .. okay)
      - WTF imgui y u do dis
+   - Okay so, for realsies tho: the slowdown is almost certainly because we're now
+     building Dear ImGui from source rather than using a statically linked library.
+     We do this because we have to use all those dumn fkin macros to tell imgui
+     not to use libc...
+     So. Hmmh. #HowDoWeDoDis?
+       - I don't think we can even build object files (not a .a, just.o's)
+         - The compiler won't be able to resolve ...
+           well...
+           Maybe we could if we declare the symbols as extern...
+           Hmmmmmmmmhmhmhmhmhmhmmhmhmhmhmhmhmhm...
  - Merge the ctime files!
    - I split them because the linux version
      of ctime wouldn't handle the Casey version
