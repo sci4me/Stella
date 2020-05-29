@@ -59,7 +59,6 @@ GLuint load_shader_program(const char *name, GLenum flags) {
         GLint info_log_length;
         glGetProgramiv(p, GL_INFO_LOG_LENGTH, &info_log_length);
 
-        // TODO: maybe _don't_ use alloca here lol
         GLchar *info_log = (GLchar*) talloc(sizeof(GLchar) * (info_log_length + 1));
         assert(info_log); // NOTE: Yes I'm being lazy, fite me.
         glGetProgramInfoLog(p, info_log_length, 0, info_log);

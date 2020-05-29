@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <limits.h>
 #include <float.h>
-#include <alloca.h>
 
 #include "stb_sprintf.h"
 
@@ -27,7 +26,7 @@ extern "C" {
 	s32 mlc_memcmp(void const* a, void const* b, u64 n);
 	void* mlc_memmove(void *dst, void const* src, u64 n);
 	void const* mlc_memchr(void const* p, s32 v, u64 n);
-	int mlc_strcmp(char const* a, char const* b);
+	s32 mlc_strcmp(char const* a, char const* b);
 	u64 mlc_strlen(char const* s);
 	char const* mlc_strchr(char const* s, s32 c);
 	char const* mlc_strstr(char const* a, char const* b);

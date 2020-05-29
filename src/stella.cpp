@@ -41,10 +41,11 @@ static inline double ImPow(double b, double e) { return powf64(b, e); }
 #define IM_STRSTR(a, b)             mlc_strstr(a, b)
 #define IM_SSCANF(s, f, ...)        mlc_sscanf(s, f, __VA_ARGS__)
 #define IM_VSNPRINTF(fmt, ...)      stbsp_vsnprintf(fmt, __VA_ARGS__)
+#define IMGUI_DISABLE_INCLUDE_IMCONFIG_H
 #include "imgui/imgui.h"
-#include "imgui/imgui.cpp"
-#include "imgui/imgui_draw.cpp"
-#include "imgui/imgui_widgets.cpp"
+// #include "imgui/imgui.cpp"
+// #include "imgui/imgui_draw.cpp"
+// #include "imgui/imgui_widgets.cpp"
 
 
 #define STB_IMAGE_IMPLEMENTATION

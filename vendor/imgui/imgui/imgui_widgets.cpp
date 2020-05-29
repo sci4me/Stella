@@ -40,11 +40,13 @@ Index of this file:
 #endif
 #include "imgui_internal.h"
 
+#ifndef IMGUI_NO_LIBC
 #include <ctype.h>      // toupper
 #if defined(_MSC_VER) && _MSC_VER <= 1500 // MSVC 2008 or earlier
 #include <stddef.h>     // intptr_t
 #else
 #include <stdint.h>     // intptr_t
+#endif
 #endif
 
 // Visual Studio warnings
