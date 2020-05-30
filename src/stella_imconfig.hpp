@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdarg.h>
 #include <limits.h>
 #include <float.h>
@@ -17,12 +19,6 @@ typedef signed long long s64;
 typedef float f32;
 typedef double f64;
 
-// NOTE TODO(?): Compatibility bs...
-#ifdef STELLA_IMGUI_STATIC_BUILD
-typedef s64 ptrdiff_t;
-typedef s64 intptr_t;
-typedef u64 uintptr_t;
-#endif
 
 #ifndef NULL
 #define NULL 0

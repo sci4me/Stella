@@ -10,41 +10,6 @@
 #include "maths.hpp"
 
 
-/*
-#define IMGUI_NO_LIBC
-#define IM_ASSERT(x)                assert(x)
-#define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
-#define IM_MEMMOVE(d, s, n)         mlc_memmove(d, s, n)
-#define IM_MEMCPY(d, s, n)          mlc_memcpy(d, s, n)
-#define IM_MEMCMP(a, b, n)          mlc_memcmp(a, b, n)
-#define IM_STRLEN(s)                mlc_strlen(s)
-#define IM_STRCHR(s, c)             mlc_strchr(s, c)
-#define IM_STRCPY(d, s)             mlc_strcpy(d, s)
-#define IM_STRCMP(a, b)             mlc_strcmp(a, b)
-#define ImFabs(x)                   absf32(x)
-#define ImSqrt(x)                   sqrtf32(x)
-#define ImFmod(a, b)                fmodf32(a, b)
-#define ImCos(x)                    cosf64(x)
-#define ImSin(x)                    sinf64(x)
-#define ImAcos(x)                   acosf32(x)
-#define ImAtan2(y, x)               atan2f32(y, x)
-#define ImFloorStd(x)               floorf32(x)
-#define ImCeil(x)                   ceilf32(x)
-#define ImAtof(s)                   mlc_atof(s)
-static inline float ImPow(float b, float e) { return powf32(b, e); }
-static inline double ImPow(double b, double e) { return powf64(b, e); }
-#define ImQsort(b, n, s, c)         mlc_qsort(b, n, s, c)
-#define IM_MALLOC_FN(n)             mlc_malloc(n)
-#define IM_FREE_FN(p)               mlc_free(p)
-#define IM_TOUPPER(c)               mlc_toupper(c)
-#define IM_STRNCPY(d, s, n)         mlc_strncpy(d, s, n)
-#define IM_MEMCHR(p, v, n)          mlc_memchr(p, v, n)
-#define IM_STRSTR(a, b)             mlc_strstr(a, b)
-#define IM_SSCANF(s, f, ...)        mlc_sscanf(s, f, __VA_ARGS__)
-#define IM_VSNPRINTF(fmt, ...)      stbsp_vsnprintf(fmt, __VA_ARGS__)
-#define IMGUI_DISABLE_INCLUDE_IMCONFIG_H
-*/
-
 #define IMGUI_USER_CONFIG "stella_imconfig.hpp"
 #include "imgui/imgui.h"
 
