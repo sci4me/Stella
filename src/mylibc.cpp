@@ -222,6 +222,7 @@ extern "C" {
 	}
 
 	void mlc_qsort(void* base, u64 num, u64 size, s32 (*compar)(void const*, void const*)) {
+		// NOTE TODO BUG: 20 bucks says there's a bug in this code path somewhere
 		_mlc_qsort(base, size, 0, (s64)num - 1, compar);
 	}
 

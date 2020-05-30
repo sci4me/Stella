@@ -60,4 +60,41 @@ struct Dynamic_Array {
 
 	T& operator[](s32 x) { return data[x]; }
     T const& operator[](s32 x) const { return data[x]; }
+
+    void qsort(s32 (*compar)(T const&, T const&)) {
+    	_qsort(0, count - 1, compar);
+    }
+
+    void swap(s32 i, s32 j) {
+    	const u64 N = sizeof(T);
+    	void *temp = talloc(N);
+    	mlc_memcpy(temp, &data[i], N);
+    	mlc_memcpy(&data[i], &data[j], N);
+    	mlc_memcpy(&data[j], temp, N);
+    }
+
+private:
+	s32 _qsort_partition(s32 l, s32 h, s32 (*compar)(T const&, T const&)) {
+		T const& pivot = data[h];
+		s32 i = l - 1;
+
+		for(s32 j = l; j < h; j++) {
+			T const& b = data[j];
+			if(compar(b, pivot) <= 0) {
+				i++;
+				swap(i, j);
+			}
+		}
+
+		swap(i + 1, h);
+		return i + 1;
+	}
+
+	void _qsort(s32 p, s32 r, s32 (*compar)(T const&, T const&)) {
+		if(p < r) {
+			s32 q = _qsort_partition(p, r, compar);
+			_qsort(p, q - 1, compar);
+			_qsort(q + 1, r, compar);
+		}
+	}
 };

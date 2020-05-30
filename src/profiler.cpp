@@ -1,7 +1,13 @@
 // #define PROFILER_DISABLE
 
 #ifndef PROFILER_DISABLE
+
 // TODO: Switch to rdtsc
+
+// TODO: THREAD SAFETY!!@!!!!
+
+// TODO: Use an arena for allocation Block_Profiles; 
+// it's a simple linear-allocate and reset pattern, per-frame.
 
 namespace prof {
 	enum Debug_Event_Type {
@@ -107,6 +113,7 @@ namespace prof {
 	};
 
 	struct Frame_Profile {
+		u64 frame;
 		Dynamic_Array<Block_Profile*> block_profiles;
 
 		void init() {
@@ -123,6 +130,7 @@ namespace prof {
 	Frame_Profile frame_profiles[MAX_FRAME_PROFILES];
 	u32 frame_profile_index = 0;
 	u32 selected_frame_profile_index = 0;
+	u64 frame_count = 0;
 
 
 	void init() {
@@ -138,7 +146,24 @@ namespace prof {
 		if(frame_profile_index >= MAX_FRAME_PROFILES) frame_profile_index = 0;
 	}
 
+	s32 _sort_block_profiles_comparator(Block_Profile* const& a, Block_Profile* const& b) {
+		if(a->time_ns < b->time_ns) return  1;
+		if(a->time_ns > b->time_ns) return -1;
+		return 0;
+	}
+
+	void sort_block_profiles(Dynamic_Array<Block_Profile*>& bps) {
+		for(u32 i = 0; i < bps.count; i++) {
+			Block_Profile *bp = bps[i];
+			sort_block_profiles(bp->children);
+		}
+
+		bps.qsort(_sort_block_profiles_comparator);
+	}
+
 	void end_frame() {
+		// NOTE TODO BUG: We don't distinguish between calls to the same function from different callsites!!!!
+
 		// NOTE: We are using char* as an 8-byte value here!
 		// This is _not_ a "string hash table"!
 		// This is _only_ okay because we know that these
@@ -155,6 +180,7 @@ namespace prof {
 
 		// TODO: sort blocks & block_profiles (not the Hash_Table obviously!)
 		Frame_Profile& fp = frame_profiles[frame_profile_index];
+		fp.frame = frame_count;
 
 		for(u32 i = 0; i < fp.block_profiles.count; i++) {
 			fp.block_profiles[i]->deinit();
@@ -210,12 +236,16 @@ namespace prof {
 			fp.block_profiles[i]->calculate_child_time();
 		}
 
+		sort_block_profiles(fp.block_profiles);
+
 		block_profiles.deinit();
 		block_profile_stack.deinit();
 
 		frame_events.clear();
 
 		selected_frame_profile_index = frame_profile_index;
+
+		frame_count++;
 	}
 
 	char* format_ns(u64 ns) {
@@ -304,6 +334,7 @@ namespace prof {
 			ImGui::Separator();
 
 			Frame_Profile& fp = frame_profiles[selected_frame_profile_index]; // NOTE: - 1 because we increment after write
+			ImGui::Text("Frame: %llu", fp.frame);
 			for(u32 i = 0; i < fp.block_profiles.count; i++) {
 				show_block_profile(fp.block_profiles[i]);
 			}
