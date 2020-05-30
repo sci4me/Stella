@@ -210,10 +210,19 @@ extern "C" GAME_INIT(stella_init) {
 extern "C" GAME_DEINIT(stella_deinit) {
     Game *g = (Game*) pio->game_memory;
     
-    // TODO
-
+    prof::deinit();
     imsupport::deinit();
-}
+    assets::deinit();
+    crafting::deinit();
+
+    g->world->deinit();
+    mlc_free(g->world);
+
+    g->player->deinit();
+    mlc_free(g->player);
+
+    mlc_free(g);
+}   
 
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
     Game *g = (Game*) pio->game_memory;

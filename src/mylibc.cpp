@@ -185,15 +185,13 @@ extern "C" {
 		return x;
 	}
 
-	void _mlc_qsort_swap(void *base, s64 size, s64 a, u64 b) {
-		u8 *pa = ((u8*) base) + (a * size);
-		u8 *pb = ((u8*) base) + (b * size);
-		for(s64 i = 0; i < size; i++) {
-			u8 t = *pa;
-			*pa = *pb;
-			*pb = t;
-			pa++;
-			pb++;
+	void _mlc_qsort_swap(u8 *a, u8 *b, u64 size) {
+		for(u64 i = 0; i < size; i++) {
+			u8 t = *a;
+			*a = *b;
+			*b = t;
+			a++;
+			b++;
 		}
 	}
 
@@ -205,11 +203,16 @@ extern "C" {
 			u8 *pj = ((u8*) base) + (j * size);
 			if(compar(pj, p_pivot) <= 0) {
 				i++;
-				_mlc_qsort_swap(base, size, i, j);
+
+				u8 *pi = ((u8*) base) + (i * size);
+				_mlc_qsort_swap(pi, pj, size);
 			}
 		}
 
-		_mlc_qsort_swap(base, size, i + 1, h);
+		u8 *pi = ((u8*) base) + ((i + 1) * size);
+		u8 *ph = ((u8*) base) + (h * size);
+		_mlc_qsort_swap(pi, ph, size);
+
 		return i + 1;
 	}
 
@@ -222,6 +225,7 @@ extern "C" {
 	}
 
 	void mlc_qsort(void* base, u64 num, u64 size, s32 (*compar)(void const*, void const*)) {
+		if(num == 0) return;
 		// NOTE TODO BUG: 20 bucks says there's a bug in this code path somewhere
 		_mlc_qsort(base, size, 0, (s64)num - 1, compar);
 	}

@@ -152,6 +152,15 @@ namespace prof {
 		return 0;
 	}
 
+	s32 _sort_block_profiles_comparator_mlc(void const* ppa, void const* ppb) {
+		Block_Profile *a = ((Block_Profile*) ppa);
+		Block_Profile *b = ((Block_Profile*) ppb);
+		if(a == 0 || b == 0) return 0;
+		if(a->time_ns < b->time_ns) return  1;
+		if(a->time_ns > b->time_ns) return -1;
+		return 0;
+	}
+
 	void sort_block_profiles(Dynamic_Array<Block_Profile*>& bps) {
 		for(u32 i = 0; i < bps.count; i++) {
 			Block_Profile *bp = bps[i];
@@ -159,6 +168,7 @@ namespace prof {
 		}
 
 		bps.qsort(_sort_block_profiles_comparator);
+		// mlc_qsort(bps.data, sizeof(Block_Profile*), bps.count, _sort_block_profiles_comparator_mlc);
 	}
 
 	void end_frame() {
@@ -308,6 +318,8 @@ namespace prof {
 
 			if(i == frame_profile_index) dl->AddRectFilled(s, e, 0xFF0000FF);
 			else if(i == selected_frame_profile_index) dl->AddRectFilled(s, e, 0xFFFF0000);
+			else if(i < frame_profile_index) dl->AddRectFilled(s, e, 0xFF00FF00);
+			else if(i > frame_profile_index) dl->AddRectFilled(s, e, 0xFF00FFFF);
 
 			if(mouse_pos.x >= s.x && mouse_pos.x < e.x && mouse_pos.y >= s.y && mouse_pos.y < e.y) {
 				dl->AddRectFilled(s, e, 0x66FFFFFF);
