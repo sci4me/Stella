@@ -1,13 +1,7 @@
-#define PROFILER_DISABLE
+// #define PROFILER_DISABLE
 
 #ifndef PROFILER_DISABLE
 // TODO: Switch to rdtsc
-
-u64 get_time_ns() {
-	struct timespec t;
-	clock_gettime(CLOCK_REALTIME, &t);
-	return t.tv_sec * 1000000000LLU + t.tv_nsec;
-}
 
 namespace prof {
 	enum Debug_Event_Type {
@@ -51,7 +45,7 @@ namespace prof {
 			e.name = name;
 			e.file = file;
 			e.line = line;
-			e.time_ns = get_time_ns();
+			e.time_ns = nanotime();
 			frame_events.push(e);
 		}
 
@@ -62,7 +56,7 @@ namespace prof {
 			e.name = name;
 			e.file = file;
 			e.line = line;
-			e.time_ns = get_time_ns();
+			e.time_ns = nanotime();
 			frame_events.push(e);
 		}
 	};

@@ -35,6 +35,7 @@ extern "C" {
 	void mlc_qsort(void* base, u64 num, u64 size, s32 (*compar)(void const*, void const*));
 	s32 mlc_sscanf(char const* s, char const* format, ...);
 	void mlc_exit(s32 code);
+	u64 nanotime();
 }
 
 

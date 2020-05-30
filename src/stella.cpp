@@ -344,7 +344,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
     }
 
     // NOTE TODO: This next line is kind of a hack...
-    // if(!is_paused) prof::end_frame(); else prof::frame_events.clear();
+    if(!is_paused) prof::end_frame(); else prof::frame_events.clear();
     if(g->show_profiler) prof::show();
 
     imsupport::end_frame();
