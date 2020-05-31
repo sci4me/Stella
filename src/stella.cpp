@@ -72,6 +72,7 @@ void dump_gl_extensions() {
     glGetIntegerv(GL_NUM_EXTENSIONS, &n_ext);
     
     char const** exts = (char const**) talloc(n_ext * sizeof(char const*));
+    assert(exts);
 
     u32 max_len = 0;
     for(s32 i = 0; i < n_ext; i++) {
