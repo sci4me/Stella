@@ -23,6 +23,8 @@
 #endif
 
 
+// NOTE TODO: It feels weird to have these
+// be defined in here.......
 #define GL_MAJOR 4
 #define GL_MINOR 4
 #define APP_NAME "Stella"
@@ -37,59 +39,35 @@
 // NOTE TODO: this is gross.
 #include <stdarg.h>
 
+
 // TODO: Instead of having malloc, calloc, realloc, and free,
 // we just want to have alloc and free.
-#define MLC_MALLOC(name) void* name(u64)
-#define MLC_CALLOC(name) void* name(u64, u64)
-#define MLC_REALLOC(name) void* name(void*, u64)
-#define MLC_FREE(name) void name(void*)
-#define MLC_FWRITE(name) void name(s32, char const*)
-#define READ_ENTIRE_FILE(name) Buffer name(char const*)
-#define TVSPRINTF(name) char* name(char const*, va_list)
-#define TSPRINTF(name) char* name(char const*, ...)
-#define TPRINTF(name) void name(char const*, ...)
-#define TFPRINTF(name) void name(s32, char const*, ...)
-#define MLC_EXIT(name) void name(s32);
-#define NANOTIME(name) u64 name();
+#define _PLATFORM_API_FUNCTIONS(X) \
+	X(mlc_malloc, 			void*, 		(u64)) \
+	X(mlc_calloc, 			void*, 		(u64, u64)) \
+	X(mlc_realloc, 			void*, 		(void*, u64)) \
+	X(mlc_free, 			void, 		(void*)) \
+	X(mlc_fwrite, 			void, 		(s32, char const*)) \
+	X(mlc_exit, 			void,	 	(s32)) \
+	X(nanotime, 			u64, 		()) \
+	X(read_entire_file, 	Buffer, 	(char const*))
 
 #ifdef STELLA_DYNAMIC
 extern "C" {
-	typedef MLC_MALLOC(mlc_malloc_fn);
-	typedef MLC_CALLOC(mlc_calloc_fn);
-	typedef MLC_REALLOC(mlc_realloc_fn);
-	typedef MLC_FREE(mlc_free_fn);
-	typedef MLC_FWRITE(mlc_fwrite_fn);
-	typedef READ_ENTIRE_FILE(read_entire_file_fn);
-	typedef TVSPRINTF(tvsprintf_fn);
-	typedef TSPRINTF(tsprintf_fn);
-	typedef TPRINTF(tprintf_fn);
-	typedef TFPRINTF(tfprintf_fn);
-	typedef MLC_EXIT(mlc_exit_fn);
-	typedef NANOTIME(nanotime_fn);
+	#define _X(ident, ret, params) typedef ret ident##_fn params;
+	_PLATFORM_API_FUNCTIONS(_X)
+	#undef _X
 }
 
-#define FPTR(name) name##_fn *name
-#define PLATFORM_API_FUNCTIONS(p) p FPTR(mlc_malloc); \
-	p FPTR(mlc_calloc); \
-	p FPTR(mlc_realloc); \
-	p FPTR(mlc_free); \
-	p FPTR(mlc_fwrite); \
-	p FPTR(read_entire_file); \
-	p FPTR(mlc_exit); \
-	p FPTR(nanotime);
+#define _X_PLATFORM_API_FUNCTIONS(ident, ret, params) ident##_fn *ident;
+#define PLATFORM_API_FUNCTIONS() _PLATFORM_API_FUNCTIONS(_X_PLATFORM_API_FUNCTIONS)
 
 struct PlatformAPI {
 	PLATFORM_API_FUNCTIONS()
 };
 #else
-#define PLATFORM_API_FUNCTIONS(ignored) extern "C" MLC_MALLOC(mlc_malloc); \
-	extern "C" MLC_CALLOC(mlc_calloc); \
-	extern "C" MLC_REALLOC(mlc_realloc); \
-	extern "C" MLC_FREE(mlc_free); \
-	extern "C" MLC_FWRITE(mlc_fwrite); \
-	extern "C" READ_ENTIRE_FILE(read_entire_file); \
-	extern "C" MLC_EXIT(mlc_exit); \
-	extern "C" NANOTIME(nanotime);
+#define _X_PLATFORM_API_FUNCTIONS(ident, ret, params) extern "C" ret ident params;
+#define PLATFORM_API_FUNCTIONS() _PLATFORM_API_FUNCTIONS(_X_PLATFORM_API_FUNCTIONS)
 #endif
 
 

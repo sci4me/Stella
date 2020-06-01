@@ -7,8 +7,6 @@
 #include <float.h>
 #include <alloca.h>
 
-#include "mylibc.hpp"
-
 
 extern "C" {
 	void* stella_im_malloc(u64);

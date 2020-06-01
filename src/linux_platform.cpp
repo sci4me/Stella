@@ -9,6 +9,7 @@
 #define STB_SPRINTF_IMPLEMENTATION
 #include "stb_sprintf.h"
 
+
 #include "platform_interface.hpp"
 #include "mylibc.cpp"
 #include "linux_mylibc.cpp"
@@ -453,9 +454,9 @@ s32 main(s32 argc, char **argv) {
     PACK(mlc_realloc);
     PACK(mlc_free);
     PACK(mlc_fwrite);
-    PACK(read_entire_file);
     PACK(mlc_exit);
     PACK(nanotime);
+    PACK(read_entire_file);
 
     #undef PACK
 

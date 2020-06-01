@@ -33,7 +33,7 @@ struct Player {
 
 
     void init(Game *game, World *world) {
-        this->game = game;;
+        this->game = game;
         this->world = world;
 
         inventory.init(16);

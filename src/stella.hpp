@@ -1,6 +1,9 @@
 #include "platform_interface.hpp"
 
 
+#define GL_DEBUG
+
+
 struct Game {
 	f32 scale = 1.0f;
 

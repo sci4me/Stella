@@ -1,5 +1,3 @@
-#include "mylibc.hpp"
-
 // NOTE TODO: Query this...
 constexpr u64 PAGE_SIZE = 4096;
 

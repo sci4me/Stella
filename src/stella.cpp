@@ -8,16 +8,24 @@
 // In the static compilation case, that doesn't make sense!
 // What to do? *shrugs*
 //                  - sci4me, 6/1/20
-PLATFORM_API_FUNCTIONS(static)
+PLATFORM_API_FUNCTIONS()
 
 
 #ifdef STELLA_DYNAMIC
 #include "mylibc.cpp" // TODO REMOVEME
 #endif
 
+
+// NOTE: We have to include this before the defines for
+// stb_image. This has bothered me for some time now but,
+// yknow. Sometimes it do be like that.
 #include "maths.hpp"
 
 
+// NOTE TODO: We're duplicating stb_sprintf here!
+// We should really just suck it up and make it
+// a "platform API function" even thought it's
+// not platform-specific at all. lol
 #ifdef STELLA_DYNAMIC
 #define STB_SPRINTF_IMPLEMENTATION
 #endif
@@ -81,8 +89,6 @@ PLATFORM_API_FUNCTIONS(static)
 #include "ui.cpp"
 #include "player.cpp"
 
-
-#define GL_DEBUG
 
 void dump_gl_extensions() {
     tprintf("  GL_EXTENSIONS\n");
@@ -171,27 +177,36 @@ extern "C" GAME_ATTACH(stella_attach) {
     UNPACK(mlc_realloc);
     UNPACK(mlc_free);
     UNPACK(mlc_fwrite);
-    UNPACK(read_entire_file);
     UNPACK(mlc_exit);
     UNPACK(nanotime);
+    UNPACK(read_entire_file);
 
     #undef UNPACK
 
 
     // NOTE: This is far from ideal, but, eh,
     // saves me a lot of time and pain, for now.
+    //
+    // In case it wasn't obvious, the reason this
+    // is unideal is that we're re-loading all of
+    // the GL functions every time we re-load the
+    // dylib (the game code). Since that only
+    // happens in dev mode anyway, maybe this is fine?
     assert(glewInit() == GLEW_OK);
 }
 #endif
 
 extern "C" GAME_INIT(stella_init) {
+    // NOTE: Maybe don't duplicate this?...
     #ifdef STELLA_STATIC
     assert(glewInit() == GLEW_OK);
     #endif
 
+
     void *mem = mlc_malloc(sizeof(Game));
     Game* g = new(mem) Game;
     pio->game_memory = g;
+
 
     #ifdef GL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);

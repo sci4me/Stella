@@ -1,8 +1,8 @@
-#include "linux_mylibc.hpp"
 #include "linux_syscall.cpp"
 
 extern "C" {
 	void* mlc_memcpy(void *dst, void const* src, u64 n);
+	void mlc_free(void* p);
 
 	void* mlc_malloc(u64 n) {
 		n += sizeof(u64); // NOTE: This is so we can store the size.
