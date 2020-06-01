@@ -26,8 +26,6 @@ Features:
        especially once we consider things like tiles that are doing their
        update logic, etc.
        I find it hard to believe that I'll actually do this.
- - Key/Mouse Event Dispatch / Handling
-   - Instead of having to like, hackily debounce keys with a static bool...
  - Shift clicking in inventories!
  - Ability to select part of a stack vs only the entire thing
  - Click outside of ImGui window to close it? Maybe?
@@ -35,6 +33,10 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Set window positions when opening them
+   - Not sure how exactly to do this well
+   - But, just letting imgui default the positions
+     seems to be no bueno.
  - Structure the user input code such that we don't have to
    constantly check ImGuiIO::WantXXX all throughout our code.
    - Should be able to just clear the input members that get
@@ -81,19 +83,6 @@ Code/Dev Features/Quality:
    maths.cpp and also math.cpp...
  - Format strings with %
    - Because fuck printf and friends
- - OH MY GOD FIX THE FKIN BUILD TIME
-   - Just had a build take 3.679 (ayyy! ... i'm like yeaaaa she's fine.... no? .. okay)
-     - WTF imgui y u do dis
-   - Okay so, for realsies tho: the slowdown is almost certainly because we're now
-     building Dear ImGui from source rather than using a statically linked library.
-     We do this because we have to use all those dumn fkin macros to tell imgui
-     not to use libc...
-     So. Hmmh. #HowDoWeDoDis?
-       - I don't think we can even build object files (not a .a, just.o's)
-         - The compiler won't be able to resolve ...
-           well...
-           Maybe we could if we declare the symbols as extern...
-           Hmmmmmmmmhmhmhmhmhmhmmhmhmhmhmhmhmhm...
  - Merge the ctime files!
    - I split them because the linux version
      of ctime wouldn't handle the Casey version
@@ -166,6 +155,9 @@ Code/Dev Features/Quality:
    - We also would like to make it possible to build either as an exe
      or as an exe and a dll/so, etc. depending on whether it's a dev
      or release build. This shouldn't be hard; maybe just a bit finicky.
+   - So, in the `i_hate_everything_please_end_me_now` branch, we uh...
+     took a first stab at this. What we need to do is fairly obvious but...
+     damn. What a nightmare it is...
  - Shader Abstraction
    - Bind/Unbind
    - Ability to handle uniforms
@@ -189,27 +181,8 @@ Quality/Optimization:
  - Dynamically load everything instead of dynamically linking
    - i.e. remove -lX11 -lGL etc.
      - Is this worth doing? Why? etc.
- - Remove libc
-   - We have done this, but, well, we're not done yet lol.
-   - Going to be a fair bit more work.
-     - X code isn't robust
-     - No win32 code yet
-     - Replacing libc with our own code
-     - Making imgui work
-       - We got it compiling but.. damn.
-         - What a mess!
- - Verify that we only have _one_ copy of GLEW being build
-   into our executable! I _think_ this is the case.. but..
-   - I'm really not sure if .. like..
-     We're not explicitly linking GLEW into the static lib for
-     imgui, so... presumably it assumes that it will be linked
-     in at a later stage, as it is in our main build?
-     - Is this how linking works though? Can you do this?
-       - Build a static library that must be linked into something else,
-         _alongside_ another static library
-   - Also, tbh, I don't know ... if/how our imgui build is working;
-     It's including <GLEW/*> rather than "glew/*" so, is it using
-     headers _outside of /vendor? It would have to be???
+       - Well for one thing, it's probably faster?
+         - At least at compile time?
  - Tests
    - It's starting to get to the point where we have easily
      testable things that probably _should_ be tested.
