@@ -1,14 +1,17 @@
-#include "platform_interface.hpp"
-#include "mylibc.cpp"
-#include "linux_mylibc.cpp"
-
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-
 #include <float.h> // FLT_MAX
+
+
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb_sprintf.h"
+
+#include "platform_interface.hpp"
+#include "mylibc.cpp"
+#include "linux_mylibc.cpp"
 
 
 #define GLX_MAJOR 1
@@ -320,14 +323,16 @@ static void update_button_state(PlatformIO *pio, Virtual_Button vb, bool state) 
 s32 main(s32 argc, char **argv) {
 	Display *dsp = XOpenDisplay(0);
     if(!dsp) {
-    	tprintf("Failed to open X display!\n");
+    	mlc_fwrite(STDERR, "Failed to open X display!\n");
         return 1;
     }
 
     GLint glx_major, glx_minor;
     glXQueryVersion(dsp, &glx_major, &glx_minor);
     if(glx_major < GLX_MAJOR || glx_minor < GLX_MINOR) {
-    	tprintf("GLX version too old! Got %d.%d, want %d.%d+\n", glx_major, glx_minor, GLX_MAJOR, GLX_MINOR);
+    	char buf[1024];
+        stbsp_sprintf(buf, "GLX version too old! Got %d.%d, want %d.%d+\n", glx_major, glx_minor, GLX_MAJOR, GLX_MINOR);
+        mlc_fwrite(STDERR, buf);
         XCloseDisplay(dsp);
         return 1;
     }
@@ -352,7 +357,7 @@ s32 main(s32 argc, char **argv) {
     s32 fb_count;
     GLXFBConfig *fbcs = glXChooseFBConfig(dsp, DefaultScreen(dsp), att, &fb_count);
     if(fbcs == 0) {
-    	tprintf("Failed to choose framebuffer config!\n");
+    	mlc_fwrite(STDERR, "Failed to choose framebuffer config!\n");
         XCloseDisplay(dsp);
         return 1;
     }
@@ -360,7 +365,7 @@ s32 main(s32 argc, char **argv) {
     // TODO: Pick the best out of fbcs
     XVisualInfo *vi = glXGetVisualFromFBConfig(dsp, fbcs[0]);
     if(!vi) {
-    	tprintf("Failed to get XVisualInfo from framebuffer config!\n");
+    	mlc_fwrite(STDERR, "Failed to get XVisualInfo from framebuffer config!\n");
         XCloseDisplay(dsp);
         return 1;
     }
@@ -373,7 +378,7 @@ s32 main(s32 argc, char **argv) {
 
     Window win = XCreateWindow(dsp, root, 0, 0, 1280, 720, 0, vi->depth, InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
     if(!win) {
-    	tprintf("Failed to create X window!\n");
+    	mlc_fwrite(STDERR, "Failed to create X window!\n");
         XCloseDisplay(dsp);
         return 1;
     }
@@ -384,7 +389,7 @@ s32 main(s32 argc, char **argv) {
 
     auto glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((GLubyte const*)"glXCreateContextAttribsARB");
     if(!glXCreateContextAttribsARB) {
-        tprintf("glXCreateContextAttribsARB is not available!\n");
+        mlc_fwrite(STDERR, "glXCreateContextAttribsARB is not available!\n");
         XDestroyWindow(dsp, win);
         XCloseDisplay(dsp);
         return 1;
@@ -403,7 +408,7 @@ s32 main(s32 argc, char **argv) {
     XSetErrorHandler(eh);
 
     if(x_error_occurred) {
-        tprintf("Failed to create GLX context!\n");
+        mlc_fwrite(STDERR, "Failed to create GLX context!\n");
         XDestroyWindow(dsp, win);
         XCloseDisplay(dsp);
         return 1;
@@ -415,7 +420,7 @@ s32 main(s32 argc, char **argv) {
     XSetWMProtocols(dsp, win, &atomWmDeleteWindow, 1);
 
     if(!glXIsDirect(dsp, glc)) {
-    	tprintf("GLX gave us an indirect GL context even though we asked for a direct one! :(\n");
+    	mlc_fwrite(STDERR, "GLX gave us an indirect GL context even though we asked for a direct one! :(\n");
         glXDestroyContext(dsp, glc);
         XDestroyWindow(dsp, win);
         XCloseDisplay(dsp);
@@ -447,11 +452,8 @@ s32 main(s32 argc, char **argv) {
     PACK(mlc_calloc);
     PACK(mlc_realloc);
     PACK(mlc_free);
+    PACK(mlc_fwrite);
     PACK(read_entire_file);
-    PACK(tvsprintf);
-    PACK(tsprintf);
-    PACK(tprintf);
-    PACK(tfprintf);
     PACK(mlc_exit);
     PACK(nanotime);
 
@@ -460,7 +462,7 @@ s32 main(s32 argc, char **argv) {
     char path[256];
     s64 n = sc_readlink("/proc/self/exe", path, array_length(path) - 4);
     if(n <= 0) {
-        tfprintf(STDERR, "Failed to read /proc/self/exe!\n");
+        mlc_fwrite(STDERR, "Failed to read /proc/self/exe!\n");
         return 1;
     }
     path[n] = '.';
@@ -470,32 +472,33 @@ s32 main(s32 argc, char **argv) {
 
     void *stella_dylib = dlopen(path, RTLD_NOW | RTLD_LOCAL);
     if(!stella_dylib) {
-        tfprintf(STDERR, "Failed to load stella.so:\n");
-        tfprintf(STDERR, "%s\n", dlerror());
+        char buf[1024];
+        stbsp_sprintf(buf, "Failed to load stella.so:\n%s\n", dlerror());
+        mlc_fwrite(STDERR, buf);
         return 1;
     }
 
     stella_attach = (Game_Attach*) dlsym(stella_dylib, "stella_attach");
     if(!stella_attach) {
-        tfprintf(STDERR, "Failed to load symbol `stella_attach`!\n");
+        mlc_fwrite(STDERR, "Failed to load symbol `stella_attach`!\n");
         return 1;
     }
 
     stella_init = (Game_Init*) dlsym(stella_dylib, "stella_init");
     if(!stella_init) {
-        tfprintf(STDERR, "Failed to load symbol `stella_init`!\n");
+        mlc_fwrite(STDERR, "Failed to load symbol `stella_init`!\n");
         return 1;
     }
 
     stella_deinit = (Game_Deinit*) dlsym(stella_dylib, "stella_deinit");
     if(!stella_deinit) {
-        tfprintf(STDERR, "Failed to load symbol `stella_deinit`!\n");
+        mlc_fwrite(STDERR, "Failed to load symbol `stella_deinit`!\n");
         return 1;
     }
 
     stella_update_and_render = (Game_Update_And_Render*) dlsym(stella_dylib, "stella_update_and_render");
     if(!stella_update_and_render) {
-        tfprintf(STDERR, "Failed to load symbol `stella_update_and_render`!\n");
+        mlc_fwrite(STDERR, "Failed to load symbol `stella_update_and_render`!\n");
         return 1;
     }
 
@@ -609,7 +612,9 @@ s32 main(s32 argc, char **argv) {
                     if(xev.type >= 0 && xev.type < array_length(XEvent_Type_Names)) name = XEvent_Type_Names[xev.type];
                     else                                                            name = "<oob>";
 
-                    tfprintf(STDERR, "WARN: Unhandled X11 event: %s (%d)\n", name, xev.type);
+                    char buf[256];
+                    stbsp_sprintf(buf, "WARN: Unhandled X11 event: %s (%d)\n", name, xev.type);
+                    mlc_fwrite(STDOUT, buf);
                     break;
                 }
             }

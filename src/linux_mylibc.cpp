@@ -47,6 +47,11 @@ extern "C" {
 		sc_munmap(x, *x);
 	}
 
+	void mlc_fwrite(s32 fd, char const* str) {
+		// NOTE TODO: Double-check on that +1...
+		sc_write(fd, str, mlc_strlen(str) + 1);
+	}
+
 	// NOTE: This always adds a null terminator to the end
 	// of the data, but that is not included in `len`.
 	Buffer read_entire_file(char const* name) {
@@ -81,43 +86,6 @@ extern "C" {
 	    sc_close(fd);
 
 	    return { data, (u64) statbuf.st_size };
-	}
-
-
-	char* tvsprintf(char const* fmt, va_list args) {
-	    va_list args2;
-	    va_copy(args2, args);
-	    s32 len = stbsp_vsnprintf(0, 0, fmt, args);
-	    va_end(args);
-
-	    char *buf = (char*) talloc(len);
-
-	    stbsp_vsprintf(buf, fmt, args2);
-	    va_end(args2);
-
-	    buf[len] = 0;
-
-	    return buf;
-	}
-
-	char* tsprintf(char const* fmt, ...) {
-	    va_list args;
-	    va_start(args, fmt);
-	    return tvsprintf(fmt, args);
-	}
-
-	void tprintf(char const* fmt, ...) {
-	    va_list args;
-	    va_start(args, fmt);
-	    char *buf = tvsprintf(fmt, args);
-	    sc_write(STDOUT, buf, mlc_strlen(buf) + 1);
-	}
-
-	void tfprintf(s32 fd, char const* fmt, ...) {
-	    va_list args;
-	    va_start(args, fmt);
-	    char *buf = tvsprintf(fmt, args);
-	    sc_write(fd, buf, mlc_strlen(buf) + 1);
 	}
 
 	void mlc_exit(s32 code) {

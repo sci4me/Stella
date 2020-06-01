@@ -1,4 +1,7 @@
-#include "temporary_storage.hpp"
+constexpr u64 TEMPORARY_STORAGE_SIZE = 1024 * 64;
+constexpr u64 TEMPORARY_STORAGE_ALIGNMENT = 8;
+
+// TODO: Make this thread-safe!
 
 char temporary_storage_buffer[TEMPORARY_STORAGE_SIZE];
 u64 temporary_storage_used = 0;
@@ -10,6 +13,7 @@ void* talloc(u64 x) {
 	
 	if(new_used > TEMPORARY_STORAGE_SIZE) {
 		// TODO ?
+		assert(0);
 		return 0;
 	}
 

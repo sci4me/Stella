@@ -1,11 +1,7 @@
 #ifndef MYLIBC_H
 #define MYLIBC_H
 
-#include "stb_sprintf.h"
-
 #include "common.hpp"
-#include "temporary_storage.hpp"
-
 
 extern "C" {
 	void* mlc_memset(void *p, s32 v, u64 n);

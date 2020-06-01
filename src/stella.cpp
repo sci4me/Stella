@@ -1,15 +1,27 @@
 #include "stella.hpp"
 
 
+// NOTE: I have yet to decide whether I truly want these
+// to be globals or not. So far it's been fine but... eh.
+// Sometimes I feel like I'd be more comfortable
+// accessing them through the PlatformAPI struct. EXCEPT...
+// In the static compilation case, that doesn't make sense!
+// What to do? *shrugs*
+//                  - sci4me, 6/1/20
 PLATFORM_API_FUNCTIONS(static)
 
 
 #ifdef STELLA_DYNAMIC
-#include "mylibc.cpp"
+#include "mylibc.cpp" // TODO REMOVEME
 #endif
 
-
 #include "maths.hpp"
+
+
+#ifdef STELLA_DYNAMIC
+#define STB_SPRINTF_IMPLEMENTATION
+#endif
+#include "stb_sprintf.h"
 
 
 #define IMGUI_USER_CONFIG "stella_imconfig.hpp"
@@ -45,6 +57,7 @@ PLATFORM_API_FUNCTIONS(static)
 #include "GL/glew.h"
 
 
+#include "temporary_storage.cpp"
 #include "off_the_rails.cpp"
 #include "math.cpp"
 #include "static_bitset.cpp"
@@ -148,6 +161,7 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 void* stella_im_malloc(u64 n) { return mlc_malloc(n); }
 void stella_im_free(void *p) { mlc_free(p); }
 
+
 #ifdef STELLA_DYNAMIC
 extern "C" GAME_ATTACH(stella_attach) {
     #define UNPACK(name) name = pio->api.name
@@ -156,11 +170,8 @@ extern "C" GAME_ATTACH(stella_attach) {
     UNPACK(mlc_calloc);
     UNPACK(mlc_realloc);
     UNPACK(mlc_free);
+    UNPACK(mlc_fwrite);
     UNPACK(read_entire_file);
-    UNPACK(tvsprintf);
-    UNPACK(tsprintf);
-    UNPACK(tprintf);
-    UNPACK(tfprintf);
     UNPACK(mlc_exit);
     UNPACK(nanotime);
 

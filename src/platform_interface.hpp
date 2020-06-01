@@ -43,6 +43,7 @@
 #define MLC_CALLOC(name) void* name(u64, u64)
 #define MLC_REALLOC(name) void* name(void*, u64)
 #define MLC_FREE(name) void name(void*)
+#define MLC_FWRITE(name) void name(s32, char const*)
 #define READ_ENTIRE_FILE(name) Buffer name(char const*)
 #define TVSPRINTF(name) char* name(char const*, va_list)
 #define TSPRINTF(name) char* name(char const*, ...)
@@ -57,6 +58,7 @@ extern "C" {
 	typedef MLC_CALLOC(mlc_calloc_fn);
 	typedef MLC_REALLOC(mlc_realloc_fn);
 	typedef MLC_FREE(mlc_free_fn);
+	typedef MLC_FWRITE(mlc_fwrite_fn);
 	typedef READ_ENTIRE_FILE(read_entire_file_fn);
 	typedef TVSPRINTF(tvsprintf_fn);
 	typedef TSPRINTF(tsprintf_fn);
@@ -71,11 +73,8 @@ extern "C" {
 	p FPTR(mlc_calloc); \
 	p FPTR(mlc_realloc); \
 	p FPTR(mlc_free); \
+	p FPTR(mlc_fwrite); \
 	p FPTR(read_entire_file); \
-	p FPTR(tvsprintf); \
-	p FPTR(tsprintf); \
-	p FPTR(tprintf); \
-	p FPTR(tfprintf); \
 	p FPTR(mlc_exit); \
 	p FPTR(nanotime);
 
@@ -87,11 +86,8 @@ struct PlatformAPI {
 	extern "C" MLC_CALLOC(mlc_calloc); \
 	extern "C" MLC_REALLOC(mlc_realloc); \
 	extern "C" MLC_FREE(mlc_free); \
+	extern "C" MLC_FWRITE(mlc_fwrite); \
 	extern "C" READ_ENTIRE_FILE(read_entire_file); \
-	extern "C" TVSPRINTF(tvsprintf); \
-	extern "C" TSPRINTF(tsprintf); \
-	extern "C" TPRINTF(tprintf); \
-	extern "C" TFPRINTF(tfprintf); \
 	extern "C" MLC_EXIT(mlc_exit); \
 	extern "C" NANOTIME(nanotime);
 #endif

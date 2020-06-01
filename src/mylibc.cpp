@@ -1,10 +1,5 @@
 #include "mylibc.hpp"
 
-#include "temporary_storage.cpp"
-
-#define STB_SPRINTF_IMPLEMENTATION
-#include "stb_sprintf.h"
-
 // NOTE TODO: Query this...
 constexpr u64 PAGE_SIZE = 4096;
 
