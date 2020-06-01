@@ -236,7 +236,7 @@ namespace imsupport {
 
         vao.unbind();
 
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTextureUnit(0, 0);
         glUseProgram(0);
         glDisable(GL_SCISSOR_TEST);
 
