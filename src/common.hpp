@@ -33,4 +33,12 @@ static_assert(sizeof(f64) == 8);
 #endif
 
 
+#define array_length(a) ((sizeof(a))/(sizeof(a[0])))
+#define offsetof(type, member) ((u64)&(((type *)0)->member))
+
+
+// TODO: Make this less terrible.
+#define assert(x) if(!(x)){*(volatile int*)0=0;}
+
+
 #endif

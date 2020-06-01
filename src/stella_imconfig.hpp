@@ -7,7 +7,7 @@
 #include <float.h>
 #include <alloca.h>
 
-#include "types.hpp"
+#include "common.hpp"
 
 
 #define IMGUI_NO_LIBC

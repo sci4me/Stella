@@ -13,7 +13,7 @@
 #define PLATFORM_INTERFACE_H
 
 
-#include "types.hpp"
+#include "common.hpp"
 
 
 // NOTE TODO: We don't want to include GLEW in here.

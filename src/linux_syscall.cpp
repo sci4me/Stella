@@ -1,7 +1,7 @@
 #include <sys/fcntl.h>
 #include <sys/stat.h>
 
-#include "types.hpp"
+#include "common.hpp"
 
 extern "C" {
 	void* syscall0(void*);

@@ -320,12 +320,3 @@ void tfprintf(s32 fd, char const* fmt, ...) {
     char *buf = tvsprintf(fmt, args);
     sc_write(fd, buf, mlc_strlen(buf) + 1);
 }
-
-
-void __assert_fail(char const* msg, char const* file, s32 line) {
-    tfprintf(STDERR, "Assertion failed: %s at %s, line %d\n", msg, file, line);
-
-    s32 pid = sc_getpid();
-    s32 tid = sc_gettid();
-    sc_tgkill(pid, tid, 6); // SIGABRT
-}
