@@ -33,6 +33,16 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Asset files
+   - _Eventually_ (TM), we'll want to have a custom asset file
+     format instead of just loading PNGs from disk, for example.
+ - Composable shaders
+   - Well, actually, calling it that sounds like something
+     a bit different than what I meant here...
+     - Just a preprocessor to do things like #include for our
+       GLSL code; this will be relevant when we start to care
+       about graphical quality and want to be doing more
+       GPU-side work.
  - Set window positions when opening them
    - Not sure how exactly to do this well
    - But, just letting imgui default the positions

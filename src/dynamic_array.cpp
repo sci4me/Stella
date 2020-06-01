@@ -61,7 +61,11 @@ struct Dynamic_Array {
 	T& operator[](s32 x) { return data[x]; }
     T const& operator[](s32 x) const { return data[x]; }
 
+    // TODO: Generalize this so we can use it on Static_Array, and,
+    // ideally, just with "plain-old-C-arrays", if you will.
+    // i.e. mlc_qsort, which, currently, appears to be 100% borked.
     void qsort(s32 (*compar)(T const&, T const&)) {
+    	if(count <= 1) return;
     	_qsort(0, count - 1, compar);
     }
 
