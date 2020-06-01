@@ -30,27 +30,22 @@
 #define APP_NAME "Stella"
 
 
-// TODO: Find a way to make the following crap better!
-// I hate that we have to define PLATFORM_API_FUNCTIONS
-// twice. I also don't love the macros for all the
-// "platform functions". Maybe we can do better? *shrugs*
-//					- sci4me, 6/1/20
-
-// NOTE TODO: this is gross.
-#include <stdarg.h>
+#define STDIN 				0
+#define STDOUT				1
+#define STDERR				2
 
 
 // TODO: Instead of having malloc, calloc, realloc, and free,
 // we just want to have alloc and free.
-#define _PLATFORM_API_FUNCTIONS(X) \
-	X(mlc_malloc, 			void*, 		(u64)) \
-	X(mlc_calloc, 			void*, 		(u64, u64)) \
-	X(mlc_realloc, 			void*, 		(void*, u64)) \
-	X(mlc_free, 			void, 		(void*)) \
-	X(mlc_fwrite, 			void, 		(s32, char const*)) \
-	X(mlc_exit, 			void,	 	(s32)) \
-	X(nanotime, 			u64, 		()) \
-	X(read_entire_file, 	Buffer, 	(char const*))
+#define _PLATFORM_API_FUNCTIONS(X) 								  \
+	X(mlc_malloc, 			void*, 		(u64)					) \
+	X(mlc_calloc, 			void*, 		(u64, u64)				) \
+	X(mlc_realloc, 			void*, 		(void*, u64)			) \
+	X(mlc_free, 			void, 		(void*)					) \
+	X(mlc_fwrite, 			void, 		(s32, char const*)		) \
+	X(mlc_exit, 			void,	 	(s32)					) \
+	X(nanotime, 			u64, 		()						) \
+	X(read_entire_file, 	Buffer, 	(char const*)			)
 
 #ifdef STELLA_DYNAMIC
 extern "C" {
@@ -60,14 +55,14 @@ extern "C" {
 }
 
 #define _X_PLATFORM_API_FUNCTIONS(ident, ret, params) ident##_fn *ident;
-#define PLATFORM_API_FUNCTIONS() _PLATFORM_API_FUNCTIONS(_X_PLATFORM_API_FUNCTIONS)
+#define PLATFORM_API_FUNCTIONS _PLATFORM_API_FUNCTIONS(_X_PLATFORM_API_FUNCTIONS)
 
 struct PlatformAPI {
-	PLATFORM_API_FUNCTIONS()
+	PLATFORM_API_FUNCTIONS
 };
 #else
 #define _X_PLATFORM_API_FUNCTIONS(ident, ret, params) extern "C" ret ident params;
-#define PLATFORM_API_FUNCTIONS() _PLATFORM_API_FUNCTIONS(_X_PLATFORM_API_FUNCTIONS)
+#define PLATFORM_API_FUNCTIONS _PLATFORM_API_FUNCTIONS(_X_PLATFORM_API_FUNCTIONS)
 #endif
 
 

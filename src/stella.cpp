@@ -8,7 +8,7 @@
 // In the static compilation case, that doesn't make sense!
 // What to do? *shrugs*
 //                  - sci4me, 6/1/20
-PLATFORM_API_FUNCTIONS()
+PLATFORM_API_FUNCTIONS
 
 
 #ifdef STELLA_DYNAMIC

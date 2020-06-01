@@ -16,8 +16,8 @@ typedef double f64;
 
 // NOTE: Yes, I do enjoy being this rude. Fite me.
 // (Currently I only target 64-bit architectures. x64 specifically :P)
-static_assert(sizeof(u8) == 1);
-static_assert(sizeof(s8) == 1);
+static_assert(sizeof(u8)  == 1);
+static_assert(sizeof(s8)  == 1);
 static_assert(sizeof(u16) == 2);
 static_assert(sizeof(s16) == 2);
 static_assert(sizeof(u32) == 4);
@@ -34,6 +34,7 @@ static_assert(sizeof(f64) == 8);
 
 
 #define array_length(a) ((sizeof(a))/(sizeof(a[0])))
+
 
 #ifdef offsetof
 #undef offsetof
@@ -52,12 +53,6 @@ inline void __assert(bool x) {
 #undef assert
 #endif
 #define assert(x) __assert(!!(x))
-
-
-// NOTE TODO: Do we want these here??
-#define STDIN 				0
-#define STDOUT				1
-#define STDERR				2
 
 
 struct Buffer {
