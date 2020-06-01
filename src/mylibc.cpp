@@ -230,7 +230,7 @@ extern "C" {
 		_mlc_qsort(base, size, 0, (s64)num - 1, compar);
 	}
 
-	int mlc_sscanf(char const* s, char const* format, ...) {
+	s32 mlc_sscanf(char const* s, char const* format, ...) {
 		assert(0);
 		// TODO
 		return 0;

@@ -267,7 +267,7 @@ static void init_key_map() {
 
 // NOTE: This is hacky but meh, it's what we've got.
 bool x_error_occurred = false;
-static int x_error_handler(Display *dsp, XErrorEvent *ev) {
+static s32 x_error_handler(Display *dsp, XErrorEvent *ev) {
     x_error_occurred = true;
     return 0;
 }
@@ -341,7 +341,7 @@ s32 main(s32 argc, char **argv) {
         None
     };
 
-    int fb_count;
+    s32 fb_count;
     GLXFBConfig *fbcs = glXChooseFBConfig(dsp, DefaultScreen(dsp), att, &fb_count);
     if(fbcs == 0) {
     	tprintf("Failed to choose framebuffer config!\n");

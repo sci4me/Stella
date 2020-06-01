@@ -108,9 +108,9 @@ struct mat4 {
         mat4 r;
         mlc_memset(&r, 0, sizeof(mat4));
 
-        for(int i = 0; i < 4; i++) {
-            for(int j = 0; j < 4; j++) {
-                for(int k = 0; k < 4; k++) {
+        for(s32 i = 0; i < 4; i++) {
+            for(s32 j = 0; j < 4; j++) {
+                for(s32 k = 0; k < 4; k++) {
                     r.m[i][j] += m[i][k] * b.m[k][j];
                 }
             }    
