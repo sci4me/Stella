@@ -35,7 +35,13 @@ Index of this file:
 #include "imgui_internal.h"
 
 
-#if !defined(IMGUI_NO_LIBC)
+#if defined(IMGUI_NO_LIBC)
+
+#ifndef IM_ALLOCA
+#error "IM_ALLOCA must be defined in IMGUI_NO_LIBC is used."
+#endif
+
+#else
 
 #include <stdio.h>      // vsnprintf, sscanf, printf
 #if !defined(alloca)
@@ -51,9 +57,9 @@ Index of this file:
 #endif
 #endif
 
-#else
-
-// TODO
+#ifndef IM_ALLOCA
+#define IM_ALLOCA alloca
+#endif
 
 #endif
 
@@ -659,7 +665,7 @@ void ImDrawList::AddPolyline(const ImVec2* points, const int points_count, ImU32
         PrimReserve(idx_count, vtx_count);
 
         // Temporary buffer
-        ImVec2* temp_normals = (ImVec2*)alloca(points_count * (thick_line ? 5 : 3) * sizeof(ImVec2)); //-V630
+        ImVec2* temp_normals = (ImVec2*)IM_ALLOCA(points_count * (thick_line ? 5 : 3) * sizeof(ImVec2)); //-V630
         ImVec2* temp_points = temp_normals + points_count;
 
         for (int i1 = 0; i1 < count; i1++)
@@ -850,7 +856,7 @@ void ImDrawList::AddConvexPolyFilled(const ImVec2* points, const int points_coun
         }
 
         // Compute normals
-        ImVec2* temp_normals = (ImVec2*)alloca(points_count * sizeof(ImVec2)); //-V630
+        ImVec2* temp_normals = (ImVec2*)IM_ALLOCA(points_count * sizeof(ImVec2)); //-V630
         for (int i0 = points_count-1, i1 = 0; i1 < points_count; i0 = i1++)
         {
             const ImVec2& p0 = points[i0];

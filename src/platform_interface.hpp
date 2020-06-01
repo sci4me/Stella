@@ -105,6 +105,7 @@ struct PlatformIO {
 
 	void *game_memory;
 
+	// TODO: remove the `_button`?
 	inline bool is_button_down(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_DOWN) != 0; }
 	inline bool was_button_pressed(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_PRESSED) != 0; }
 	inline bool was_button_released(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_RELEASED) != 0; }

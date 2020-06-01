@@ -220,6 +220,10 @@ Index of this file:
 #error "IM_VSNPRINTF must be defined if IMGUI_NO_LIBC is used and IMGUI_USE_STB_SPRINTF is not."
 #endif
 
+#if !defined(IM_ALLOCA)
+#error "IM_ALLOCA must be defined if IMGUI_NO_LIBC is used."
+#endif
+
 #endif
 
 // Version
@@ -240,6 +244,9 @@ Index of this file:
 
 // Helper Macros
 #ifndef IM_ASSERT
+#ifdef IMGUI_NO_LIBC
+#error "IM_ASSERT must be defined if IMGUI_NO_LIBC is used."
+#endif
 #include <assert.h>
 #define IM_ASSERT(_EXPR)            assert(_EXPR)                               // You can override the default assert handler by editing imconfig.h
 #endif

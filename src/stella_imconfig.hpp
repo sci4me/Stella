@@ -48,8 +48,8 @@ extern "C" {
 }
 
 
-// #define IM_ASSERT(x)                assert(x)
-#define IM_ASSERT(x)
+#define IM_ALLOCA					alloca
+#define IM_ASSERT(x)                assert(x)
 #define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
 #define IM_MEMMOVE(d, s, n)         mlc_memmove(d, s, n)
 #define IM_MEMCPY(d, s, n)          mlc_memcpy(d, s, n)
