@@ -1,5 +1,5 @@
 void program_attach_shader(GLuint program, char *name, GLenum type) {
-    Entire_File source = read_entire_file(name);
+    Buffer source = read_entire_file(name);
 
     if(!source.data) {
         tfprintf(STDERR, "Unable to read file: %s\n", name);
@@ -10,7 +10,7 @@ void program_attach_shader(GLuint program, char *name, GLenum type) {
     glShaderSource(id, 1, (char const* const*) &source.data, 0);
     glCompileShader(id);
 
-    source.deinit();
+    mlc_free(source.data);
 
     GLint success;
     glGetShaderiv(id, GL_COMPILE_STATUS, &success);

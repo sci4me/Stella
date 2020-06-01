@@ -7,32 +7,12 @@
 #include <float.h>
 #include <alloca.h>
 
-#include "common.hpp"
-
-
-#define IMGUI_NO_LIBC
+#include "mylibc.hpp"
 
 
 extern "C" {
-	void* mlc_memset(void *p, s32 v, u64 n);
-	void* mlc_memmove(void *dst, void const* src, u64 n);
-	void* mlc_memcpy(void *dst, void const* src, u64 n);
-	s32 mlc_memcmp(void const* a, void const* b, u64 n);
-	u64 mlc_strlen(char const* s);
-	char const* mlc_strchr(char const* s, s32 c);
-	char* mlc_strcpy(char *dst, char const* src);
-	s32 mlc_strcmp(char const* a, char const* b);
-	f32 mlc_atof(char const* s);
-	void mlc_qsort(void* base, u64 num, u64 size, s32 (*compar)(void const*, void const*));
-	void* mlc_malloc(u64 n);
-	void mlc_free(void *p);
-	s32 mlc_toupper(s32 x);
-	char* mlc_strncpy(char *dst, char const* src, u64 n);
-	void const* mlc_memchr(void const* p, s32 v, u64 n);
-	char const* mlc_strstr(char const* a, char const* b);
-	s32 mlc_sscanf(char const* s, char const* format, ...);
-
-	s32 stbsp_vsnprintf(char * buf, s32 count, char const* fmt, va_list va);
+	void* stella_im_malloc(u64);
+	void stella_im_free(void*);
 
 	f32 PT_fabsf(f32 x);
 	f32 PT_sqrtf(f32 x);
@@ -48,6 +28,7 @@ extern "C" {
 }
 
 
+#define IMGUI_NO_LIBC
 #define IM_ALLOCA					alloca
 #define IM_ASSERT(x)                assert(x)
 #define IM_MEMSET(d, x, n)          mlc_memset(d, x, n)
@@ -71,8 +52,8 @@ extern "C" {
 static inline float ImPow(float b, float e) { return PT_powf(b, e); }
 static inline double ImPow(double b, double e) { return PT_pow(b, e); }
 #define ImQsort(b, n, s, c)         mlc_qsort(b, n, s, c)
-#define IM_MALLOC_FN(n)             mlc_malloc(n)
-#define IM_FREE_FN(p)               mlc_free(p)
+#define IM_MALLOC_FN(n)             stella_im_malloc(n)
+#define IM_FREE_FN(p)               stella_im_free(p)
 #define IM_TOUPPER(c)               mlc_toupper(c)
 #define IM_STRNCPY(d, s, n)         mlc_strncpy(d, s, n)
 #define IM_MEMCHR(p, v, n)          mlc_memchr(p, v, n)

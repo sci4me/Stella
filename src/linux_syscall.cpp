@@ -80,6 +80,7 @@ extern "C" {
 
 #define SYS_getpid			39
 #define SYS_exit 			60
+#define SYS_readlink		89
 #define SYS_gettid			186
 #define SYS_clock_gettime	228
 #define SYS_tgkill			234
@@ -140,6 +141,10 @@ s32 sc_getpid() {
 
 void sc_exit(s32 code) {
 	SYSCALL1(SYS_exit, (s64)code);
+}
+
+s64 sc_readlink(char const* path, char *buf, u64 bufsz) {
+	return (s64) SYSCALL3(SYS_readlink, path, buf, bufsz);
 }
 
 s32 sc_gettid() {

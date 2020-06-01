@@ -34,11 +34,36 @@ static_assert(sizeof(f64) == 8);
 
 
 #define array_length(a) ((sizeof(a))/(sizeof(a[0])))
+
+#ifdef offsetof
+#undef offsetof
+#endif
 #define offsetof(type, member) ((u64)&(((type *)0)->member))
 
 
 // TODO: Make this less terrible.
-#define assert(x) if(!(x)){*(volatile int*)0=0;}
+inline void __assert(bool x) {
+	if(!x) {
+		*(volatile int*)0 = 0;
+	}
+}
+
+#ifdef assert
+#undef assert
+#endif
+#define assert(x) __assert(!!(x))
+
+
+// NOTE TODO: Do we want these here??
+#define STDIN 				0
+#define STDOUT				1
+#define STDERR				2
+
+
+struct Buffer {
+	u8 *data;
+	u64 len;
+};
 
 
 #endif

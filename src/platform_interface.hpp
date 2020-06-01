@@ -16,20 +16,85 @@
 #include "common.hpp"
 
 
-// NOTE TODO: We don't want to include GLEW in here.
-// However, if we don't, we'll have to create our own
-// way of calling out to GL. Even if it's still through
-// GLEW. Not sure what I want to do here yet, but, for
-// now it's fine to just leave it as is.
-//				- sci4me, 5/28/20
-#define GLEW_STATIC
-#define GLEW_NO_GLU
-#include "GL/glew.h"
+#if defined(STELLA_STATIC) && defined(STELLA_DYNAMIC)
+#error "STELLA_STATIC may not be defined allongside STELLA_DYNAMIC; pick one or the other"
+#elif !defined(STELLA_STATIC) && !defined(STELLA_DYNAMIC)
+#error "STELLA_DYNAMIC or STELLA_STATIC must be defined!"
+#endif
 
 
 #define GL_MAJOR 4
 #define GL_MINOR 4
 #define APP_NAME "Stella"
+
+
+// TODO: Find a way to make the following crap better!
+// I hate that we have to define PLATFORM_API_FUNCTIONS
+// twice. I also don't love the macros for all the
+// "platform functions". Maybe we can do better? *shrugs*
+//					- sci4me, 6/1/20
+
+// NOTE TODO: this is gross.
+#include <stdarg.h>
+
+// TODO: Instead of having malloc, calloc, realloc, and free,
+// we just want to have alloc and free.
+#define MLC_MALLOC(name) void* name(u64)
+#define MLC_CALLOC(name) void* name(u64, u64)
+#define MLC_REALLOC(name) void* name(void*, u64)
+#define MLC_FREE(name) void name(void*)
+#define READ_ENTIRE_FILE(name) Buffer name(char const*)
+#define TVSPRINTF(name) char* name(char const*, va_list)
+#define TSPRINTF(name) char* name(char const*, ...)
+#define TPRINTF(name) void name(char const*, ...)
+#define TFPRINTF(name) void name(s32, char const*, ...)
+#define MLC_EXIT(name) void name(s32);
+#define NANOTIME(name) u64 name();
+
+#ifdef STELLA_DYNAMIC
+extern "C" {
+	typedef MLC_MALLOC(mlc_malloc_fn);
+	typedef MLC_CALLOC(mlc_calloc_fn);
+	typedef MLC_REALLOC(mlc_realloc_fn);
+	typedef MLC_FREE(mlc_free_fn);
+	typedef READ_ENTIRE_FILE(read_entire_file_fn);
+	typedef TVSPRINTF(tvsprintf_fn);
+	typedef TSPRINTF(tsprintf_fn);
+	typedef TPRINTF(tprintf_fn);
+	typedef TFPRINTF(tfprintf_fn);
+	typedef MLC_EXIT(mlc_exit_fn);
+	typedef NANOTIME(nanotime_fn);
+}
+
+#define FPTR(name) name##_fn *name
+#define PLATFORM_API_FUNCTIONS(p) p FPTR(mlc_malloc); \
+	p FPTR(mlc_calloc); \
+	p FPTR(mlc_realloc); \
+	p FPTR(mlc_free); \
+	p FPTR(read_entire_file); \
+	p FPTR(tvsprintf); \
+	p FPTR(tsprintf); \
+	p FPTR(tprintf); \
+	p FPTR(tfprintf); \
+	p FPTR(mlc_exit); \
+	p FPTR(nanotime);
+
+struct PlatformAPI {
+	PLATFORM_API_FUNCTIONS()
+};
+#else
+#define PLATFORM_API_FUNCTIONS(ignored) extern "C" MLC_MALLOC(mlc_malloc); \
+	extern "C" MLC_CALLOC(mlc_calloc); \
+	extern "C" MLC_REALLOC(mlc_realloc); \
+	extern "C" MLC_FREE(mlc_free); \
+	extern "C" READ_ENTIRE_FILE(read_entire_file); \
+	extern "C" TVSPRINTF(tvsprintf); \
+	extern "C" TSPRINTF(tsprintf); \
+	extern "C" TPRINTF(tprintf); \
+	extern "C" TFPRINTF(tfprintf); \
+	extern "C" MLC_EXIT(mlc_exit); \
+	extern "C" NANOTIME(nanotime);
+#endif
 
 
 // NOTE: Virtual_Key is our "virtual" representation of all the different
@@ -78,6 +143,7 @@ enum Button_Flags_ : Button_Flags {
 	BTN_FLAG_RESERVED4  = 128
 };
 
+
 // NOTE: The PlatformIO struct is the central interface point
 // between the game and the platform layer. It is intended to be a
 // 100% cross-platform interface that any platform layer can implement
@@ -92,6 +158,10 @@ enum Button_Flags_ : Button_Flags {
 // and stores a pointer to that struct in `game_memory`. This member is only read/written
 // by the game code itself.
 struct PlatformIO {
+	#ifdef STELLA_DYNAMIC
+	PlatformAPI api;
+	#endif
+
 	s32 window_width;
 	s32 window_height;
 	bool window_just_resized;
@@ -111,6 +181,9 @@ struct PlatformIO {
 	inline bool was_button_released(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_RELEASED) != 0; }
 };
 
+
+#define GAME_ATTACH(name) void name(PlatformIO *pio)
+typedef GAME_ATTACH(Game_Attach);
 
 #define GAME_INIT(name) void name(PlatformIO *pio)
 typedef GAME_INIT(Game_Init);

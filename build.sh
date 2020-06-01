@@ -4,14 +4,15 @@ STATUS=0
 
 ctime -begin stella_linux.ctm
 
-BUILD_MODE=static
-# BUILD_MODE=dynamic
+# BUILD_MODE=static
+BUILD_MODE=dynamic
 
 SRC_DIR=src
 BUILD_DIR=build
 VENDOR_DIR=vendor
 
 EXECUTABLE=stella
+DYLIB=stella.so
 
 # -ffreestanding ?
 # Couldn't get it to "work" (define __STDC_HOSTED__ as 0)
@@ -24,9 +25,11 @@ EXECUTABLE=stella
 
 if [ "$STATUS" -eq 0 ]; then
 CXXFLAGS="-std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector -Wa,--noexecstack"  # -s
-LDFLAGS="-L$VENDOR_DIR/GLEW/lib -L$VENDOR_DIR/imgui/lib -l:imgui.a -lGLEW -lGL -lX11 -lgcc -msse4.1"
-INCLUDES="-I $SRC_DIR -I$VENDOR_DIR/GLEW/include -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math"
+LDFLAGS="-lgcc -msse4.1"
+PLATFORM_LDFLAGS="-lGL -lX11"
+GAME_LDFLAGS="-L$VENDOR_DIR/GLEW/lib -lGLEW -L$VENDOR_DIR/imgui/lib -l:imgui.a"
 
+INCLUDES="-I $SRC_DIR -I$VENDOR_DIR/GLEW/include -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math"
 PLATFORM_SOURCES="$SRC_DIR/linux_syscall.s $SRC_DIR/linux_platform.s $SRC_DIR/linux_platform.cpp"
 GAME_SOURCES="$SRC_DIR/stella.cpp"
 
@@ -34,11 +37,16 @@ mkdir -p $BUILD_DIR
 rm -f $BUILD_DIR/*
 
 if [ "$BUILD_MODE" = "static" ]; then
-	g++ $CXXFLAGS $INCLUDES $PLATFORM_SOURCES $GAME_SOURCES -o $BUILD_DIR/stella $LDFLAGS
+	g++ $CXXFLAGS $INCLUDES $PLATFORM_SOURCES $GAME_SOURCES -DSTELLA_STATIC -o $BUILD_DIR/$EXECUTABLE $LDFLAGS $PLATFORM_LDFLAGS $GAME_LDFLAGS
 	STATUS=$?
 elif [ "$BUILD_MODE" = "dynamic" ]; then
-	echo "dynamic build not yet implemented!"
-	STATUS=1
+	g++ -shared -fPIC $CXXFLAGS $INCLUDES $GAME_SOURCES -DSTELLA_DYNAMIC -o $BUILD_DIR/$DYLIB $LDFLAGS $GAME_LDFLAGS
+	STATUS=$?
+
+	if [ "$STATUS" -eq 0 ]; then
+		g++ $CXXFLAGS $INCLUDES $PLATFORM_SOURCES -DSTELLA_DYNAMIC -o $BUILD_DIR/$EXECUTABLE $LDFLAGS $PLATFORM_LDFLAGS -ldl
+		STATUS=$?
+	fi
 else
 	echo "Invalid build mode: $BUILD_MODE"
 	STATUS=1

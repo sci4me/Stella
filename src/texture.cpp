@@ -78,7 +78,7 @@ void alpha_premultiply_in_place(u32 *image, u32 w, u32 h) {
 }
 
 Texture load_texture_from_file(char const* path, bool generate_mipmaps = false) {
-    Entire_File file = read_entire_file(path);
+    Buffer file = read_entire_file(path);
 
     s32 w, h, _n;
     u8 *image = stbi_load_from_memory(file.data, file.len, &w, &h, &_n, 4);
@@ -88,7 +88,7 @@ Texture load_texture_from_file(char const* path, bool generate_mipmaps = false) 
         mlc_exit(1);
     }
 
-    file.deinit();
+    mlc_free(file.data);
 
     alpha_premultiply_in_place((u32*)image, w, h);
 

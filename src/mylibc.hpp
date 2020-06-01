@@ -7,18 +7,9 @@
 #include "temporary_storage.hpp"
 
 
-#define STDIN 				0
-#define STDOUT				1
-#define STDERR				2
-
-
 extern "C" {
 	void* mlc_memset(void *p, s32 v, u64 n);
 	void* mlc_memcpy(void *dst, void const* src, u64 n);
-	void* mlc_malloc(u64 n);
-	void* mlc_calloc(u64 n, u64 s);
-	void mlc_free(void *p);
-	void* mlc_realloc(void *p, u64 n);
 	s32 mlc_memcmp(void const* a, void const* b, u64 n);
 	void* mlc_memmove(void *dst, void const* src, u64 n);
 	void const* mlc_memchr(void const* p, s32 v, u64 n);
@@ -34,25 +25,7 @@ extern "C" {
 	s32 mlc_toupper(s32 x);
 	void mlc_qsort(void* base, u64 num, u64 size, s32 (*compar)(void const*, void const*));
 	s32 mlc_sscanf(char const* s, char const* format, ...);
-	void mlc_exit(s32 code);
-	u64 nanotime();
 }
-
-
-struct Entire_File {
-	u8 *data;
-	u64 len;
-
-	void deinit() { if(data) mlc_free(data); }
-};
-
-Entire_File read_entire_file(char const* name);
-
-
-char* tvsprintf(char const* fmt, va_list args);
-char* tsprintf(char const* fmt, ...);
-void tprintf(char const* fmt, ...);
-void tfprintf(s32 fd, char const* fmt, ...);
 
 
 #endif

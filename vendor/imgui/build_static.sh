@@ -6,10 +6,10 @@ SRC_DIR=${BASE_DIR}/imgui
 BUILD_DIR=${BASE_DIR}/lib
 
 DEFINES="-DIMGUI_USER_CONFIG=\"stella_imconfig.hpp\""
-CXXFLAGS="-std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector -Wa,--noexecstack"
+CXXFLAGS="-fPIC -std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector -Wa,--noexecstack"
 LDFLAGS=""
 
-INCLUDES="-I ${VENDOR_DIR}/../src"
+INCLUDES="-I ${VENDOR_DIR}/stb -I ${VENDOR_DIR}/pt_math -I ${VENDOR_DIR}/../src"
 SOURCES="${SRC_DIR}/imgui.cpp ${SRC_DIR}/imgui_draw.cpp ${SRC_DIR}/imgui_widgets.cpp"
 OBJECTS="imgui.o imgui_draw.o imgui_widgets.o"
 

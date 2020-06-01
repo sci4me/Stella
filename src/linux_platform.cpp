@@ -1,5 +1,6 @@
 #include "platform_interface.hpp"
 #include "mylibc.cpp"
+#include "linux_mylibc.cpp"
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -14,11 +15,18 @@
 #define GLX_MINOR 4
 
 
-// TODO: These need to be surrounded by an ifdef (or similar) and
-// and else clause for the case when we're doing dynamic loading.
+#if defined(STELLA_DYNAMIC)
+#include <dlfcn.h>
+Game_Attach *stella_attach;
+Game_Init *stella_init;
+Game_Deinit *stella_deinit;
+Game_Update_And_Render *stella_update_and_render;
+#elif defined(STELLA_STATIC)
+extern "C" GAME_ATTACH(stella_attach);
 extern "C" GAME_INIT(stella_init);
 extern "C" GAME_DEINIT(stella_deinit);
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render);
+#endif
 
 
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const s32*);
@@ -418,17 +426,6 @@ s32 main(s32 argc, char **argv) {
     glXMakeCurrent(dsp, win, glc);
 
 
-    if(glewInit() != GLEW_OK) {
-        tprintf("Failed to initialize GLEW!\n");
-
-        glXMakeCurrent(dsp, None, 0);
-        glXDestroyContext(dsp, glc);
-        XDestroyWindow(dsp, win);
-        XCloseDisplay(dsp);
-        return 1;
-    }
-
-
     GLint gl_major, gl_minor; 
     glGetIntegerv(GL_MAJOR_VERSION, &gl_major); 
     glGetIntegerv(GL_MINOR_VERSION, &gl_minor);
@@ -442,6 +439,69 @@ s32 main(s32 argc, char **argv) {
 
 
     PlatformIO pio = {};
+
+    #ifdef STELLA_DYNAMIC
+    #define PACK(name) pio.api.name = name
+
+    PACK(mlc_malloc);
+    PACK(mlc_calloc);
+    PACK(mlc_realloc);
+    PACK(mlc_free);
+    PACK(read_entire_file);
+    PACK(tvsprintf);
+    PACK(tsprintf);
+    PACK(tprintf);
+    PACK(tfprintf);
+    PACK(mlc_exit);
+    PACK(nanotime);
+
+    #undef PACK
+
+    char path[256];
+    s64 n = sc_readlink("/proc/self/exe", path, array_length(path) - 4);
+    if(n <= 0) {
+        tfprintf(STDERR, "Failed to read /proc/self/exe!\n");
+        return 1;
+    }
+    path[n] = '.';
+    path[n + 1] = 's';
+    path[n + 2] = 'o';
+    path[n + 3] = '\0';
+
+    void *stella_dylib = dlopen(path, RTLD_NOW | RTLD_LOCAL);
+    if(!stella_dylib) {
+        tfprintf(STDERR, "Failed to load stella.so:\n");
+        tfprintf(STDERR, "%s\n", dlerror());
+        return 1;
+    }
+
+    stella_attach = (Game_Attach*) dlsym(stella_dylib, "stella_attach");
+    if(!stella_attach) {
+        tfprintf(STDERR, "Failed to load symbol `stella_attach`!\n");
+        return 1;
+    }
+
+    stella_init = (Game_Init*) dlsym(stella_dylib, "stella_init");
+    if(!stella_init) {
+        tfprintf(STDERR, "Failed to load symbol `stella_init`!\n");
+        return 1;
+    }
+
+    stella_deinit = (Game_Deinit*) dlsym(stella_dylib, "stella_deinit");
+    if(!stella_deinit) {
+        tfprintf(STDERR, "Failed to load symbol `stella_deinit`!\n");
+        return 1;
+    }
+
+    stella_update_and_render = (Game_Update_And_Render*) dlsym(stella_dylib, "stella_update_and_render");
+    if(!stella_update_and_render) {
+        tfprintf(STDERR, "Failed to load symbol `stella_update_and_render`!\n");
+        return 1;
+    }
+
+    stella_attach(&pio);
+    #endif
+
 
     stella_init(&pio);
 
@@ -549,7 +609,7 @@ s32 main(s32 argc, char **argv) {
                     if(xev.type >= 0 && xev.type < array_length(XEvent_Type_Names)) name = XEvent_Type_Names[xev.type];
                     else                                                            name = "<oob>";
 
-                    tfprintf(STDERR, "Warning: Unhandled X11 event: %s (%d)\n", name, xev.type);
+                    tfprintf(STDERR, "WARN: Unhandled X11 event: %s (%d)\n", name, xev.type);
                     break;
                 }
             }
@@ -584,6 +644,11 @@ s32 main(s32 argc, char **argv) {
 
 
     stella_deinit(&pio);
+
+
+    #ifdef STELLA_DYNAMIC
+    dlclose(stella_dylib);
+    #endif
 
 
     glXMakeCurrent(dsp, None, 0);

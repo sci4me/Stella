@@ -1,12 +1,14 @@
 #include "stella.hpp"
 
-// NOTE TODO: Eventually we want to not have mylibc
-// included into the game code _at all_.
-// We probably won't be able to "remove" mylibc per se,
-// but we may be able to slim it down/reorganize and
-// just generally make things nicer...
-//                  - sci4me, 5/28/20
-#include "mylibc.hpp"
+
+PLATFORM_API_FUNCTIONS(static)
+
+
+#ifdef STELLA_DYNAMIC
+#include "mylibc.cpp"
+#endif
+
+
 #include "maths.hpp"
 
 
@@ -38,6 +40,11 @@
 #include "rnd.h"
 
 
+#define GLEW_STATIC
+#define GLEW_NO_GLU
+#include "GL/glew.h"
+
+
 #include "off_the_rails.cpp"
 #include "math.cpp"
 #include "static_bitset.cpp"
@@ -63,7 +70,6 @@
 
 
 #define GL_DEBUG
-
 
 void dump_gl_extensions() {
     tprintf("  GL_EXTENSIONS\n");
@@ -137,11 +143,44 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 #endif
 
 
+// NOTE: Yes, this is stupid. But, ya know.
+// Sometimes it do be like that.
+void* stella_im_malloc(u64 n) { return mlc_malloc(n); }
+void stella_im_free(void *p) { mlc_free(p); }
+
+#ifdef STELLA_DYNAMIC
+extern "C" GAME_ATTACH(stella_attach) {
+    #define UNPACK(name) name = pio->api.name
+
+    UNPACK(mlc_malloc);
+    UNPACK(mlc_calloc);
+    UNPACK(mlc_realloc);
+    UNPACK(mlc_free);
+    UNPACK(read_entire_file);
+    UNPACK(tvsprintf);
+    UNPACK(tsprintf);
+    UNPACK(tprintf);
+    UNPACK(tfprintf);
+    UNPACK(mlc_exit);
+    UNPACK(nanotime);
+
+    #undef UNPACK
+
+
+    // NOTE: This is far from ideal, but, eh,
+    // saves me a lot of time and pain, for now.
+    assert(glewInit() == GLEW_OK);
+}
+#endif
+
 extern "C" GAME_INIT(stella_init) {
+    #ifdef STELLA_STATIC
+    assert(glewInit() == GLEW_OK);
+    #endif
+
     void *mem = mlc_malloc(sizeof(Game));
     Game* g = new(mem) Game;
     pio->game_memory = g;
-
 
     #ifdef GL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
