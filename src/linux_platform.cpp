@@ -3,8 +3,6 @@
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-#include <float.h> // FLT_MAX
-
 
 #define STB_SPRINTF_IMPLEMENTATION
 #include "stb_sprintf.h"

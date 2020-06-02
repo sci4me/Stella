@@ -374,6 +374,7 @@ RECENT REVISION HISTORY:
 // NOTE: If we're not using libc and STBI_ASSERT isn't 
 // defined, we have no assert implementation so default 
 // to an empty macro.
+// NOTE: This is inconsistent with what we did to imgui...
 #if !defined(STBI_ASSERT)
 #define STBI_ASSERT(x)
 #endif

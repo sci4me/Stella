@@ -1,10 +1,13 @@
 #pragma once
 
-#include <stddef.h>
+#include "common.hpp"
+#include "mylibc.hpp"
+
+
+#include "stb_sprintf.h"
+
+
 #include <stdint.h>
-#include <stdarg.h>
-#include <limits.h>
-#include <float.h>
 #include <alloca.h>
 
 

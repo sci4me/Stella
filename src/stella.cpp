@@ -22,6 +22,10 @@ PLATFORM_API_FUNCTIONS
 #include "maths.hpp"
 
 
+#define IMGUI_USER_CONFIG "stella_imconfig.hpp"
+#include "imgui/imgui.h"
+
+
 // NOTE TODO: We're duplicating stb_sprintf here!
 // We should really just suck it up and make it
 // a "platform API function" even thought it's
@@ -30,10 +34,6 @@ PLATFORM_API_FUNCTIONS
 #define STB_SPRINTF_IMPLEMENTATION
 #endif
 #include "stb_sprintf.h"
-
-
-#define IMGUI_USER_CONFIG "stella_imconfig.hpp"
-#include "imgui/imgui.h"
 
 
 #define STB_IMAGE_IMPLEMENTATION

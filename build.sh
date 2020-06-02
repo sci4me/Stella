@@ -18,10 +18,10 @@ DYLIB=stella.so
 # Couldn't get it to "work" (define __STDC_HOSTED__ as 0)
 
 # TODO (IMPORTANT): Call vendor/imgui/build_static.sh (if needed?)
-# pushd $VENDOR_DIR/imgui
-# ./build_static.sh
-# STATUS=$?
-# popd
+pushd $VENDOR_DIR/imgui
+./build_static.sh
+STATUS=$?
+popd
 
 if [ "$STATUS" -eq 0 ]; then
 CXXFLAGS="-std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector -Wa,--noexecstack"  # -s

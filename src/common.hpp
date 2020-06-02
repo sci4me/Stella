@@ -2,6 +2,38 @@
 #define TYPES_H
 
 
+#if defined(_MSC_VER)
+#define STELLA_CC_MSVC
+#elif defined(__GNUC__)
+#define STELLA_CC_GCC
+#elif defined(__clang__)
+#define STELLA_CC_CLANG
+#elif defined(__EMSCRIPTEN__)
+#error "Emscripten not supported!"
+#elif defined(__MINGW32__) || defined(__MINGW64__)
+#error "MinGW not yet supported!"
+#else
+#error "Unknown compiler!"
+#endif
+
+#if defined(__linux__)
+#define STELLA_OS_LINUX
+#elif defined(_WIN32) || defined(_WIN64)
+#define STELLA_OS_WINDOWS
+#else
+#error "Unknown operating system!"
+#endif
+
+
+#if defined(STELLA_CC_MSVC)
+#define FORCE_INLINE __forceinline
+#elif defined(STELLA_CC_GCC) || defined(STELLA_CC_CLANG)
+#define FORCE_INLINE __attribute__((always_inline))
+#else
+#error "FORCE_INLINE unimplemented for this compiler!"
+#endif
+
+
 typedef unsigned char u8;
 typedef signed char s8;
 typedef unsigned short u16;
@@ -60,5 +92,41 @@ struct Buffer {
 	u64 len;
 };
 
+
+#define S32_MIN 	0x80000000
+#define S32_MAX 	0x7FFFFFFF
+
+#define U32_MIN 	0x00000000
+#define U32_MAX 	0xFFFFFFFF
+
+#define S64_MIN 	0x8000000000000000L
+#define S64_MAX 	0x7FFFFFFFFFFFFFFFL
+
+#define U64_MIN 	0x0000000000000000L
+#define U64_MAX 	0xFFFFFFFFFFFFFFFFL
+
+#define F32_MIN 	1.17549435082228750796873653722224568e-38F
+#define F32_MAX 	3.40282346638528859811704183484516925e+38F
+
+#define F64_MIN		((f64)2.22507385850720138309023271733240406e-308L)
+#define F64_MAX 	((f64)1.79769313486231570814527423731704357e+308L)
+
+#define INT_MIN 	S32_MIN
+#define INT_MAX 	S32_MAX
+
+#define UINT_MIN 	U32_MIN
+#define UINT_MAX 	U32_MAX
+
+#define LONG_MIN 	S64_MIN
+#define LONG_MAX 	S64_MAX
+
+#define ULONG_MIN 	U64_MIN
+#define ULONG_MAX 	U64_MAX
+
+#define FLT_MIN		F32_MIN
+#define FLT_MAX 	F32_MAX
+
+#define DBL_MIN 	F64_MIN
+#define DBL_MAX 	F64_MAX
 
 #endif

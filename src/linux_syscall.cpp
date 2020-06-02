@@ -1,3 +1,4 @@
+// TODO: Would be nice to remove these? Or remove the defines... er.... eyeyaydhweh
 #include <sys/fcntl.h>
 #include <sys/stat.h>
 
