@@ -33,6 +33,13 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Can we just export libc symbols ourselves?
+   - This could potentially allow us to 
+     avoid having to modify library code
+     - i.e. instead of mlc_malloc just have malloc
+     - Libraries would just link to our versions of
+       these symbols.
+     - Seems feasible..
  - Clean up `linux_platform.cpp`
    - And `linux_syscall.cpp` while you're at it :P
    - But for realsies... like... damn.

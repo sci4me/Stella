@@ -62,7 +62,7 @@ extern "C" {
 	    if(fd == -1) return { 0, 0 };
 
 	    struct stat statbuf;
-	    sc_fstat(fd, &statbuf);
+	    if(sc_fstat(fd, &statbuf) != 0) return {0, 0};
 
 	    u64 rem = (u64) statbuf.st_size;
 	    u8 *data = (u8*) mlc_malloc(rem + 1);

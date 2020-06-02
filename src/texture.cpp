@@ -77,7 +77,10 @@ void alpha_premultiply_in_place(u32 *image, u32 w, u32 h) {
     }
 }
 
-Texture load_texture_from_file(char const* path, bool generate_mipmaps = false) {
+Texture load_texture_from_file(char const* type, char const* name, bool generate_mipmaps = false) {
+    char path[256];
+    stbsp_snprintf(path, sizeof(path), "assets/textures/%s/%s.png", type, name);
+
     Buffer file = read_entire_file(path);
 
     s32 w, h, _n;

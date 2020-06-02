@@ -1,20 +1,20 @@
 namespace assets {
     #define _TEXTURES(X) \
-        X(stone) \
-        X(grass) \
-        X(cobblestone) \
-        X(coal_ore) \
-        X(iron_ore) \
-        X(gold_ore) \
-        X(chest) \
-        X(furnace) \
-        X(mining_machine) \
-        X(iron_plate) \
-        X(gold_plate) \
-        X(iron_gear)
+        X(stone,                true ,          tile  ) \
+        X(grass,                true ,          tile  ) \
+        X(cobblestone,          true ,          tile  ) \
+        X(coal_ore,             true ,          tile  ) \
+        X(iron_ore,             true ,          tile  ) \
+        X(gold_ore,             true ,          tile  ) \
+        X(chest,                true ,          tile  ) \
+        X(furnace,              true ,          tile  ) \
+        X(mining_machine,       true ,          tile  ) \
+        X(iron_plate,           false,          item  ) \
+        X(gold_plate,           false,          item  ) \
+        X(iron_gear,            false,          item  )
 
     namespace textures {
-        #define _X(name) Texture name;
+        #define _X(name, mips, type) Texture name;
         _TEXTURES(_X)
         #undef _X
     }
@@ -28,7 +28,7 @@ namespace assets {
         Texture *texs = (Texture*) buf;
 
         u32 i = 0;
-        #define _X(name) texs[i++] = name;
+        #define _X(name, mips, type) texs[i++] = name;
         _TEXTURES(_X)
         #undef _X
     }
@@ -40,7 +40,7 @@ namespace assets {
         Texture *texs = (Texture*) buf;
 
         u32 i = 0;
-        #define _X(name) name = texs[i++];
+        #define _X(name, mips, type) name = texs[i++];
         _TEXTURES(_X)
         #undef _X
     }
@@ -49,39 +49,16 @@ namespace assets {
     void init() {
         using namespace textures;
 
-        constexpr bool MIPS = true;
-
-        stone                 = load_texture_from_file("assets/textures/tile/stone.png", MIPS);
-        grass                 = load_texture_from_file("assets/textures/tile/grass.png", MIPS);
-        cobblestone           = load_texture_from_file("assets/textures/tile/cobblestone.png", MIPS);
-        coal_ore              = load_texture_from_file("assets/textures/tile/coal_ore.png", MIPS);
-        iron_ore              = load_texture_from_file("assets/textures/tile/iron_ore.png", MIPS);
-        gold_ore              = load_texture_from_file("assets/textures/tile/gold_ore.png", MIPS);
-        chest                 = load_texture_from_file("assets/textures/tile/chest.png", MIPS);
-        furnace               = load_texture_from_file("assets/textures/tile/furnace.png", MIPS);
-        mining_machine        = load_texture_from_file("assets/textures/tile/mining_machine.png", MIPS);
-
-        // NOTE: Do we actually want MIPs for items? i.e. for item entities?
-        iron_plate            = load_texture_from_file("assets/textures/item/iron_plate.png", false);
-        gold_plate            = load_texture_from_file("assets/textures/item/gold_plate.png", false);
-        iron_gear             = load_texture_from_file("assets/textures/item/iron_gear.png", false);
+        #define _X(name, mips, type) name = load_texture_from_file(#type, #name, mips);
+        _TEXTURES(_X)
+        #undef _X
     }
 
     void deinit() {
         using namespace textures;
 
-        stone.deinit();
-        grass.deinit();
-        cobblestone.deinit();
-        coal_ore.deinit();
-        iron_ore.deinit();
-        gold_ore.deinit();
-        chest.deinit();
-        furnace.deinit();
-        mining_machine.deinit();
-
-        iron_plate.deinit();
-        gold_plate.deinit();
-        iron_gear.deinit();
+        #define _X(name, mips, type) name.deinit();
+        _TEXTURES(_X)
+        #undef _X
     }
 }
