@@ -18,6 +18,8 @@ enum Tile_Type : u8 {
 };
 
 
+// TODO(URGENT): FIX THIS! Hot code reloading only
+// makes this WAY worse...
 Texture tile_textures[N_TILE_TYPES];
 
 void init_tiles() {

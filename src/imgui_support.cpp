@@ -1,28 +1,43 @@
 namespace imsupport {
-    GLuint shader;
-    GLuint u_proj;
-    GLuint u_texture;
+    struct Ctx {
+        ImGuiContext *imctx;
 
-    Texture font_texture;
+        GLuint shader;
+        GLuint u_proj;
+        GLuint u_texture;
 
-    Vertex_Array vao;
-    Vertex_Buffer vbo;
-    Index_Buffer ibo;
+        Texture font_texture;
 
-    void create_fonts_texture() {
+        Vertex_Array vao;
+        Vertex_Buffer vbo;
+        Index_Buffer ibo;
+    };
+
+
+    Ctx *g_ctx;
+
+    void set_current_context(Ctx *ctx) { 
+        g_ctx = ctx;
+        ImGui::SetCurrentContext(ctx->imctx);
+    }
+
+
+    void create_fonts_texture(Ctx *ctx) {
         ImGuiIO& io = ImGui::GetIO();
 
         u8 *pixels;
         s32 width, height;
         io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-        font_texture.init(width, height);
-        font_texture.set_data(pixels);
+        ctx->font_texture.init(width, height);
+        ctx->font_texture.set_data(pixels);
 
-        io.Fonts->TexID = (ImTextureID)(s64)font_texture.id;
+        io.Fonts->TexID = (ImTextureID)(s64)ctx->font_texture.id;
     }
 
-    void init(ImGuiContext **imgui_ctx) {
+    Ctx* init() {
+        Ctx *ctx = (Ctx*) mlc_malloc(sizeof(Ctx));
+
         IMGUI_CHECKVERSION();
 
         // NOTE TODO: We may need this for hot code reloading;
@@ -30,7 +45,7 @@ namespace imsupport {
         // we actually tell it what to use for malloc/free. So.
         // ImGui::SetAllocatorFunctions(alloc_fn, free_fn, user_data);
 
-        *imgui_ctx = ImGui::CreateContext();
+        ctx->imctx = ImGui::CreateContext();
 
         ImGuiIO& io = ImGui::GetIO();
         io.IniFilename = nullptr;
@@ -92,38 +107,45 @@ namespace imsupport {
 
         ImGui::StyleColorsDark();
 
-        shader = load_shader_program("imgui", VERTEX_SHADER | FRAGMENT_SHADER);
-        u_proj = glGetUniformLocation(shader, "u_proj");
-        u_texture = glGetUniformLocation(shader, "u_texture");
+        ctx->shader = load_shader_program("imgui", VERTEX_SHADER | FRAGMENT_SHADER);
+        ctx->u_proj = glGetUniformLocation(ctx->shader, "u_proj");
+        ctx->u_texture = glGetUniformLocation(ctx->shader, "u_texture");
 
-        create_fonts_texture();
+        create_fonts_texture(ctx);
 
-        vao.init();
-        vbo.init();
-        ibo.init();
+        ctx->vao.init();
+        ctx->vbo.init();
+        ctx->ibo.init();
 
-        vao.add_vertex_buffer(
-            vbo,
+        ctx->vao.add_vertex_buffer(
+            ctx->vbo,
             Vertex_Element(GL_FLOAT, 2),
             Vertex_Element(GL_FLOAT, 2),
             Vertex_Element(GL_UNSIGNED_BYTE, 4, true)
         );
-        vao.set_index_buffer(ibo);
+        ctx->vao.set_index_buffer(ctx->ibo);
+
+        return ctx;
     }
 
     void deinit() {
         ImGui::DestroyContext();
 
-        glDeleteProgram(shader);
+        glDeleteProgram(g_ctx->shader);
 
-        font_texture.deinit();
+        g_ctx->font_texture.deinit();
 
-        vao.deinit();
-        vbo.deinit();
-        ibo.deinit();
+        g_ctx->vao.deinit();
+        g_ctx->vbo.deinit();
+        g_ctx->ibo.deinit();
+
+        mlc_free(g_ctx);
+        g_ctx = nullptr;
     }
 
     void begin_frame(PlatformIO *pio) {
+        assert(g_ctx);
+
         ImGuiIO& io = ImGui::GetIO();
         IM_ASSERT(io.Fonts->IsBuilt());
 
@@ -159,6 +181,8 @@ namespace imsupport {
     }
 
     void end_frame() {
+        assert(g_ctx);
+
         ImGui::Render();
         auto dd = ImGui::GetDrawData();
 
@@ -167,8 +191,8 @@ namespace imsupport {
         f32 t = dd->DisplayPos.y;
         f32 b = dd->DisplayPos.y + dd->DisplaySize.y;
         mat4 proj = mat4::ortho(l, r, b, t, -1.0f, 1.0f);
-        glProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, proj.value_ptr());
-        glProgramUniform1i(shader, u_texture, 0);
+        glProgramUniformMatrix4fv(g_ctx->shader, g_ctx->u_proj, 1, GL_FALSE, proj.value_ptr());
+        glProgramUniform1i(g_ctx->shader, g_ctx->u_texture, 0);
 
         bool clip_origin_lower_left = true;
         #if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
@@ -194,15 +218,15 @@ namespace imsupport {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glEnable(GL_SCISSOR_TEST);
-        glUseProgram(shader);
+        glUseProgram(g_ctx->shader);
 
-        vao.bind();
+        g_ctx->vao.bind();
 
         for(s32 i = 0; i < dd->CmdListsCount; i++) {
             ImDrawList const* cmd_list = dd->CmdLists[i];
 
-            vbo.set_data(cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), GL_STREAM_DRAW);
-            ibo.set_data(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), GL_STREAM_DRAW);
+            g_ctx->vbo.set_data(cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), GL_STREAM_DRAW);
+            g_ctx->ibo.set_data(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), GL_STREAM_DRAW);
         
             for(s32 j = 0; j < cmd_list->CmdBuffer.Size; j++) {
                 ImDrawCmd const* cmd = &cmd_list->CmdBuffer[j];
@@ -234,7 +258,7 @@ namespace imsupport {
             }    
         }
 
-        vao.unbind();
+        g_ctx->vao.unbind();
 
         glBindTextureUnit(0, 0);
         glUseProgram(0);

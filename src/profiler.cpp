@@ -1,4 +1,6 @@
-// #define PROFILER_DISABLE
+// TODO: Deal with the global state! i.e. save and restore the context
+// when we reload the shared library (#if defined(STELLA_DYNAMIC))
+#define PROFILER_DISABLE
 
 #ifndef PROFILER_DISABLE
 
@@ -31,6 +33,11 @@ namespace prof {
 
 	constexpr u32 MAX_DEBUG_EVENTS = 64 * 1024 * 64;
 	Static_Array<Debug_Event, MAX_DEBUG_EVENTS> frame_events;
+
+
+	void clear_frame_events() {
+		frame_events.clear();
+	}
 
 
 	struct Timed_Block {
@@ -256,6 +263,8 @@ namespace prof {
 		selected_frame_profile_index = frame_profile_index;
 
 		frame_count++;
+
+		clear_frame_events();
 	}
 
 	char* format_ns(u64 ns) {
@@ -369,6 +378,7 @@ namespace prof {
 #else
 
 namespace prof {
+	void clear_frame_events() {}
 	void init() {}
 	void deinit() {}
 	void begin_frame() {}

@@ -197,7 +197,13 @@ extern "C" GAME_ATTACH(stella_attach) {
 
     if(reload) {
         Game *g = (Game*) pio->game_memory;
-        ImGui::SetCurrentContext(g->imgui_ctx);
+
+        imsupport::set_current_context(g->imctx);
+        
+        assets::restore_textures(g->texs);
+
+        init_tiles();
+        init_items();
     }
 }
 #endif
@@ -229,7 +235,8 @@ extern "C" GAME_INIT(stella_init) {
     prof::init();
 
 
-    imsupport::init(&g->imgui_ctx);
+    g->imctx = imsupport::init();
+    imsupport::set_current_context(g->imctx);
 
 
     glClearColor(0, 0, 0, 0);
@@ -243,7 +250,11 @@ extern "C" GAME_INIT(stella_init) {
     g->batch_renderer->init();
 
 
+    g->texs = (u8*) mlc_malloc(sizeof(Texture) * 64);
+
     assets::init();
+    assets::save_textures(g->texs);
+
     init_tiles();
     init_items();
 
@@ -425,7 +436,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
     }
 
     // NOTE TODO: This next line is kind of a hack...
-    if(!is_paused) prof::end_frame(); else prof::frame_events.clear();
+    if(!is_paused) prof::end_frame(); else prof::clear_frame_events();
     if(g->show_profiler) prof::show();
 
     imsupport::end_frame();

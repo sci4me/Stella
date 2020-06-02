@@ -4,6 +4,12 @@
 #define GL_DEBUG
 
 
+// TODO REMOVEME
+namespace imsupport {
+	struct Ctx;
+}
+
+
 struct Game {
 	f32 scale = 1.0f;
 
@@ -26,5 +32,8 @@ struct Game {
 	struct World *world;
 	struct Player *player;
 
-	struct ImGuiContext *imgui_ctx;
+	struct imsupport::Ctx *imctx;
+
+	// TODO(URGENT): REMOVE ME
+	u8 *texs;
 };
