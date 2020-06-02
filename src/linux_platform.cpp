@@ -325,7 +325,15 @@ void* load_dylib(char *dylib_path) {
     char real_path[256];
     stbsp_sprintf(real_path, "%s.%d", dylib_path, id++);
 
-    s32 fd = sc_open(real_path, O_CREAT | O_RDWR, 0700);
+    // NOTE TOOD: Honestly, can't we just delete the file if it
+    // exists _every time_? Seems reasonable to me.
+    if(id > 1) {
+        char del_path[256];
+        stbsp_sprintf(del_path, "%s.%d", dylib_path, id - 2);
+        assert(sc_unlink(del_path) == 0);
+    }
+
+    s32 fd = sc_open(real_path, O_CREAT | O_RDWR | O_EXCL, 0700); // NOTE TODO: O_EXCL ???
     if(fd <= 0) {
         mlc_fwrite(STDERR, "Failed to open temp file for shared library!\n");
         sc_exit(1);

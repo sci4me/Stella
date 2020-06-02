@@ -149,6 +149,11 @@ Code/Dev Features/Quality:
        - However... if the app is running then
          - We probably can't write to the executable(?)
          - We probably can't write to the shared library
+   - Update on this...
+     - We've got it working; at least, the basics
+       - Much refactoring to do, etc.
+     - Trying to think of how I want to structure things
+       - Globals can be convenient (TM)
  - Shader Abstraction
    - Bind/Unbind
    - Ability to handle uniforms

@@ -81,6 +81,7 @@ extern "C" {
 #define SYS_munmap				11
 #define SYS_getpid				39
 #define SYS_exit 				60
+#define SYS_unlink 				87
 #define SYS_readlink			89
 #define SYS_gettid				186
 #define SYS_clock_gettime		228
@@ -142,6 +143,10 @@ s32 sc_getpid() {
 
 void sc_exit(s32 code) {
 	SYSCALL1(SYS_exit, (s64)code);
+}
+
+s32 sc_unlink(char const* path) {
+	return (s32)(s64) SYSCALL1(SYS_unlink, path);
 }
 
 s64 sc_readlink(char const* path, char *buf, u64 bufsz) {
