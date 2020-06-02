@@ -141,36 +141,14 @@ Code/Dev Features/Quality:
    - #define internal static
    - Do we really care? er..
  - HOT CODE RELOAD!!!!!
-   - Definitely non-trivial to implement!
-     - We have a ton of state.. sorta.
-   - Totally worth doing though!
-     - Not hard conceptually: just use a dynamic
-       library to hold the actual game code, and
-       a "playform layer" (although in our case,
-       it won't be a true _platform_ layer.. but..
-       semantics.. n stuff..)
-       And then just uh, have this platform layer (what
-       gets build as the actual .exe) load and reload
-       the dynamic library if it changes.
-       Just have to be really careful/specific/controlled/whatever
-       about memory; all allocation must happen from within
-       the platform layer so that when the dynlib reloads, it can
-       just keep using that same memory.
-   - We may want to move the GLEW stuff into platform layer?
-     - Well, actually, we should probably just leave GLEW in the
-       dynlib and just call glewInit every time...
-       - No this is stupid... we should just remove GLEW.
-   - We will absolutely have to ensure that ALL memory allocation
-     goes through our own API so that we can control _where_ the
-     allocations happen. i.e. you can't allocate memory in the dynlib
-     and expect it to survive reload! The call to malloc must occur
-     within the persistent executable.
-   - We also would like to make it possible to build either as an exe
-     or as an exe and a dll/so, etc. depending on whether it's a dev
-     or release build. This shouldn't be hard; maybe just a bit finicky.
-   - So, in the `i_hate_everything_please_end_me_now` branch, we uh...
-     took a first stab at this. What we need to do is fairly obvious but...
-     damn. What a nightmare it is...
+   - So we've done the first half of this, essentially.
+     - We can run as a shared library or a static library
+       - Could probably be improved further (cleanup, for one)
+   - Now we have to do the hard(?) part
+     - Detect when the code is recompiled; reload the code
+       - However... if the app is running then
+         - We probably can't write to the executable(?)
+         - We probably can't write to the shared library
  - Shader Abstraction
    - Bind/Unbind
    - Ability to handle uniforms

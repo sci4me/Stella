@@ -1,6 +1,3 @@
-const f32 PI = 3.14159265359f;
-
-
 struct ivec2 {
     s32 x;
     s32 y;
