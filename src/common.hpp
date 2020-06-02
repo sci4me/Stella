@@ -28,7 +28,7 @@
 #if defined(STELLA_CC_MSVC)
 #define FORCE_INLINE __forceinline
 #elif defined(STELLA_CC_GCC) || defined(STELLA_CC_CLANG)
-#define FORCE_INLINE __attribute__((always_inline))
+#define FORCE_INLINE inline __attribute__((always_inline))
 #else
 #error "FORCE_INLINE unimplemented for this compiler!"
 #endif

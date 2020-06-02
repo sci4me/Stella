@@ -323,17 +323,25 @@ void* load_dylib(char *dylib_path) {
     static u32 id = 0;
 
     char real_path[256];
-    stbsp_sprintf(real_path, "%s.%d", dylib_path, id++);
 
-    // NOTE TOOD: Honestly, can't we just delete the file if it
-    // exists _every time_? Seems reasonable to me.
-    if(id > 1) {
-        char del_path[256];
-        stbsp_sprintf(del_path, "%s.%d", dylib_path, id - 2);
-        assert(sc_unlink(del_path) == 0);
+    if(id > 0) {
+        stbsp_sprintf(real_path, "%s.%d", dylib_path, id - 1);
+
+        // NOTE: Intentionally ignoring the return value!
+        // NOTE: Technically this is definitely WRONG. Er..
+        // Wrong by some standards. Theoretically we'd want 
+        // to handle the case where, for example, the error
+        // occurred because the user running the app didn't
+        // have permission to write to `real_path`.
+        sc_unlink(real_path);
     }
 
-    s32 fd = sc_open(real_path, O_CREAT | O_RDWR | O_EXCL, 0700); // NOTE TODO: O_EXCL ???
+    stbsp_sprintf(real_path, "%s.%d", dylib_path, id++);
+
+    // NOTE: Same as above.
+    sc_unlink(real_path);
+
+    s32 fd = sc_open(real_path, O_CREAT | O_WRONLY | O_EXCL, S_IRUSR | S_IWUSR);
     if(fd <= 0) {
         mlc_fwrite(STDERR, "Failed to open temp file for shared library!\n");
         sc_exit(1);
@@ -370,6 +378,7 @@ void* load_dylib(char *dylib_path) {
 
     sc_close(orig_fd);
     sc_close(fd);
+
 
     void *stella_dylib = dlopen(real_path, RTLD_NOW | RTLD_LOCAL);
     if(!stella_dylib) {

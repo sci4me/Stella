@@ -33,6 +33,9 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Clean up `linux_platform.cpp`
+   - And `linux_syscall.cpp` while you're at it :P
+   - But for realsies... like... damn.
  - Ctrl+C takes a LONG time to close the program
    - Is this just because we don't explicitly handle
      the signal? errrr..... yeeeeaaaahhhhhhh...

@@ -89,78 +89,78 @@ extern "C" {
 
 // TODO: Force these to be inlined!
 
-s64 sc_read(s32 fd, void *data, u64 n) {
+FORCE_INLINE s64 sc_read(s32 fd, void *data, u64 n) {
 	return (s64) SYSCALL3(SYS_read, (s64)fd, data, n);
 }
 
-s64 sc_write(s32 fd, void const* data, u64 n) {
+FORCE_INLINE s64 sc_write(s32 fd, void const* data, u64 n) {
 	return (s64) SYSCALL3(SYS_write, (s64)fd, data, n);
 }
 
-s32 sc_open(char const* path, s32 flags) {
+FORCE_INLINE s32 sc_open(char const* path, s32 flags) {
 	return (s32)(s64) SYSCALL2(SYS_open, path, (s64)flags);
 }
 
-s32 sc_open(char const* path, s32 flags, u32 mode) {
+FORCE_INLINE s32 sc_open(char const* path, s32 flags, u32 mode) {
 	return (s32)(s64) SYSCALL3(SYS_open, path, (s64)flags, (u64)mode);
 }
 
-s32 sc_close(s32 fd) {
+FORCE_INLINE s32 sc_close(s32 fd) {
 	return (s32)(s64) SYSCALL1(SYS_close, (s64)fd);
 }
 
-s32 sc_stat(char const* path, struct stat *statbuf) {
+FORCE_INLINE s32 sc_stat(char const* path, struct stat *statbuf) {
 	return (s32)(s64) SYSCALL2(SYS_stat, path, statbuf);
 }
 
-s32 sc_fstat(s32 fd, struct stat *statbuf) {
+FORCE_INLINE s32 sc_fstat(s32 fd, struct stat *statbuf) {
 	return (s32)(s64) SYSCALL2(SYS_fstat, (s64)fd, statbuf);
 }
 
-s32 sc_lstat(char const* path, struct stat *statbuf) {
+FORCE_INLINE s32 sc_lstat(char const* path, struct stat *statbuf) {
 	return (s32)(s64) SYSCALL2(SYS_lstat, path, statbuf);
 }
 
-s64 sc_lseek(s32 fd, s64 offset, s32 whence) {
+FORCE_INLINE s64 sc_lseek(s32 fd, s64 offset, s32 whence) {
 	return (s64) SYSCALL3(SYS_lseek, (s64)fd, offset, (s64)whence);
 }
 
-void* sc_mmap(void *addr, u64 len, s32 prot, s32 flags, s32 fd, s64 offset) {
+FORCE_INLINE void* sc_mmap(void *addr, u64 len, s32 prot, s32 flags, s32 fd, s64 offset) {
 	return SYSCALL6(SYS_mmap, addr, len, (s64)prot, (s64)flags, (s64)fd, offset);
 }
 
-s32 sc_mprotect(void *addr, u64 len, s32 prot) {
+FORCE_INLINE s32 sc_mprotect(void *addr, u64 len, s32 prot) {
 	return (s32)(s64) SYSCALL3(SYS_mprotect, addr, len, (s64)prot);
 }
 
-s32 sc_munmap(void *addr, u64 len) {
+FORCE_INLINE s32 sc_munmap(void *addr, u64 len) {
 	return (s32)(s64) SYSCALL2(SYS_munmap, addr, len);
 }
 
-s32 sc_getpid() {
+FORCE_INLINE s32 sc_getpid() {
 	return (s32)(s64) SYSCALL0(SYS_getpid);
 }
 
-void sc_exit(s32 code) {
+FORCE_INLINE void sc_exit(s32 code) {
 	SYSCALL1(SYS_exit, (s64)code);
 }
 
-s32 sc_unlink(char const* path) {
+FORCE_INLINE s32 sc_unlink(char const* path) {
 	return (s32)(s64) SYSCALL1(SYS_unlink, path);
 }
 
-s64 sc_readlink(char const* path, char *buf, u64 bufsz) {
+FORCE_INLINE s64 sc_readlink(char const* path, char *buf, u64 bufsz) {
 	return (s64) SYSCALL3(SYS_readlink, path, buf, bufsz);
 }
 
-s32 sc_gettid() {
+FORCE_INLINE s32 sc_gettid() {
 	return (s32)(s64) SYSCALL0(SYS_gettid);
 }
 
-s32 sc_clock_gettime(s32 id, struct timespec *ts) {
+FORCE_INLINE s32 sc_clock_gettime(s32 id, struct timespec *ts) {
 	return (s32)(s64) SYSCALL2(SYS_clock_gettime, (s64)id, (s64)ts);
 }
 
-s32 sc_tgkill(s32 tgid, s32 tid, s32 sig) {
+FORCE_INLINE s32 sc_tgkill(s32 tgid, s32 tid, s32 sig) {
 	return (s32)(s64) SYSCALL3(SYS_tgkill, (s64)tgid, (s64)tid, (s64)sig);
 }
