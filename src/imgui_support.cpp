@@ -1,51 +1,25 @@
-namespace imsupport {
-    struct Ctx {
-        ImGuiContext *imctx;
+struct ImGui_Backend {
+    ImGuiContext *imctx;
 
-        GLuint shader;
-        GLuint u_proj;
-        GLuint u_texture;
+    GLuint shader;
+    GLuint u_proj;
+    GLuint u_texture;
 
-        Texture font_texture;
+    Texture font_texture;
 
-        Vertex_Array vao;
-        Vertex_Buffer vbo;
-        Index_Buffer ibo;
-    };
+    Vertex_Array vao;
+    Vertex_Buffer vbo;
+    Index_Buffer ibo;
 
-
-    Ctx *g_ctx;
-
-    void set_current_context(Ctx *ctx) { 
-        g_ctx = ctx;
-        ImGui::SetCurrentContext(ctx->imctx);
+    void attach() {
+        ImGui::SetCurrentContext(imctx);
     }
 
-
-    void create_fonts_texture(Ctx *ctx) {
-        ImGuiIO& io = ImGui::GetIO();
-
-        u8 *pixels;
-        s32 width, height;
-        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-        ctx->font_texture.init(width, height);
-        ctx->font_texture.set_data(pixels);
-
-        io.Fonts->TexID = (ImTextureID)(s64)ctx->font_texture.id;
-    }
-
-    Ctx* init() {
-        Ctx *ctx = (Ctx*) mlc_malloc(sizeof(Ctx));
-
+    void init() {
         IMGUI_CHECKVERSION();
 
-        // NOTE TODO: We may need this for hot code reloading;
-        // currently we have a hacked up version of imgui, and,
-        // we actually tell it what to use for malloc/free. So.
-        // ImGui::SetAllocatorFunctions(alloc_fn, free_fn, user_data);
-
-        ctx->imctx = ImGui::CreateContext();
+        imctx = ImGui::CreateContext();
+        attach();
 
         ImGuiIO& io = ImGui::GetIO();
         io.IniFilename = nullptr;
@@ -107,45 +81,38 @@ namespace imsupport {
 
         ImGui::StyleColorsDark();
 
-        ctx->shader = load_shader_program("imgui", VERTEX_SHADER | FRAGMENT_SHADER);
-        ctx->u_proj = glGetUniformLocation(ctx->shader, "u_proj");
-        ctx->u_texture = glGetUniformLocation(ctx->shader, "u_texture");
+        shader = load_shader_program("imgui", VERTEX_SHADER | FRAGMENT_SHADER);
+        u_proj = glGetUniformLocation(shader, "u_proj");
+        u_texture = glGetUniformLocation(shader, "u_texture");
 
-        create_fonts_texture(ctx);
+        create_fonts_texture();
 
-        ctx->vao.init();
-        ctx->vbo.init();
-        ctx->ibo.init();
+        vao.init();
+        vbo.init();
+        ibo.init();
 
-        ctx->vao.add_vertex_buffer(
-            ctx->vbo,
+        vao.add_vertex_buffer(
+            vbo,
             Vertex_Element(GL_FLOAT, 2),
             Vertex_Element(GL_FLOAT, 2),
             Vertex_Element(GL_UNSIGNED_BYTE, 4, true)
         );
-        ctx->vao.set_index_buffer(ctx->ibo);
-
-        return ctx;
+        vao.set_index_buffer(ibo);
     }
 
     void deinit() {
         ImGui::DestroyContext();
 
-        glDeleteProgram(g_ctx->shader);
+        glDeleteProgram(shader);
 
-        g_ctx->font_texture.deinit();
+        font_texture.deinit();
 
-        g_ctx->vao.deinit();
-        g_ctx->vbo.deinit();
-        g_ctx->ibo.deinit();
-
-        mlc_free(g_ctx);
-        g_ctx = nullptr;
+        vao.deinit();
+        vbo.deinit();
+        ibo.deinit();
     }
 
     void begin_frame(PlatformIO *pio) {
-        assert(g_ctx);
-
         ImGuiIO& io = ImGui::GetIO();
         IM_ASSERT(io.Fonts->IsBuilt());
 
@@ -181,8 +148,6 @@ namespace imsupport {
     }
 
     void end_frame() {
-        assert(g_ctx);
-
         ImGui::Render();
         auto dd = ImGui::GetDrawData();
 
@@ -191,8 +156,8 @@ namespace imsupport {
         f32 t = dd->DisplayPos.y;
         f32 b = dd->DisplayPos.y + dd->DisplaySize.y;
         mat4 proj = mat4::ortho(l, r, b, t, -1.0f, 1.0f);
-        glProgramUniformMatrix4fv(g_ctx->shader, g_ctx->u_proj, 1, GL_FALSE, proj.value_ptr());
-        glProgramUniform1i(g_ctx->shader, g_ctx->u_texture, 0);
+        glProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, proj.value_ptr());
+        glProgramUniform1i(shader, u_texture, 0);
 
         bool clip_origin_lower_left = true;
         #if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
@@ -218,15 +183,15 @@ namespace imsupport {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glEnable(GL_SCISSOR_TEST);
-        glUseProgram(g_ctx->shader);
+        glUseProgram(shader);
 
-        g_ctx->vao.bind();
+        vao.bind();
 
         for(s32 i = 0; i < dd->CmdListsCount; i++) {
             ImDrawList const* cmd_list = dd->CmdLists[i];
 
-            g_ctx->vbo.set_data(cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), GL_STREAM_DRAW);
-            g_ctx->ibo.set_data(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), GL_STREAM_DRAW);
+            vbo.set_data(cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), GL_STREAM_DRAW);
+            ibo.set_data(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), GL_STREAM_DRAW);
         
             for(s32 j = 0; j < cmd_list->CmdBuffer.Size; j++) {
                 ImDrawCmd const* cmd = &cmd_list->CmdBuffer[j];
@@ -258,7 +223,7 @@ namespace imsupport {
             }    
         }
 
-        g_ctx->vao.unbind();
+        vao.unbind();
 
         glBindTextureUnit(0, 0);
         glUseProgram(0);
@@ -267,4 +232,18 @@ namespace imsupport {
         glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
         glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
     }
-}
+
+private:
+    void create_fonts_texture() {
+        ImGuiIO& io = ImGui::GetIO();
+
+        u8 *pixels;
+        s32 width, height;
+        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+        font_texture.init(width, height);
+        font_texture.set_data(pixels);
+
+        io.Fonts->TexID = (ImTextureID)(s64)font_texture.id;
+    }
+};

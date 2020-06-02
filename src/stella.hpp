@@ -32,7 +32,7 @@ struct Game {
 	struct World *world;
 	struct Player *player;
 
-	struct imsupport::Ctx *imctx;
+	struct ImGui_Backend *imgui_backend;
 
 	// TODO(URGENT): REMOVE ME
 	u8 *texs;

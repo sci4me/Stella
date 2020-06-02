@@ -198,8 +198,8 @@ extern "C" GAME_ATTACH(stella_attach) {
     if(reload) {
         Game *g = (Game*) pio->game_memory;
 
-        imsupport::set_current_context(g->imctx);
-        
+        g->imgui_backend->attach();
+
         assets::restore_textures(g->texs);
 
         init_tiles();
@@ -235,9 +235,8 @@ extern "C" GAME_INIT(stella_init) {
     prof::init();
 
 
-    g->imctx = imsupport::init();
-    imsupport::set_current_context(g->imctx);
-
+    g->imgui_backend = (ImGui_Backend*) mlc_malloc(sizeof(ImGui_Backend));
+    g->imgui_backend->init();
 
     glClearColor(0, 0, 0, 0);
 
@@ -294,7 +293,7 @@ extern "C" GAME_DEINIT(stella_deinit) {
     Game *g = (Game*) pio->game_memory;
     
     prof::deinit();
-    imsupport::deinit();
+    g->imgui_backend->deinit();
     assets::deinit();
     crafting::deinit();
 
@@ -360,7 +359,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
     }    
 
 
-    imsupport::begin_frame(pio);
+    g->imgui_backend->begin_frame(pio);
 
 
     //
@@ -439,7 +438,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
     if(!is_paused) prof::end_frame(); else prof::clear_frame_events();
     if(g->show_profiler) prof::show();
 
-    imsupport::end_frame();
+    g->imgui_backend->end_frame();
 
     tclear();
 }
