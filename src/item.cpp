@@ -25,19 +25,17 @@ Texture item_textures[N_ITEM_TYPES];
 const char *item_names[N_ITEM_TYPES];
 bool item_is_placeable[N_ITEM_TYPES];
 
-void init_items() {
-    using namespace assets::textures;
-
-    item_textures[ITEM_COBBLESTONE]                     = cobblestone;
-    item_textures[ITEM_COAL_ORE]                        = coal_ore;
-    item_textures[ITEM_IRON_ORE]                        = iron_ore;
-    item_textures[ITEM_GOLD_ORE]                        = gold_ore;
-    item_textures[ITEM_IRON_PLATE]                      = iron_plate;
-    item_textures[ITEM_GOLD_PLATE]                      = gold_plate;
-    item_textures[ITEM_IRON_GEAR]                       = iron_gear;
-    item_textures[ITEM_CHEST]                           = chest;
-    item_textures[ITEM_FURNACE]                         = furnace;
-    item_textures[ITEM_MINING_MACHINE]                  = mining_machine;
+void init_items(Assets *assets) {
+    item_textures[ITEM_COBBLESTONE]                     = assets->cobblestone;
+    item_textures[ITEM_COAL_ORE]                        = assets->coal_ore;
+    item_textures[ITEM_IRON_ORE]                        = assets->iron_ore;
+    item_textures[ITEM_GOLD_ORE]                        = assets->gold_ore;
+    item_textures[ITEM_IRON_PLATE]                      = assets->iron_plate;
+    item_textures[ITEM_GOLD_PLATE]                      = assets->gold_plate;
+    item_textures[ITEM_IRON_GEAR]                       = assets->iron_gear;
+    item_textures[ITEM_CHEST]                           = assets->chest;
+    item_textures[ITEM_FURNACE]                         = assets->furnace;
+    item_textures[ITEM_MINING_MACHINE]                  = assets->mining_machine;
 
     item_names[ITEM_COBBLESTONE]                        = "Cobblestone";
     item_names[ITEM_COAL_ORE]                           = "Coal Ore";

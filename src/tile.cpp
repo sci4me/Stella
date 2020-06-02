@@ -22,18 +22,16 @@ enum Tile_Type : u8 {
 // makes this WAY worse...
 Texture tile_textures[N_TILE_TYPES];
 
-void init_tiles() {
-    using namespace assets::textures;
-
-    tile_textures[TILE_STONE]               = stone;
-    tile_textures[TILE_GRASS]               = grass;
-    tile_textures[TILE_COBBLESTONE]         = cobblestone;
-    tile_textures[TILE_COAL_ORE]            = coal_ore;
-    tile_textures[TILE_IRON_ORE]            = iron_ore;
-    tile_textures[TILE_GOLD_ORE]            = gold_ore;
-    tile_textures[TILE_CHEST]               = chest;
-    tile_textures[TILE_FURNACE]             = furnace;
-    tile_textures[TILE_MINING_MACHINE]      = mining_machine;
+void init_tiles(Assets *assets) {
+    tile_textures[TILE_STONE]               = assets->stone;
+    tile_textures[TILE_GRASS]               = assets->grass;
+    tile_textures[TILE_COBBLESTONE]         = assets->cobblestone;
+    tile_textures[TILE_COAL_ORE]            = assets->coal_ore;
+    tile_textures[TILE_IRON_ORE]            = assets->iron_ore;
+    tile_textures[TILE_GOLD_ORE]            = assets->gold_ore;
+    tile_textures[TILE_CHEST]               = assets->chest;
+    tile_textures[TILE_FURNACE]             = assets->furnace;
+    tile_textures[TILE_MINING_MACHINE]      = assets->mining_machine;
 }
 
 

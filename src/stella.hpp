@@ -29,6 +29,8 @@ struct Game {
 
 	struct Batch_Renderer *batch_renderer;
 
+	struct Assets *assets;
+
 	struct World *world;
 	struct Player *player;
 

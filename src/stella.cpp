@@ -80,7 +80,7 @@ PLATFORM_API_FUNCTIONS
 #include "texture.cpp"
 #include "buffer_objects.cpp"
 #include "assets.cpp"
-#include "imgui_support.cpp"
+#include "imgui_backend.cpp"
 #include "batch_renderer.cpp"
 #include "item.cpp"
 #include "crafting.cpp"
@@ -200,10 +200,8 @@ extern "C" GAME_ATTACH(stella_attach) {
 
         g->imgui_backend->attach();
 
-        assets::restore_textures(g->texs);
-
-        init_tiles();
-        init_items();
+        init_tiles(g->assets);
+        init_items(g->assets);
     }
 }
 #endif
@@ -238,6 +236,7 @@ extern "C" GAME_INIT(stella_init) {
     g->imgui_backend = (ImGui_Backend*) mlc_malloc(sizeof(ImGui_Backend));
     g->imgui_backend->init();
 
+
     glClearColor(0, 0, 0, 0);
 
     glEnable(GL_BLEND);
@@ -249,13 +248,15 @@ extern "C" GAME_INIT(stella_init) {
     g->batch_renderer->init();
 
 
+    g->assets = (Assets*) mlc_malloc(sizeof(Assets));
+    g->assets->init();
+
+
     g->texs = (u8*) mlc_malloc(sizeof(Texture) * 64);
 
-    assets::init();
-    assets::save_textures(g->texs);
 
-    init_tiles();
-    init_items();
+    init_tiles(g->assets);
+    init_items(g->assets);
 
 
     crafting::init();
@@ -292,18 +293,21 @@ extern "C" GAME_INIT(stella_init) {
 extern "C" GAME_DEINIT(stella_deinit) {
     Game *g = (Game*) pio->game_memory;
     
+    #define DEINIT_AND_FREE(name) g->name->deinit(); mlc_free(g->name);
+
+    DEINIT_AND_FREE(batch_renderer);
+    DEINIT_AND_FREE(assets);
+    DEINIT_AND_FREE(imgui_backend);
+
     prof::deinit();
-    g->imgui_backend->deinit();
-    assets::deinit();
     crafting::deinit();
 
-    g->world->deinit();
-    mlc_free(g->world);
-
-    g->player->deinit();
-    mlc_free(g->player);
+    DEINIT_AND_FREE(world);
+    DEINIT_AND_FREE(player);
 
     mlc_free(g);
+
+    #undef DEINIT_AND_FREE
 }   
 
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
