@@ -347,7 +347,8 @@ void* load_dylib(char *dylib_path) {
         sc_exit(1);
     }
 
-    s32 orig_fd = sc_open(dylib_path, O_RDONLY, 0600);
+    s32 orig_fd = sc_open(dylib_path, O_RDONLY, S_IRUSR);
+    assert(orig_fd >= 0);
 
     {
         u8 copy_buf[4096];
