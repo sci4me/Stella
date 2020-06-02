@@ -193,6 +193,12 @@ extern "C" GAME_ATTACH(stella_attach) {
     // dylib (the game code). Since that only
     // happens in dev mode anyway, maybe this is fine?
     assert(glewInit() == GLEW_OK);
+
+
+    if(reload) {
+        Game *g = (Game*) pio->game_memory;
+        ImGui::SetCurrentContext(g->imgui_ctx);
+    }
 }
 #endif
 
@@ -204,7 +210,7 @@ extern "C" GAME_INIT(stella_init) {
 
 
     void *mem = mlc_malloc(sizeof(Game));
-    Game* g = new(mem) Game;
+    Game *g = new(mem) Game;
     pio->game_memory = g;
 
 
@@ -223,7 +229,7 @@ extern "C" GAME_INIT(stella_init) {
     prof::init();
 
 
-    imsupport::init();
+    imsupport::init(&g->imgui_ctx);
 
 
     glClearColor(0, 0, 0, 0);

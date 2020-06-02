@@ -318,6 +318,86 @@ static void update_button_state(PlatformIO *pio, Virtual_Button vb, bool state) 
     }
 }
 
+#ifdef STELLA_DYNAMIC
+void* load_dylib(char *dylib_path) {
+    static u32 id = 0;
+
+    char real_path[256];
+    stbsp_sprintf(real_path, "%s.%d", dylib_path, id++);
+
+    s32 fd = sc_open(real_path, O_CREAT | O_RDWR, 0700);
+    if(fd <= 0) {
+        mlc_fwrite(STDERR, "Failed to open temp file for shared library!\n");
+        sc_exit(1);
+    }
+
+    s32 orig_fd = sc_open(dylib_path, O_RDONLY, 0600);
+
+    {
+        u8 copy_buf[4096];
+        s64 n = sc_read(orig_fd, copy_buf, sizeof(copy_buf));
+
+        while(n > 0) {
+            u8 *w = copy_buf;
+            s64 wc;
+            do {
+                wc = sc_write(fd, w, n);
+
+                if(wc >= 0) {
+                    n -= wc;
+                    w += wc;
+                } else {
+                    mlc_fwrite(STDERR, "Failed copying shared library!\n");
+                    sc_exit(1);
+                }
+            } while(n > 0);
+            n = sc_read(orig_fd, copy_buf, sizeof(copy_buf));
+        }
+
+        if(n != 0) {
+            mlc_fwrite(STDERR, "Could not copy whole shared library!\n");
+            sc_exit(1);
+        }
+    }
+
+    sc_close(orig_fd);
+    sc_close(fd);
+
+    void *stella_dylib = dlopen(real_path, RTLD_NOW | RTLD_LOCAL);
+    if(!stella_dylib) {
+        char buf[1024];
+        stbsp_sprintf(buf, "Failed to load stella.so:\n%s\n", dlerror());
+        mlc_fwrite(STDERR, buf);
+        sc_exit(1);
+    }
+
+    stella_attach = (Game_Attach*) dlsym(stella_dylib, "stella_attach");
+    if(!stella_attach) {
+        mlc_fwrite(STDERR, "Failed to load symbol `stella_attach`!\n");
+        sc_exit(1);
+    }
+
+    stella_init = (Game_Init*) dlsym(stella_dylib, "stella_init");
+    if(!stella_init) {
+        mlc_fwrite(STDERR, "Failed to load symbol `stella_init`!\n");
+        sc_exit(1);
+    }
+
+    stella_deinit = (Game_Deinit*) dlsym(stella_dylib, "stella_deinit");
+    if(!stella_deinit) {
+        mlc_fwrite(STDERR, "Failed to load symbol `stella_deinit`!\n");
+        sc_exit(1);
+    }
+
+    stella_update_and_render = (Game_Update_And_Render*) dlsym(stella_dylib, "stella_update_and_render");
+    if(!stella_update_and_render) {
+        mlc_fwrite(STDERR, "Failed to load symbol `stella_update_and_render`!\n");
+        sc_exit(1);
+    }
+
+    return stella_dylib;
+}
+#endif
 
 s32 main(s32 argc, char **argv) {
 	Display *dsp = XOpenDisplay(0);
@@ -458,50 +538,27 @@ s32 main(s32 argc, char **argv) {
 
     #undef PACK
 
-    char path[256];
-    s64 n = sc_readlink("/proc/self/exe", path, array_length(path) - 4);
+    char dylib_path[256];
+    s64 n = sc_readlink("/proc/self/exe", dylib_path, array_length(dylib_path) - 4);
     if(n <= 0) {
         mlc_fwrite(STDERR, "Failed to read /proc/self/exe!\n");
         return 1;
     }
-    path[n] = '.';
-    path[n + 1] = 's';
-    path[n + 2] = 'o';
-    path[n + 3] = '\0';
+    dylib_path[n] = '.';
+    dylib_path[n + 1] = 's';
+    dylib_path[n + 2] = 'o';
+    dylib_path[n + 3] = '\0';
 
-    void *stella_dylib = dlopen(path, RTLD_NOW | RTLD_LOCAL);
-    if(!stella_dylib) {
-        char buf[1024];
-        stbsp_sprintf(buf, "Failed to load stella.so:\n%s\n", dlerror());
-        mlc_fwrite(STDERR, buf);
-        return 1;
+    void *stella_dylib = load_dylib(dylib_path);
+
+    ino_t last_ino;
+    {
+        struct stat s;
+        sc_stat(dylib_path, &s);
+        last_ino = s.st_ino;
     }
 
-    stella_attach = (Game_Attach*) dlsym(stella_dylib, "stella_attach");
-    if(!stella_attach) {
-        mlc_fwrite(STDERR, "Failed to load symbol `stella_attach`!\n");
-        return 1;
-    }
-
-    stella_init = (Game_Init*) dlsym(stella_dylib, "stella_init");
-    if(!stella_init) {
-        mlc_fwrite(STDERR, "Failed to load symbol `stella_init`!\n");
-        return 1;
-    }
-
-    stella_deinit = (Game_Deinit*) dlsym(stella_dylib, "stella_deinit");
-    if(!stella_deinit) {
-        mlc_fwrite(STDERR, "Failed to load symbol `stella_deinit`!\n");
-        return 1;
-    }
-
-    stella_update_and_render = (Game_Update_And_Render*) dlsym(stella_dylib, "stella_update_and_render");
-    if(!stella_update_and_render) {
-        mlc_fwrite(STDERR, "Failed to load symbol `stella_update_and_render`!\n");
-        return 1;
-    }
-
-    stella_attach(&pio);
+    stella_attach(&pio, false);
     #endif
 
 
@@ -638,6 +695,22 @@ s32 main(s32 argc, char **argv) {
             pio.mouse_wheel_x = 0.0f;
             pio.mouse_wheel_y = 0.0f;
         }
+
+
+        #ifdef STELLA_DYNAMIC
+        struct stat s;
+        sc_stat(dylib_path, &s);
+
+        if(s.st_ino != last_ino) {
+            last_ino = s.st_ino;
+
+            dlclose(stella_dylib);
+            stella_dylib = load_dylib(dylib_path);
+            assert(stella_dylib);
+
+            stella_attach(&pio, true);
+        }
+        #endif
 
 
         stella_update_and_render(&pio);

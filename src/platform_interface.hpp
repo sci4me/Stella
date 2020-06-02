@@ -151,7 +151,7 @@ struct PlatformIO {
 };
 
 
-#define GAME_ATTACH(name) void name(PlatformIO *pio)
+#define GAME_ATTACH(name) void name(PlatformIO *pio, bool reload)
 typedef GAME_ATTACH(Game_Attach);
 
 #define GAME_INIT(name) void name(PlatformIO *pio)

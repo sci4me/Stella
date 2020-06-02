@@ -22,7 +22,7 @@ namespace imsupport {
         io.Fonts->TexID = (ImTextureID)(s64)font_texture.id;
     }
 
-    void init() {
+    void init(ImGuiContext **imgui_ctx) {
         IMGUI_CHECKVERSION();
 
         // NOTE TODO: We may need this for hot code reloading;
@@ -30,7 +30,7 @@ namespace imsupport {
         // we actually tell it what to use for malloc/free. So.
         // ImGui::SetAllocatorFunctions(alloc_fn, free_fn, user_data);
 
-        ImGui::CreateContext();
+        *imgui_ctx = ImGui::CreateContext();
 
         ImGuiIO& io = ImGui::GetIO();
         io.IniFilename = nullptr;

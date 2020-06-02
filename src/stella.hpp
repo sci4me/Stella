@@ -25,4 +25,6 @@ struct Game {
 
 	struct World *world;
 	struct Player *player;
+
+	struct ImGuiContext *imgui_ctx;
 };

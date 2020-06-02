@@ -1,6 +1,7 @@
 // TODO: Would be nice to remove these? Or remove the defines... er.... eyeyaydhweh
 #include <sys/fcntl.h>
 #include <sys/stat.h>
+#include <sys/inotify.h>
 
 #include "common.hpp"
 
@@ -66,25 +67,24 @@ extern "C" {
 #define CLOCK_SGI_CYCLE          10
 #define CLOCK_TAI                11
 
-#define SYS_read			0
-#define SYS_write 			1
-#define SYS_open			2
-#define SYS_close			3
-#define SYS_stat			4
-#define SYS_fstat			5
-#define SYS_lstat			6
-#define SYS_poll			7
-#define SYS_lseek			8
-#define SYS_mmap			9
-#define SYS_mprotect		10
-#define SYS_munmap			11
-
-#define SYS_getpid			39
-#define SYS_exit 			60
-#define SYS_readlink		89
-#define SYS_gettid			186
-#define SYS_clock_gettime	228
-#define SYS_tgkill			234
+#define SYS_read				0
+#define SYS_write 				1
+#define SYS_open				2
+#define SYS_close				3
+#define SYS_stat				4
+#define SYS_fstat				5
+#define SYS_lstat				6
+#define SYS_poll				7
+#define SYS_lseek				8
+#define SYS_mmap				9
+#define SYS_mprotect			10
+#define SYS_munmap				11
+#define SYS_getpid				39
+#define SYS_exit 				60
+#define SYS_readlink			89
+#define SYS_gettid				186
+#define SYS_clock_gettime		228
+#define SYS_tgkill				234
 
 // TODO: Force these to be inlined!
 
