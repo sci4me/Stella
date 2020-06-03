@@ -234,7 +234,10 @@ extern "C" GAME_INIT(stella_init) {
     // dump_gl_extensions();
 
 
-    prof::init();
+    #ifndef PROFILER_DISABLE
+    g->profiler = (prof::Profiler*) mlc_malloc(sizeof(prof::Profiler));
+    g->profiler->init();
+    #endif
 
 
     g->imgui_backend = (ImGui_Backend*) mlc_malloc(sizeof(ImGui_Backend));
@@ -298,7 +301,9 @@ extern "C" GAME_DEINIT(stella_deinit) {
     DEINIT_AND_FREE(imgui_backend);
     DEINIT_AND_FREE(recipes);
 
-    prof::deinit();
+    #ifndef PROFILER_DISABLE
+    DEINIT_AND_FREE(profiler);
+    #endif
 
     DEINIT_AND_FREE(world);
     DEINIT_AND_FREE(player);

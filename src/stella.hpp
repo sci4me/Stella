@@ -1,6 +1,15 @@
 #include "platform_interface.hpp"
 
 
+#define PROFILER_DISABLE
+
+
+// TODO REMOVEME?
+namespace prof {
+	struct Profiler;
+}
+
+
 struct Game {
 	f32 scale = 1.0f;
 
@@ -18,14 +27,17 @@ struct Game {
 	//              - sci4me, 5/15/20
 	bool debug_pause = false;
 
+	#ifndef PROFILER_DISABLE
+	struct prof::Profiler *profiler;
+	#endif
+
+	struct ImGui_Backend *imgui_backend;
 	struct Batch_Renderer *batch_renderer;
 	struct Assets *assets;
 	struct Recipes *recipes;
 
 	struct World *world;
 	struct Player *player;
-
-	struct ImGui_Backend *imgui_backend;
 };
 
 extern Game *g_inst;

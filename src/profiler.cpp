@@ -1,6 +1,8 @@
-// TODO: Deal with the global state! i.e. save and restore the context
-// when we reload the shared library (#if defined(STELLA_DYNAMIC))
-#define PROFILER_DISABLE
+namespace prof {
+	constexpr u32 MAX_DEBUG_EVENTS = 64 * 1024 * 64;
+	constexpr u32 MAX_FRAME_PROFILES = 60;
+}
+
 
 #ifndef PROFILER_DISABLE
 
@@ -28,50 +30,6 @@ namespace prof {
 		union {
 			u64 time_ns;
 		};
-	};
-
-
-	constexpr u32 MAX_DEBUG_EVENTS = 64 * 1024 * 64;
-	Static_Array<Debug_Event, MAX_DEBUG_EVENTS> frame_events;
-
-
-	void clear_frame_events() {
-		frame_events.clear();
-	}
-
-
-	struct Timed_Block {
-		char *guid;
-		char *name;
-		char *file;
-		u32 line;
-
-		Timed_Block(char *guid, char *name, char *file, u32 line) {
-			this->guid = guid;
-			this->name = name;
-			this->file = file;
-			this->line = line;
-
-			Debug_Event e;
-			e.type = DEBUG_EVENT_BLOCK_START;
-			e.guid = guid;
-			e.name = name;
-			e.file = file;
-			e.line = line;
-			e.time_ns = nanotime();
-			frame_events.push(e);
-		}
-
-		~Timed_Block() {
-			Debug_Event e;
-			e.type = DEBUG_EVENT_BLOCK_END;
-			e.guid = guid;
-			e.name = name;
-			e.file = file;
-			e.line = line;
-			e.time_ns = nanotime();
-			frame_events.push(e);
-		}
 	};
 
 
@@ -133,36 +91,34 @@ namespace prof {
 	};
 
 
-	constexpr u32 MAX_FRAME_PROFILES = 60;
-	Frame_Profile frame_profiles[MAX_FRAME_PROFILES];
-	u32 frame_profile_index = 0;
-	u32 selected_frame_profile_index = 0;
-	u64 frame_count = 0;
+	struct Profiler {
+		Static_Array<Debug_Event, MAX_DEBUG_EVENTS> frame_events;
+		Frame_Profile frame_profiles[MAX_FRAME_PROFILES];
+		u32 frame_profile_index = 0;
+		u32 selected_frame_profile_index = 0;
+		u64 frame_count = 0;
 
 
-	void init() {
-		for(u32 i = 0; i < MAX_FRAME_PROFILES; i++) frame_profiles[i].init();
-	}
+		void init() {
+			for(u32 i = 0; i < MAX_FRAME_PROFILES; i++) frame_profiles[i].init();
+		}
 
-	void deinit() {
-		for(u32 i = 0; i < MAX_FRAME_PROFILES; i++) frame_profiles[i].deinit();
+		void deinit() {
+			for(u32 i = 0; i < MAX_FRAME_PROFILES; i++) frame_profiles[i].deinit();
+		}
+	};	
+
+	void clear_frame_events() {
+		g_inst->profiler->frame_events.clear();
 	}
 
 	void begin_frame() {
-		frame_profile_index++;
-		if(frame_profile_index >= MAX_FRAME_PROFILES) frame_profile_index = 0;
+		Profiler *p = g_inst->profiler;
+		p->frame_profile_index++;
+		if(p->frame_profile_index >= MAX_FRAME_PROFILES) p->frame_profile_index = 0;
 	}
 
 	s32 _sort_block_profiles_comparator(Block_Profile* const& a, Block_Profile* const& b) {
-		if(a->time_ns < b->time_ns) return  1;
-		if(a->time_ns > b->time_ns) return -1;
-		return 0;
-	}
-
-	s32 _sort_block_profiles_comparator_mlc(void const* ppa, void const* ppb) {
-		Block_Profile *a = ((Block_Profile*) ppa);
-		Block_Profile *b = ((Block_Profile*) ppb);
-		if(a == 0 || b == 0) return 0;
 		if(a->time_ns < b->time_ns) return  1;
 		if(a->time_ns > b->time_ns) return -1;
 		return 0;
@@ -175,10 +131,11 @@ namespace prof {
 		}
 
 		bps.qsort(_sort_block_profiles_comparator);
-		// mlc_qsort(bps.data, sizeof(Block_Profile*), bps.count, _sort_block_profiles_comparator_mlc);
 	}
 
 	void end_frame() {
+		Profiler *p = g_inst->profiler;
+
 		// NOTE TODO BUG: We don't distinguish between calls to the same function from different callsites!!!!
 
 		// NOTE: We are using char* as an 8-byte value here!
@@ -196,8 +153,8 @@ namespace prof {
 		Block_Profile *current_block_profile = nullptr;
 
 		// TODO: sort blocks & block_profiles (not the Hash_Table obviously!)
-		Frame_Profile& fp = frame_profiles[frame_profile_index];
-		fp.frame = frame_count;
+		Frame_Profile& fp = p->frame_profiles[p->frame_profile_index];
+		fp.frame = p->frame_count;
 
 		for(u32 i = 0; i < fp.block_profiles.count; i++) {
 			fp.block_profiles[i]->deinit();
@@ -205,8 +162,8 @@ namespace prof {
 		}
 		fp.block_profiles.clear();
 
-		for(u32 event_index = 0; event_index < frame_events.count; event_index++) {
-			auto const& event = frame_events[event_index];
+		for(u32 event_index = 0; event_index < p->frame_events.count; event_index++) {
+			auto const& event = p->frame_events[event_index];
 
 			switch(event.type) {
 				case DEBUG_EVENT_BLOCK_START: {
@@ -258,11 +215,9 @@ namespace prof {
 		block_profiles.deinit();
 		block_profile_stack.deinit();
 
-		frame_events.clear();
+		p->selected_frame_profile_index = p->frame_profile_index;
 
-		selected_frame_profile_index = frame_profile_index;
-
-		frame_count++;
+		p->frame_count++;
 
 		clear_frame_events();
 	}
@@ -303,6 +258,8 @@ namespace prof {
 	}
 
 	void show_frames() {
+		Profiler *p = g_inst->profiler;
+
 		// TODO: Figure out how to make this a proper
 		// imgui component instead of just using ImGui::Dummy
 		// Doing it the way we are now prevents scrolling from
@@ -325,16 +282,16 @@ namespace prof {
 			vec2 s = min + vec2(i * FRAME_WIDTH, 0);
 			vec2 e = s + vec2(FRAME_WIDTH, FRAME_HEIGHT);
 
-			if(i == frame_profile_index) dl->AddRectFilled(s, e, 0xFF0000FF);
-			else if(i == selected_frame_profile_index) dl->AddRectFilled(s, e, 0xFFFF0000);
-			else if(i < frame_profile_index) dl->AddRectFilled(s, e, 0xFF00FF00);
-			else if(i > frame_profile_index) dl->AddRectFilled(s, e, 0xFF00FFFF);
+			if(i == p->frame_profile_index) dl->AddRectFilled(s, e, 0xFF0000FF);
+			else if(i == p->selected_frame_profile_index) dl->AddRectFilled(s, e, 0xFFFF0000);
+			else if(i < p->frame_profile_index) dl->AddRectFilled(s, e, 0xFF00FF00);
+			else if(i > p->frame_profile_index) dl->AddRectFilled(s, e, 0xFF00FFFF);
 
 			if(mouse_pos.x >= s.x && mouse_pos.x < e.x && mouse_pos.y >= s.y && mouse_pos.y < e.y) {
 				dl->AddRectFilled(s, e, 0x66FFFFFF);
 
 				if(ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-					selected_frame_profile_index = i;
+					p->selected_frame_profile_index = i;
 				}
 			}
 
@@ -354,7 +311,8 @@ namespace prof {
 
 			ImGui::Separator();
 
-			Frame_Profile& fp = frame_profiles[selected_frame_profile_index]; // NOTE: - 1 because we increment after write
+			Profiler *p = g_inst->profiler;
+			Frame_Profile& fp = p->frame_profiles[p->selected_frame_profile_index]; // NOTE: - 1 because we increment after write
 			ImGui::Text("Frame: %llu", fp.frame);
 			for(u32 i = 0; i < fp.block_profiles.count; i++) {
 				show_block_profile(fp.block_profiles[i]);
@@ -362,6 +320,40 @@ namespace prof {
 		}
 		ImGui::End();
 	}
+
+	struct Timed_Block {
+		char *guid;
+		char *name;
+		char *file;
+		u32 line;
+
+		Timed_Block(char *guid, char *name, char *file, u32 line) {
+			this->guid = guid;
+			this->name = name;
+			this->file = file;
+			this->line = line;
+
+			Debug_Event e;
+			e.type = DEBUG_EVENT_BLOCK_START;
+			e.guid = guid;
+			e.name = name;
+			e.file = file;
+			e.line = line;
+			e.time_ns = nanotime();
+			g_inst->profiler->frame_events.push(e);
+		}
+
+		~Timed_Block() {
+			Debug_Event e;
+			e.type = DEBUG_EVENT_BLOCK_END;
+			e.guid = guid;
+			e.name = name;
+			e.file = file;
+			e.line = line;
+			e.time_ns = nanotime();
+			g_inst->profiler->frame_events.push(e);
+		}
+	};
 }
 
 
@@ -379,8 +371,6 @@ namespace prof {
 
 namespace prof {
 	void clear_frame_events() {}
-	void init() {}
-	void deinit() {}
 	void begin_frame() {}
 	void end_frame() {}
 	void show() {}
