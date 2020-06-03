@@ -1,0 +1,19 @@
+constexpr u32 MAX_ITEM_SLOT_SIZE = 64;
+
+enum Item_Type : u8 {
+    ITEM_COBBLESTONE,
+    ITEM_COAL_ORE,
+    ITEM_IRON_ORE,
+    ITEM_GOLD_ORE,
+
+    ITEM_IRON_PLATE,
+    ITEM_GOLD_PLATE,
+
+    ITEM_IRON_GEAR,
+
+    ITEM_CHEST,
+    ITEM_FURNACE,
+    ITEM_MINING_MACHINE,
+
+    N_ITEM_TYPES
+};

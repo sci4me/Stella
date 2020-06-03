@@ -1,31 +1,44 @@
+// TODO: Clean this up!
+// We probably want to just have a macro
+// for items in item.hpp and a macro for
+// tiles in tile.hpp which has the id, name,
+// type, etc.
+
 #define _TEXTURES(X) \
-    X(stone,                true ,          tile  ) \
-    X(grass,                true ,          tile  ) \
-    X(cobblestone,          true ,          tile  ) \
-    X(coal_ore,             true ,          tile  ) \
-    X(iron_ore,             true ,          tile  ) \
-    X(gold_ore,             true ,          tile  ) \
-    X(chest,                true ,          tile  ) \
-    X(furnace,              true ,          tile  ) \
-    X(mining_machine,       true ,          tile  ) \
-    X(iron_plate,           false,          item  ) \
-    X(gold_plate,           false,          item  ) \
-    X(iron_gear,            false,          item  )
+    X(TILE_STONE,               stone,                true ,          tile,     tile  ) \
+    X(TILE_GRASS,               grass,                true ,          tile,     tile  ) \
+    X(TILE_COBBLESTONE,         cobblestone,          true ,          tile,     tile  ) \
+    X(TILE_COAL_ORE,            coal_ore,             true ,          tile,     tile  ) \
+    X(TILE_IRON_ORE,            iron_ore,             true ,          tile,     tile  ) \
+    X(TILE_GOLD_ORE,            gold_ore,             true ,          tile,     tile  ) \
+    X(TILE_CHEST,               chest,                true ,          tile,     tile  ) \
+    X(TILE_FURNACE,             furnace,              true ,          tile,     tile  ) \
+    X(TILE_MINING_MACHINE,      mining_machine,       true ,          tile,     tile  ) \
+    \
+    X(ITEM_COBBLESTONE,         cobblestone,          false,          item,     tile  ) \
+    X(ITEM_COAL_ORE,            coal_ore,             false,          item,     tile  ) \
+    X(ITEM_IRON_ORE,            iron_ore,             false,          item,     tile  ) \
+    X(ITEM_GOLD_ORE,            gold_ore,             false,          item,     tile  ) \
+    X(ITEM_IRON_PLATE,          iron_plate,           false,          item,     item  ) \
+    X(ITEM_GOLD_PLATE,          gold_plate,           false,          item,     item  ) \
+    X(ITEM_IRON_GEAR,           iron_gear,            false,          item,     item  ) \
+    X(ITEM_CHEST,               chest,                false,          item,     tile  ) \
+    X(ITEM_FURNACE,             furnace,              false,          item,     tile  ) \
+    X(ITEM_MINING_MACHINE,      mining_machine,       false,          item,     tile  )
 
 
 struct Assets {
-    #define _X(name, mips, type) Texture name;
-    _TEXTURES(_X)
-    #undef _X
+    Texture tile_textures[N_TILE_TYPES];
+    Texture item_textures[N_ITEM_TYPES];
 
     void init() {
-        #define _X(name, mips, type) name = load_texture_from_file(#type, #name, mips);
+        #define _X(id, name, mips, type, pfx) type##_textures[id] = load_texture_from_file(#pfx, #name, mips);
         _TEXTURES(_X)
         #undef _X
     }
 
     void deinit() {
-        #define _X(name, mips, type) name.deinit();
+        #define _X(id, name, mips, type, pfx) type##_textures[id].deinit();
         _TEXTURES(_X)
         #undef _X
     }

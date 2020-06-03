@@ -79,6 +79,8 @@ PLATFORM_API_FUNCTIONS
 #include "shader.cpp"
 #include "texture.cpp"
 #include "buffer_objects.cpp"
+#include "tile.hpp"
+#include "item.hpp"
 #include "assets.cpp"
 #include "imgui_backend.cpp"
 #include "batch_renderer.cpp"
@@ -168,8 +170,14 @@ void* stella_im_malloc(u64 n) { return mlc_malloc(n); }
 void stella_im_free(void *p) { mlc_free(p); }
 
 
+Game *g_inst;
+
+
 #ifdef STELLA_DYNAMIC
 extern "C" GAME_ATTACH(stella_attach) {
+    Game *g = (Game*) pio->game_memory;
+    g_inst = g;
+
     #define UNPACK(name) name = pio->api.name
 
     UNPACK(mlc_malloc);
@@ -196,12 +204,10 @@ extern "C" GAME_ATTACH(stella_attach) {
 
 
     if(reload) {
-        Game *g = (Game*) pio->game_memory;
-
         g->imgui_backend->attach();
 
         init_tiles(g->assets);
-        init_items(g->assets);
+        init_items();
     }
 }
 #endif
@@ -215,6 +221,7 @@ extern "C" GAME_INIT(stella_init) {
 
     void *mem = mlc_malloc(sizeof(Game));
     Game *g = new(mem) Game;
+    g_inst = g;
     pio->game_memory = g;
 
 
@@ -256,7 +263,7 @@ extern "C" GAME_INIT(stella_init) {
 
 
     init_tiles(g->assets);
-    init_items(g->assets);
+    init_items();
 
 
     crafting::init();

@@ -39,3 +39,5 @@ struct Game {
 	// TODO(URGENT): REMOVE ME
 	u8 *texs;
 };
+
+extern Game *g_inst;

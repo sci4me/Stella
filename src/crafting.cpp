@@ -308,7 +308,7 @@ namespace crafting {
                         ImGui::PushID(i); // TODO: This is silly.
                         ImGui::PushID(k);
                         ImGui::PushID(j);
-                        if(ImGui::ImageButton((ImTextureID)(u64)item_textures[req.recipe->output.type].id, { 32, 32 })) {
+                        if(ImGui::ImageButton((ImTextureID)(u64)g_inst->assets->item_textures[req.recipe->output.type].id, { 32, 32 })) {
                             cancel_job(i);
                             
                             ImGui::PopID();

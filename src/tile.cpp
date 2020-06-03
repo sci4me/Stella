@@ -1,37 +1,17 @@
-constexpr f32 TILE_SIZE = 32.0f;
-
-
-enum Tile_Type : u8 {
-    TILE_STONE,
-    TILE_GRASS,
-
-    TILE_COBBLESTONE,
-    TILE_COAL_ORE,
-    TILE_IRON_ORE,
-    TILE_GOLD_ORE,
-
-    TILE_CHEST,
-    TILE_FURNACE,
-    TILE_MINING_MACHINE,
-
-    N_TILE_TYPES
-};
-
-
 // TODO(URGENT): FIX THIS! Hot code reloading only
 // makes this WAY worse...
 Texture tile_textures[N_TILE_TYPES];
 
 void init_tiles(Assets *assets) {
-    tile_textures[TILE_STONE]               = assets->stone;
-    tile_textures[TILE_GRASS]               = assets->grass;
-    tile_textures[TILE_COBBLESTONE]         = assets->cobblestone;
-    tile_textures[TILE_COAL_ORE]            = assets->coal_ore;
-    tile_textures[TILE_IRON_ORE]            = assets->iron_ore;
-    tile_textures[TILE_GOLD_ORE]            = assets->gold_ore;
-    tile_textures[TILE_CHEST]               = assets->chest;
-    tile_textures[TILE_FURNACE]             = assets->furnace;
-    tile_textures[TILE_MINING_MACHINE]      = assets->mining_machine;
+    tile_textures[TILE_STONE]               = assets->tile_textures[TILE_STONE];
+    tile_textures[TILE_GRASS]               = assets->tile_textures[TILE_GRASS];
+    tile_textures[TILE_COBBLESTONE]         = assets->tile_textures[TILE_COBBLESTONE];
+    tile_textures[TILE_COAL_ORE]            = assets->tile_textures[TILE_COAL_ORE];
+    tile_textures[TILE_IRON_ORE]            = assets->tile_textures[TILE_IRON_ORE];
+    tile_textures[TILE_GOLD_ORE]            = assets->tile_textures[TILE_GOLD_ORE];
+    tile_textures[TILE_CHEST]               = assets->tile_textures[TILE_CHEST];
+    tile_textures[TILE_FURNACE]             = assets->tile_textures[TILE_FURNACE];
+    tile_textures[TILE_MINING_MACHINE]      = assets->tile_textures[TILE_MINING_MACHINE];
 }
 
 
