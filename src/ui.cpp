@@ -223,9 +223,9 @@ namespace ui {
         }
     }
 
-    // NOTE: We just pass the crafting::Queue since it contains the
+    // NOTE: We just pass the Crafting_Queue since it contains the
     // Item_Container for the player inventory, and we need the Queue anyway.
-    void player_inventory(crafting::Queue *crafting_queue, bool *open) {
+    void player_inventory(Crafting_Queue *crafting_queue, bool *open) {
         TIMED_FUNCTION();
 
         if(!*open) return;
@@ -238,8 +238,8 @@ namespace ui {
 
             ImGui::Separator();
 
-            for(u32 i = 0; i < crafting::recipes.count; i++) {
-                auto r = crafting::recipes[i];
+            for(u32 i = 0; i < g_inst->recipes->recipes.count; i++) {
+                auto r = g_inst->recipes->recipes[i];
                 
                 if(ImGui::ImageButton((ImTextureID)(u64)g_inst->assets->item_textures[r->output.type].id, { SLOT_SIZE, SLOT_SIZE })) {
                     // TODO: Handle result?

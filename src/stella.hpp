@@ -1,15 +1,6 @@
 #include "platform_interface.hpp"
 
 
-#define GL_DEBUG
-
-
-// TODO REMOVEME
-namespace imsupport {
-	struct Ctx;
-}
-
-
 struct Game {
 	f32 scale = 1.0f;
 
@@ -28,16 +19,13 @@ struct Game {
 	bool debug_pause = false;
 
 	struct Batch_Renderer *batch_renderer;
-
 	struct Assets *assets;
+	struct Recipes *recipes;
 
 	struct World *world;
 	struct Player *player;
 
 	struct ImGui_Backend *imgui_backend;
-
-	// TODO(URGENT): REMOVE ME
-	u8 *texs;
 };
 
 extern Game *g_inst;

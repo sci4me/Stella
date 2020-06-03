@@ -29,10 +29,7 @@
 #define GL_MINOR 4
 #define APP_NAME "Stella"
 
-
-#define STDIN 				0
-#define STDOUT				1
-#define STDERR				2
+#define GL_DEBUG
 
 
 // TODO: Instead of having malloc, calloc, realloc, and free,
@@ -151,8 +148,10 @@ struct PlatformIO {
 };
 
 
+#ifdef STELLA_DYNAMIC
 #define GAME_ATTACH(name) void name(PlatformIO *pio, bool reload)
 typedef GAME_ATTACH(Game_Attach);
+#endif
 
 #define GAME_INIT(name) void name(PlatformIO *pio)
 typedef GAME_INIT(Game_Init);

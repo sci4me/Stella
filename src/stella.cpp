@@ -256,10 +256,8 @@ extern "C" GAME_INIT(stella_init) {
     g->assets->init();
 
 
-    g->texs = (u8*) mlc_malloc(sizeof(Texture) * 64);
-
-
-    crafting::init();
+    g->recipes = (Recipes*) mlc_malloc(sizeof(Recipes));
+    g->recipes->init();
 
 
     {
@@ -298,9 +296,9 @@ extern "C" GAME_DEINIT(stella_deinit) {
     DEINIT_AND_FREE(batch_renderer);
     DEINIT_AND_FREE(assets);
     DEINIT_AND_FREE(imgui_backend);
+    DEINIT_AND_FREE(recipes);
 
     prof::deinit();
-    crafting::deinit();
 
     DEINIT_AND_FREE(world);
     DEINIT_AND_FREE(player);

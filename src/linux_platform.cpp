@@ -24,7 +24,6 @@ Game_Init *stella_init;
 Game_Deinit *stella_deinit;
 Game_Update_And_Render *stella_update_and_render;
 #elif defined(STELLA_STATIC)
-extern "C" GAME_ATTACH(stella_attach);
 extern "C" GAME_INIT(stella_init);
 extern "C" GAME_DEINIT(stella_deinit);
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render);
@@ -727,6 +726,8 @@ s32 main(s32 argc, char **argv) {
             assert(stella_dylib);
 
             stella_attach(&pio, true);
+
+            mlc_fwrite(STDOUT, "NOTE: Reloaded stella.so!\n");
         }
         #endif
 

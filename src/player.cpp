@@ -18,7 +18,7 @@ struct Player {
     f32 mining_progress;
 
     Item_Container inventory;
-    crafting::Queue crafting_queue;
+    Crafting_Queue crafting_queue;
 
     Tile *active_ui_tile = nullptr;
 

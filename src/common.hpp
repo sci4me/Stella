@@ -87,10 +87,9 @@ inline void __assert(bool x) {
 #define assert(x) __assert(!!(x))
 
 
-struct Buffer {
-	u8 *data;
-	u64 len;
-};
+#define STDIN 				0
+#define STDOUT				1
+#define STDERR				2
 
 
 #define S32_MIN 	0x80000000
@@ -128,5 +127,12 @@ struct Buffer {
 
 #define DBL_MIN 	F64_MIN
 #define DBL_MAX 	F64_MAX
+
+
+struct Buffer {
+	u8 *data;
+	u64 len;
+};
+
 
 #endif
