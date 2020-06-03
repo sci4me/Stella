@@ -196,7 +196,7 @@ u32 next_pow2_u32(u32 y) {
 }
 
 
-inline vec4 rgba255_to_rgba1(u32 c) {
+FORCE_INLINE vec4 rgba255_to_rgba1(u32 c) {
     u8 r = c & 0xFF;
     u8 g = (c >> 8) & 0xFF;
     u8 b = (c >> 16) & 0xFF;
@@ -209,7 +209,7 @@ inline vec4 rgba255_to_rgba1(u32 c) {
     };
 }
 
-inline u32 rgba1_to_rgba255(vec4 c) {
+FORCE_INLINE u32 rgba1_to_rgba255(vec4 c) {
     u8 r = (u8) roundf32(c.x * 255.0f);
     u8 g = (u8) roundf32(c.y * 255.0f);
     u8 b = (u8) roundf32(c.z * 255.0f);
@@ -217,7 +217,7 @@ inline u32 rgba1_to_rgba255(vec4 c) {
     return a << 24 | b << 16 | g << 8 | r;
 }
 
-inline vec4 rgba1_to_linear(vec4 c) {
+FORCE_INLINE vec4 rgba1_to_linear(vec4 c) {
     return {
         square(c.x),
         square(c.y),
@@ -226,7 +226,7 @@ inline vec4 rgba1_to_linear(vec4 c) {
     };
 }
 
-inline vec4 linear_to_rgba1(vec4 c) {
+FORCE_INLINE vec4 linear_to_rgba1(vec4 c) {
     return {
         sqrtf32(c.x),
         sqrtf32(c.y),
@@ -236,7 +236,7 @@ inline vec4 linear_to_rgba1(vec4 c) {
 }
 
 // NOTE: This function expects RGBA values from 0 to 1.
-inline vec4 alpha_premultiply(vec4 c) {
+FORCE_INLINE vec4 alpha_premultiply(vec4 c) {
     auto p = rgba1_to_linear(c);
     p.x *= p.w;
     p.y *= p.w;
@@ -264,15 +264,15 @@ struct AABB {
         );
     }
 
-    inline vec2 get_center() const {
+    FORCE_INLINE vec2 get_center() const {
         return 0.5f * (min + max);
     }
 
-    inline vec2 get_size() const {
+    FORCE_INLINE vec2 get_size() const {
         return max - min;
     }
 
-    inline vec2 get_half_size() const {
+    FORCE_INLINE vec2 get_half_size() const {
         return 0.5f * get_size();
     }
 

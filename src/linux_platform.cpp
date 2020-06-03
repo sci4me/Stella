@@ -542,17 +542,8 @@ s32 main(s32 argc, char **argv) {
     PlatformIO pio = {};
 
     #ifdef STELLA_DYNAMIC
-    #define PACK(name) pio.api.name = name
-
-    PACK(mlc_malloc);
-    PACK(mlc_calloc);
-    PACK(mlc_realloc);
-    PACK(mlc_free);
-    PACK(mlc_fwrite);
-    PACK(mlc_exit);
-    PACK(nanotime);
-    PACK(read_entire_file);
-
+    #define PACK(name, ret, params) pio.api.name = name;
+    _PLATFORM_API_FUNCTIONS(PACK)
     #undef PACK
 
     char dylib_path[256];

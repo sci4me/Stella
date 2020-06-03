@@ -73,8 +73,6 @@ Code/Dev Features/Quality:
      It would generate serialization and deserialization code for us.
      Wouldn't really be all that hard.. I think..
    - Not sure if we really _want_ this..... so.. idk. Maybe?
- - Force Inline "attribute" (macro)
-   - Compiler-dependent
  - Okay, I'm going to put this in "TODO", but...
    I'm definitely not convinced that this should be done
    or that it shouldn't be done.
@@ -151,19 +149,8 @@ Code/Dev Features/Quality:
    - #define internal static
    - Do we really care? er..
  - HOT CODE RELOAD!!!!!
-   - So we've done the first half of this, essentially.
-     - We can run as a shared library or a static library
-       - Could probably be improved further (cleanup, for one)
-   - Now we have to do the hard(?) part
-     - Detect when the code is recompiled; reload the code
-       - However... if the app is running then
-         - We probably can't write to the executable(?)
-         - We probably can't write to the shared library
-   - Update on this...
-     - We've got it working; at least, the basics
-       - Much refactoring to do, etc.
-     - Trying to think of how I want to structure things
-       - Globals can be convenient (TM)
+   - So we've pretty much done this at this point...
+   - May still be some things that need fixed though.
  - Shader Abstraction
    - Bind/Unbind
    - Ability to handle uniforms

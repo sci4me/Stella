@@ -87,8 +87,6 @@ extern "C" {
 #define SYS_clock_gettime		228
 #define SYS_tgkill				234
 
-// TODO: Force these to be inlined!
-
 FORCE_INLINE s64 sc_read(s32 fd, void *data, u64 n) {
 	return (s64) SYSCALL3(SYS_read, (s64)fd, data, n);
 }

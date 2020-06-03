@@ -178,17 +178,8 @@ extern "C" GAME_ATTACH(stella_attach) {
     Game *g = (Game*) pio->game_memory;
     g_inst = g;
 
-    #define UNPACK(name) name = pio->api.name
-
-    UNPACK(mlc_malloc);
-    UNPACK(mlc_calloc);
-    UNPACK(mlc_realloc);
-    UNPACK(mlc_free);
-    UNPACK(mlc_fwrite);
-    UNPACK(mlc_exit);
-    UNPACK(nanotime);
-    UNPACK(read_entire_file);
-
+    #define UNPACK(name, ret, params) name = pio->api.name;
+    _PLATFORM_API_FUNCTIONS(UNPACK)
     #undef UNPACK
 
 
