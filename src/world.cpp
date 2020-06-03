@@ -361,7 +361,7 @@ void Chunk::render() {
     for(s32 i = 0; i < SIZE; i++) {
         for(s32 j = 0; j < SIZE; j++) {
             auto tile = layer0[i][j];
-            auto texture = tile_textures[tile].id;
+            auto texture = g_inst->assets->tile_textures[tile].id;
 
             s32 tex_index = textures.alloc(texture);
             assert(tex_index != -1); // TODO

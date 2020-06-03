@@ -205,9 +205,6 @@ extern "C" GAME_ATTACH(stella_attach) {
 
     if(reload) {
         g->imgui_backend->attach();
-
-        init_tiles(g->assets);
-        init_items();
     }
 }
 #endif
@@ -260,10 +257,6 @@ extern "C" GAME_INIT(stella_init) {
 
 
     g->texs = (u8*) mlc_malloc(sizeof(Texture) * 64);
-
-
-    init_tiles(g->assets);
-    init_items();
 
 
     crafting::init();

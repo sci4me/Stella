@@ -1,28 +1,3 @@
-// TODO(URGENT): FIX THIS! Hot code reloading only
-// makes this WAY worse...
-Texture tile_textures[N_TILE_TYPES];
-
-void init_tiles(Assets *assets) {
-    tile_textures[TILE_STONE]               = assets->tile_textures[TILE_STONE];
-    tile_textures[TILE_GRASS]               = assets->tile_textures[TILE_GRASS];
-    tile_textures[TILE_COBBLESTONE]         = assets->tile_textures[TILE_COBBLESTONE];
-    tile_textures[TILE_COAL_ORE]            = assets->tile_textures[TILE_COAL_ORE];
-    tile_textures[TILE_IRON_ORE]            = assets->tile_textures[TILE_IRON_ORE];
-    tile_textures[TILE_GOLD_ORE]            = assets->tile_textures[TILE_GOLD_ORE];
-    tile_textures[TILE_CHEST]               = assets->tile_textures[TILE_CHEST];
-    tile_textures[TILE_FURNACE]             = assets->tile_textures[TILE_FURNACE];
-    tile_textures[TILE_MINING_MACHINE]      = assets->tile_textures[TILE_MINING_MACHINE];
-}
-
-
-typedef u8 Tile_Flags;
-enum Tile_Flags_ : u8 {
-    TILE_FLAG_NONE                          = 0,
-    TILE_FLAG_WANTS_DYNAMIC_UPDATES         = 1,
-    TILE_FLAG_IS_COLLIDER                   = 2
-};
-
-
 struct Tile {
     struct World *world;
     Tile_Type type;
@@ -42,7 +17,7 @@ struct Tile {
     virtual void draw(Batch_Renderer *r) {
         TIMED_FUNCTION();
 
-        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &tile_textures[(u32) type]);
+        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->tile_textures[(u32) type]);
     }
 
     virtual void update() {}
@@ -83,7 +58,7 @@ struct Tile_Ore : public Tile {
             TILE_SIZE - H2,
             vec4(1.0f, 1.0f, 1.0f, 1.0f),
             uvs,
-            tile_textures[(u32) type].id
+            g_inst->assets->tile_textures[(u32) type].id
         );
     }
 };
