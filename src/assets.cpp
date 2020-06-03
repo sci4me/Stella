@@ -4,7 +4,6 @@
     _TILE_DEFS(_TEXTURES_TILE_X, X) \
     _ITEM_DEFS(_TEXTURES_ITEM_X, X)
 
-
 struct Assets {
     Texture tile_textures[N_TILE_TYPES];
     Texture item_textures[N_ITEM_TYPES];
@@ -21,3 +20,7 @@ struct Assets {
         #undef _X
     }
 };
+
+#undef _TEXTURES_ITEM_X
+#undef _TEXTURES_TILE_X
+#undef _TEXTURES
