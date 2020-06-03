@@ -1,9 +1,3 @@
-// TODO: Clean this up!
-// We probably want to just have a macro
-// for items in item.hpp and a macro for
-// tiles in tile.hpp which has the id, name,
-// type, etc.
-
 #define _TEXTURES_ITEM_X(X, id, name, placeable, pfx, texname) X(id, texname, false, item, pfx)
 #define _TEXTURES_TILE_X(X, id, texname) X(id, texname, true, tile, tile)
 #define _TEXTURES(X) \
