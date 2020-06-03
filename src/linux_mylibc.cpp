@@ -1,5 +1,3 @@
-#include "linux_syscall.cpp"
-
 extern "C" {
 	void* mlc_memcpy(void *dst, void const* src, u64 n);
 	void mlc_free(void* p);

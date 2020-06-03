@@ -3,33 +3,43 @@ constexpr u64 TEMPORARY_STORAGE_ALIGNMENT = 8;
 
 // TODO: Make this thread-safe!
 
-char temporary_storage_buffer[TEMPORARY_STORAGE_SIZE];
-u64 temporary_storage_used = 0;
-u64 temporary_storage_mark = 0;
+struct Temporary_Storage {
+	static constexpr u64 SIZE = 1024 * 64;
+	static constexpr u64 ALIGNMENT = 8;
 
-void* talloc(u64 x) {
-	u64 n = (x + (TEMPORARY_STORAGE_ALIGNMENT - 1)) & ~(TEMPORARY_STORAGE_ALIGNMENT - 1);
-	u64 new_used = temporary_storage_used + n;
-	
-	if(new_used > TEMPORARY_STORAGE_SIZE) {
-		// TODO ?
-		assert(0);
-		return 0;
+	u8 data[TEMPORARY_STORAGE_SIZE];
+	u64 used;
+	u64 _mark;
+
+	void* alloc(u64 x) {
+		u64 n = (x + (TEMPORARY_STORAGE_ALIGNMENT - 1)) & ~(TEMPORARY_STORAGE_ALIGNMENT - 1);
+		u64 new_used = used + n;
+		
+		if(new_used > TEMPORARY_STORAGE_SIZE) {
+			// TODO ?
+			assert(0);
+			return 0;
+		}
+
+		void *result = (void*) (data + used);
+		used = new_used;
+		return result;
 	}
 
-	void *result = (void*) (temporary_storage_buffer + temporary_storage_used);
-	temporary_storage_used = new_used;
-	return result;
-}
+	void clear() {
+		used = 0;
+	}
 
-void tclear() {
-	temporary_storage_used = 0;
-}
+	void mark() {
+		_mark = used;
+	}
 
-void tmark() {
-	temporary_storage_mark = temporary_storage_used;
-}
+	void reset() {
+		used = _mark;
+	}
+};
 
-void treset() {
-	temporary_storage_used = temporary_storage_mark;
-}
+void* talloc(u64 n) { return g_inst->temp->alloc(n); }
+void tclear() { return g_inst->temp->clear(); }
+void tmark() { return g_inst->temp->mark(); }
+void treset() { return g_inst->temp->reset(); }

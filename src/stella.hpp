@@ -27,6 +27,8 @@ struct Game {
 	//              - sci4me, 5/15/20
 	bool debug_pause = false;
 
+	struct Temporary_Storage *temp;
+
 	#ifndef PROFILER_DISABLE
 	struct prof::Profiler *profiler;
 	#endif

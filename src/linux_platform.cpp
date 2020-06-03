@@ -10,6 +10,7 @@
 
 #include "platform_interface.hpp"
 #include "mylibc.cpp"
+#include "linux_syscall.cpp"
 #include "linux_mylibc.cpp"
 
 

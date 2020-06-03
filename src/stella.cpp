@@ -233,7 +233,7 @@ extern "C" GAME_INIT(stella_init) {
     pio->game_memory = g;
 
 
-    init_gl(g);
+    g->temp = (Temporary_Storage*) mlc_malloc(sizeof(Temporary_Storage));
 
 
     #ifndef PROFILER_DISABLE
@@ -284,6 +284,9 @@ extern "C" GAME_INIT(stella_init) {
         g->player->inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_MINING_MACHINE, MAX_ITEM_SLOT_SIZE });
     }
+
+
+    init_gl(g);
 }
 
 extern "C" GAME_DEINIT(stella_deinit) {
