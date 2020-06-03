@@ -177,7 +177,7 @@ void init_gl(Game *g) {
     #ifdef GL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback((GLDEBUGPROCARB) ::gl_debug_callback, 0);
+        glDebugMessageCallback((GLDEBUGPROCARB) gl_debug_callback, 0);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     #endif
 
@@ -305,9 +305,9 @@ extern "C" GAME_DEINIT(stella_deinit) {
     DEINIT_AND_FREE(world);
     DEINIT_AND_FREE(player);
 
-    mlc_free(g);
-
     #undef DEINIT_AND_FREE
+
+    mlc_free(g);
 }   
 
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
