@@ -414,6 +414,12 @@ void* load_dylib(char *dylib_path) {
 
     return stella_dylib;
 }
+
+ino_t get_file_ino(char const* path) {
+    struct stat s;
+    sc_stat(path, &s);
+    return s.st_ino;
+}
 #endif
 
 s32 main(s32 argc, char **argv) {
@@ -558,13 +564,7 @@ s32 main(s32 argc, char **argv) {
     dylib_path[n + 3] = '\0';
 
     void *stella_dylib = load_dylib(dylib_path);
-
-    ino_t last_ino;
-    {
-        struct stat s;
-        sc_stat(dylib_path, &s);
-        last_ino = s.st_ino;
-    }
+    ino_t last_ino = get_file_ino(dylib_path);
 
     stella_attach(&pio, false);
     #endif
@@ -706,11 +706,9 @@ s32 main(s32 argc, char **argv) {
 
 
         #ifdef STELLA_DYNAMIC
-        struct stat s;
-        sc_stat(dylib_path, &s);
-
-        if(s.st_ino != last_ino) {
-            last_ino = s.st_ino;
+        ino_t curr_ino = get_file_ino(dylib_path);
+        if(curr_ino != last_ino) {
+            last_ino = curr_ino;
 
             dlclose(stella_dylib);
             stella_dylib = load_dylib(dylib_path);

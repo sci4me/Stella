@@ -173,6 +173,26 @@ void stella_im_free(void *p) { mlc_free(p); }
 Game *g_inst;
 
 
+void init_gl(Game *g) {
+    #ifdef GL_DEBUG
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback((GLDEBUGPROCARB) ::gl_debug_callback, 0);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+    #endif
+
+    glClearColor(0, 0, 0, 0);
+
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+
+    dump_gl_info();
+    // dump_gl_extensions();
+}
+
+
 #ifdef STELLA_DYNAMIC
 extern "C" GAME_ATTACH(stella_attach) {
     Game *g = (Game*) pio->game_memory;
@@ -213,16 +233,7 @@ extern "C" GAME_INIT(stella_init) {
     pio->game_memory = g;
 
 
-    #ifdef GL_DEBUG
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback((GLDEBUGPROCARB) ::gl_debug_callback, 0);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-    #endif
-
-
-    dump_gl_info();
-    // dump_gl_extensions();
+    init_gl(g);
 
 
     #ifndef PROFILER_DISABLE
@@ -233,13 +244,6 @@ extern "C" GAME_INIT(stella_init) {
 
     g->imgui_backend = (ImGui_Backend*) mlc_malloc(sizeof(ImGui_Backend));
     g->imgui_backend->init();
-
-
-    glClearColor(0, 0, 0, 0);
-
-    glEnable(GL_BLEND);
-    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 
     g->batch_renderer = (Batch_Renderer*) mlc_malloc(sizeof(Batch_Renderer));
@@ -265,12 +269,12 @@ extern "C" GAME_INIT(stella_init) {
         void *mem = mlc_malloc(sizeof(Player));
         g->player = new(mem) Player;
         g->player->init(g, g->world);
-        g->player->pos = {496, 3637};
     }
 
 
     {
         // TODO REMOVEME TESTING
+        g->player->pos = {496, 3637};
         g->player->inventory.insert({ ITEM_COBBLESTONE, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_IRON_ORE, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_GOLD_ORE, MAX_ITEM_SLOT_SIZE });
@@ -287,15 +291,14 @@ extern "C" GAME_DEINIT(stella_deinit) {
     
     #define DEINIT_AND_FREE(name) g->name->deinit(); mlc_free(g->name);
 
-    DEINIT_AND_FREE(batch_renderer);
-    DEINIT_AND_FREE(assets);
-    DEINIT_AND_FREE(imgui_backend);
-    DEINIT_AND_FREE(recipes);
-
     #ifndef PROFILER_DISABLE
     DEINIT_AND_FREE(profiler);
     #endif
 
+    DEINIT_AND_FREE(batch_renderer);
+    DEINIT_AND_FREE(assets);
+    DEINIT_AND_FREE(imgui_backend);
+    DEINIT_AND_FREE(recipes);
     DEINIT_AND_FREE(world);
     DEINIT_AND_FREE(player);
 
