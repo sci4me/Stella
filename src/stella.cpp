@@ -41,7 +41,8 @@ PLATFORM_API_FUNCTIONS
 #define STBI_NO_GIF
 #define STBI_NO_LIBC
 #define STBI_ASSERT(x)              assert(x)
-#define STBI_MALLOC(n)              mlc_malloc(n)
+#define STBI_MALLOC(n)              mlc_alloc(n)
+extern "C" void* mlc_realloc(void*, u64); // TODO: Cleanup!
 #define STBI_REALLOC(p, n)          mlc_realloc(p, n)
 #define STBI_FREE(p)                mlc_free(p)
 #define STBI_LDEXPF(a, b)           ldexpf32(a, b)
@@ -66,8 +67,8 @@ PLATFORM_API_FUNCTIONS
 #include "math.cpp"
 #include "static_bitset.cpp"
 #include "static_array.cpp"
-#include "dynamic_array.cpp"
 #include "util.cpp"
+#include "dynamic_array.cpp"
 #include "hash_table.cpp"
 #include "profiler.cpp"
 #include "perlin_noise.cpp"
@@ -163,7 +164,7 @@ void gl_debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 
 // NOTE: Yes, this is stupid. But, ya know.
 // Sometimes it do be like that.
-void* stella_im_malloc(u64 n) { return mlc_malloc(n); }
+void* stella_im_malloc(u64 n) { return mlc_alloc(n); }
 void stella_im_free(void *p) { mlc_free(p); }
 
 
@@ -210,7 +211,7 @@ extern "C" GAME_ATTACH(stella_attach) {
 
 extern "C" GAME_INIT(stella_init) {
     // NOTE: Maybe don't duplicate this?...
-    void *mem = mlc_malloc(sizeof(Game));
+    void *mem = mlc_alloc(sizeof(Game));
     Game *g = new(mem) Game;
     g_inst = g;
     pio->game_memory = g;
@@ -218,40 +219,40 @@ extern "C" GAME_INIT(stella_init) {
     gl = pio->gl;
 
 
-    g->temp = (Temporary_Storage*) mlc_malloc(sizeof(Temporary_Storage));
+    g->temp = (Temporary_Storage*) mlc_alloc(sizeof(Temporary_Storage));
 
 
     #ifndef PROFILER_DISABLE
-    g->profiler = (prof::Profiler*) mlc_malloc(sizeof(prof::Profiler));
+    g->profiler = (prof::Profiler*) mlc_alloc(sizeof(prof::Profiler));
     g->profiler->init();
     #endif
 
 
-    g->imgui_backend = (ImGui_Backend*) mlc_malloc(sizeof(ImGui_Backend));
+    g->imgui_backend = (ImGui_Backend*) mlc_alloc(sizeof(ImGui_Backend));
     g->imgui_backend->init();
 
 
-    g->batch_renderer = (Batch_Renderer*) mlc_malloc(sizeof(Batch_Renderer));
+    g->batch_renderer = (Batch_Renderer*) mlc_alloc(sizeof(Batch_Renderer));
     g->batch_renderer->init();
 
 
-    g->assets = (Assets*) mlc_malloc(sizeof(Assets));
+    g->assets = (Assets*) mlc_alloc(sizeof(Assets));
     g->assets->init();
 
 
-    g->recipes = (Recipes*) mlc_malloc(sizeof(Recipes));
+    g->recipes = (Recipes*) mlc_alloc(sizeof(Recipes));
     g->recipes->init();
 
 
     {
-        void *mem = mlc_malloc(sizeof(World));
+        void *mem = mlc_alloc(sizeof(World));
         g->world = new(mem) World;
         g->world->init();
     }
 
 
     {
-        void *mem = mlc_malloc(sizeof(Player));
+        void *mem = mlc_alloc(sizeof(Player));
         g->player = new(mem) Player;
         g->player->init(g, g->world);
     }

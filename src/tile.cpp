@@ -361,7 +361,7 @@ struct Tile_Mining_Machine : public Tile {
 
 template<typename T>
 T* make_tile() {
-    void *t = mlc_malloc(sizeof(T));
+    void *t = mlc_alloc(sizeof(T));
     return new(t) T;
 }
 

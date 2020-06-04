@@ -92,7 +92,7 @@ struct Hash_Table {
 		this->count = 0;
 		this->size = size;
 		this->mask = size - 1;
-		slots = (Slot*) mlc_malloc(size * sizeof(Slot));
+		slots = (Slot*) mlc_alloc(size * sizeof(Slot));
 		for(u32 i = 0; i < size; i++) slots[i].hash = 0;
 	}
 
@@ -111,7 +111,7 @@ struct Hash_Table {
 		count = 0;
 		size = new_size;
 		mask = size - 1;
-		slots = (Slot*) mlc_malloc(size * sizeof(Slot));
+		slots = (Slot*) mlc_alloc(size * sizeof(Slot));
 		for(u32 i = 0; i < size; i++) slots[i].hash = 0;
 
 		for(u32 i = 0; i < old_size; i++) {

@@ -1,6 +1,3 @@
-#define _IGNORE__X(X, ...) X(__VA_ARGS__)
-
-
 // TODO: Do something about this; no sense having a file with just this in it...
 static constexpr vec2 QUAD_UVS[4][4] = {
     { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } },
@@ -44,4 +41,19 @@ void tfprintf(s32 fd, char const* fmt, ...) {
     va_start(args, fmt);
     char *buf = tvsprintf(fmt, args);
     mlc_fwrite(STDOUT, buf);
+}
+
+
+void* mlc_realloc(void *p, u64 n) {
+    void *p2 = mlc_alloc(n);
+    if(!p2) return 0;
+    
+    if(!p) return p2;
+
+    u64 old_n = *(((u64*) p) - 1) - sizeof(u64);
+    if(n < old_n) n = old_n;
+    mlc_memcpy(p2, p, n);
+
+    mlc_free(p);
+    return p2;
 }

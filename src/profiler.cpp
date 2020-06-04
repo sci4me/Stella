@@ -170,7 +170,7 @@ namespace prof {
 					Block_Profile *this_block_profile;
 					auto bpi = block_profiles.index_of(event.guid);
 					if(bpi == -1) {
-						this_block_profile = (Block_Profile*) mlc_malloc(sizeof(Block_Profile));
+						this_block_profile = (Block_Profile*) mlc_alloc(sizeof(Block_Profile));
 						this_block_profile->init(event.guid, event.name, event.file, event.line);
 
 						if(current_block_profile) {

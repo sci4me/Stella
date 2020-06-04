@@ -38,7 +38,7 @@ Chunk* World::get_chunk(s32 x, s32 y) {
     s32 i = chunks.index_of(key);
 
     if(i == -1) {
-        Chunk *c = (Chunk*) mlc_calloc(1, sizeof(Chunk));
+        Chunk *c = (Chunk*) mlc_alloc(sizeof(Chunk));
         c->init(this, x, y);
 
         c->generate();

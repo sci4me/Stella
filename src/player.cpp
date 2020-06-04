@@ -247,13 +247,14 @@ private:
 
     void handle_movement(PlatformIO *pio) {
         vec2 delta = {0, 0};
-        if(pio->is_button_down(VK_W))           delta.y = -1.0f;
-        else if(pio->is_button_down(VK_S))      delta.y =  1.0f;
-        if(pio->is_button_down(VK_A))           delta.x = -1.0f;
-        else if(pio->is_button_down(VK_D))      delta.x =  1.0f;
+        if(pio->is_button_down(VK_W))               delta.y = -1.0f;
+        else if(pio->is_button_down(VK_S))          delta.y =  1.0f;
+        if(pio->is_button_down(VK_A))               delta.x = -1.0f;
+        else if(pio->is_button_down(VK_D))          delta.x =  1.0f;
         
         auto speed = SPEED;
-        if(pio->is_button_down(VK_SHIFT_LEFT))  speed *= 0.1f;
+        if(pio->is_button_down(VK_SHIFT_LEFT))      speed *= 0.1f;
+        else if(pio->is_button_down(VK_ALT_LEFT))   speed *= 10.0f;
         delta = normalize(delta) * speed;
         
         move(delta);

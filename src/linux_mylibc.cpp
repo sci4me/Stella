@@ -2,7 +2,7 @@ extern "C" {
 	void* mlc_memcpy(void *dst, void const* src, u64 n);
 	void mlc_free(void* p);
 
-	void* mlc_malloc(u64 n) {
+	void* mlc_alloc(u64 n) {
 		n += sizeof(u64); // NOTE: This is so we can store the size.
 		
 		u64 r = n % PAGE_SIZE;
@@ -16,26 +16,6 @@ extern "C" {
 
 		*((u64*)ptr) = n;
 		return ((u64*)ptr) + 1;
-	}
-
-	void* mlc_calloc(u64 n, u64 s) {
-		// NOTE: We can do this since mlc_malloc is using mmap
-		// w/ MAP_ANONYMOUS, which zero-initializes its results.
-		return mlc_malloc(n * s);
-	}
-
-	void* mlc_realloc(void *p, u64 n) {
-		void *p2 = mlc_malloc(n);
-		if(!p2) return 0;
-		
-		if(!p) return p2;
-
-		u64 old_n = *(((u64*) p) - 1) - sizeof(u64);
-		if(n < old_n) n = old_n;
-		mlc_memcpy(p2, p, n);
-
-		mlc_free(p);
-		return p2;
 	}
 
 	void mlc_free(void *p) {
@@ -63,7 +43,7 @@ extern "C" {
 	    if(sc_fstat(fd, &statbuf) != 0) return {0, 0};
 
 	    u64 rem = (u64) statbuf.st_size;
-	    u8 *data = (u8*) mlc_malloc(rem + 1);
+	    u8 *data = (u8*) mlc_alloc(rem + 1);
 
 	    u8 *ptr = data;
 	    while(rem) {

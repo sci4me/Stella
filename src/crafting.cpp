@@ -59,7 +59,7 @@ private:
         auto n_inputs = sizeof...(_inputs);
         Item_Stack inputs[] = { _inputs... };
 
-        auto r = (Recipe*) mlc_malloc(sizeof(Recipe) + sizeof(Item_Stack) * n_inputs);
+        auto r = (Recipe*) mlc_alloc(sizeof(Recipe) + sizeof(Item_Stack) * n_inputs);
 
         r->inputs = (Item_Stack*) (r + 1); // inputs are right after the Recipe struct
         r->n_inputs = n_inputs;

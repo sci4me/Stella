@@ -9,7 +9,7 @@ struct Dynamic_Array {
 	void init(u32 size = DYNAMIC_ARRAY_DEFAULT_SIZE) {
 		this->count = 0;
 		this->size = size;
-		this->data = (T*) mlc_malloc(size * sizeof(T));
+		this->data = (T*) mlc_alloc(size * sizeof(T));
 	}
 
 	void deinit() {

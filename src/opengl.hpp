@@ -1,3 +1,7 @@
+#ifndef OPENGL_H
+#define OPENGL_H
+
+
 #ifndef OPENGL_NO_DEFS
 #include "gl_defs.h"
 #include "glext_defs.h"
@@ -77,3 +81,6 @@ struct OpenGL {
 	OPENGL_FUNCTIONS(_X)
 	#undef _X
 };
+
+
+#endif

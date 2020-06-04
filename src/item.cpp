@@ -44,7 +44,7 @@ struct Item_Container {
         assert(size > 0);
         this->size = size;
 
-        slots = (Item_Stack*) mlc_calloc(size, sizeof(Item_Stack));
+        slots = (Item_Stack*) mlc_alloc(size * sizeof(Item_Stack));
     }
 
     void deinit() {

@@ -36,9 +36,7 @@
 // TODO: Instead of having malloc, calloc, realloc, and free,
 // we just want to have alloc and free.
 #define _PLATFORM_API_FUNCTIONS(X) 								  \
-	X(mlc_malloc, 			void*, 		(u64)					) \
-	X(mlc_calloc, 			void*, 		(u64, u64)				) \
-	X(mlc_realloc, 			void*, 		(void*, u64)			) \
+	X(mlc_alloc, 			void*, 		(u64)					) \
 	X(mlc_free, 			void, 		(void*)					) \
 	X(mlc_fwrite, 			void, 		(s32, char const*)		) \
 	X(mlc_exit, 			void,	 	(s32)					) \
