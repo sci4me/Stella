@@ -38,7 +38,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render);
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const s32*);
 
 
-char const* XEvent_Type_Names[] = {
+constexpr char const* XEvent_Type_Names[] = {
     "<invalid>",
     "<invalid>",
     "KeyPress",
@@ -415,10 +415,17 @@ ino_t get_file_ino(char const* path) {
 }
 #endif
 
-void load_opengl(PlatformIO *pio) {
+void load_opengl(OpenGL *gl) {
     // NOTE TODO: This is silly :P But hey, yknow. *shrugs*
+    // Eventually we may want/need to actually do extension
+    // checking, etc. etc. etc.
+    // Although I kind of feel like, at least for now,
+    // just having a list of required GL functions and no
+    // optional ones is fine; I'd like to avoid having optional
+    // ones for as long as we can get away with it.
+    //              - sci4me, 6/4/20
 
-    #define PACK(name, ret, params) pio->gl.name = (gl##name##_fn*) glXGetProcAddress((GLubyte const*) "gl" #name); assert(pio->gl.name != nullptr);
+    #define PACK(name, ret, params) gl->name = (gl##name##_fn*) glXGetProcAddress((GLubyte const*) "gl" #name); assert(gl->name != nullptr);
     OPENGL_FUNCTIONS(PACK)
     #undef PACK
 }
@@ -531,7 +538,7 @@ s32 main(s32 argc, char **argv) {
     }
 
 
-    glXMakeCurrent(dsp, win, glc);
+    assert(glXMakeCurrent(dsp, win, glc));
 
 
     GLint gl_major, gl_minor; 
@@ -548,7 +555,7 @@ s32 main(s32 argc, char **argv) {
 
     PlatformIO pio = {};
 
-    load_opengl(&pio);
+    load_opengl(&pio.gl);
 
     #ifdef STELLA_DYNAMIC
     #define PACK(name, ret, params) pio.api.name = name;
