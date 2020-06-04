@@ -200,7 +200,7 @@ extern "C" GAME_ATTACH(stella_attach) {
     _PLATFORM_API_FUNCTIONS(UNPACK)
     #undef UNPACK
 
-    mlc_memcpy(&gl, &pio->gl, sizeof(OpenGL));
+    gl = pio->gl;
 
     if(reload) {
         g->imgui_backend->attach();
@@ -214,6 +214,8 @@ extern "C" GAME_INIT(stella_init) {
     Game *g = new(mem) Game;
     g_inst = g;
     pio->game_memory = g;
+
+    gl = pio->gl;
 
 
     g->temp = (Temporary_Storage*) mlc_malloc(sizeof(Temporary_Storage));
