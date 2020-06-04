@@ -1,3 +1,6 @@
+// TODO: Eventually it might be nice to remove these includes
+// and(?) manually load the shared libraries instead of 
+// dynamically linking to them.
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <GL/gl.h>
@@ -414,7 +417,7 @@ ino_t get_file_ino(char const* path) {
 
 void load_opengl(PlatformIO *pio) {
     // NOTE TODO: This is silly :P But hey, yknow. *shrugs*
-    
+
     #define PACK(name, ret, params) pio->gl.name = (gl##name##_fn*) glXGetProcAddress((GLubyte const*) "gl" #name); assert(pio->gl.name != nullptr);
     OPENGL_FUNCTIONS(PACK)
     #undef PACK

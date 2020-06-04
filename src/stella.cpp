@@ -3,7 +3,7 @@
 
 
 // NOTE: I have yet to decide whether I truly want these
-// to be gl.obals or not. So far it's been fine but... eh.
+// to be globals or not. So far it's been fine but... eh.
 // Sometimes I feel like I'd be more comfortable
 // accessing them through the PlatformAPI struct. EXCEPT...
 // In the static compilation case, that doesn't make sense!
