@@ -33,6 +33,12 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Abstract the renderer (and the OpenGL interface)
+   - i.e. Game code will use our abstracted renderer to do all
+     rendering instead of calling OpenGL.
+   - In the future, if we ever wanted to have renderers implemented with
+     an API other than OpenGL, we could do that and just swap them out as
+     desired since it's abstracted.      
  - Can we just export libc symbols ourselves?
    - This could potentially allow us to 
      avoid having to modify library code
@@ -127,17 +133,6 @@ Code/Dev Features/Quality:
    that says a tile wants to be rendered per-frame
    using Batch_Renderer still, in case of animated
    tiles, etc.
- - Consider removing GLEW
-   - We could, relatively easily, handle any
-     extension querying and function pointer
-     lookup that we need, on a function-by-function
-     basis.
- - Build GLEW from source!
-   - Difficult to do on Windows (maybe)
-     - Not going to use VS!!!
-       - So we'll just write our own
-         build scripts...
-   - Won't have to do this if we remove it!  
  - In-Game Profiler
    - Instrumentation; use it
    - We've started on this...

@@ -27,9 +27,9 @@ if [ "$STATUS" -eq 0 ]; then
 CXXFLAGS="-std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector -Wa,--noexecstack"  # -s
 LDFLAGS="-lgcc -msse4.1"
 PLATFORM_LDFLAGS="-lGL -lX11"
-GAME_LDFLAGS="-L$VENDOR_DIR/GLEW/lib -lGLEW -L$VENDOR_DIR/imgui/lib -l:imgui.a"
+GAME_LDFLAGS="-L$VENDOR_DIR/imgui/lib -l:imgui.a"
 
-INCLUDES="-I $SRC_DIR -I$VENDOR_DIR/GLEW/include -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math"
+INCLUDES="-I$SRC_DIR -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math -I$VENDOR_DIR/GL"
 PLATFORM_SOURCES="$SRC_DIR/linux_syscall.s $SRC_DIR/linux_platform.s $SRC_DIR/linux_platform.cpp"
 GAME_SOURCES="$SRC_DIR/stella.cpp"
 

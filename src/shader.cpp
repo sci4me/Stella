@@ -6,27 +6,27 @@ void program_attach_shader(GLuint program, char *name, GLenum type) {
         mlc_exit(1);
     }
 
-    GLuint id = glCreateShader(type);
-    glShaderSource(id, 1, (char const* const*) &source.data, 0);
-    glCompileShader(id);
+    GLuint id = gl.CreateShader(type);
+    gl.ShaderSource(id, 1, (char const* const*) &source.data, 0);
+    gl.CompileShader(id);
 
     mlc_free(source.data);
 
     GLint success;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
+    gl.GetShaderiv(id, GL_COMPILE_STATUS, &success);
     if (!success) {
         GLint info_log_length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &info_log_length);
+        gl.GetShaderiv(id, GL_INFO_LOG_LENGTH, &info_log_length);
 
         GLchar *info_log = (GLchar*) talloc(sizeof(GLchar) * (info_log_length + 1));
         assert(info_log); // NOTE: Yes I'm being lazy, fite me.
-        glGetShaderInfoLog(id, info_log_length, 0, info_log);
+        gl.GetShaderInfoLog(id, info_log_length, 0, info_log);
 
         tfprintf(STDERR, "Error compiling shader `%s`:\n%s\n", name, info_log);
         mlc_exit(1);
     }
 
-    glAttachShader(program, id);
+    gl.AttachShader(program, id);
 }
 
 enum {
@@ -36,7 +36,7 @@ enum {
 };
 
 GLuint load_shader_program(const char *name, GLenum flags) {
-    GLuint p = glCreateProgram();
+    GLuint p = gl.CreateProgram();
 
     char buffer[1024];
 
@@ -53,15 +53,15 @@ GLuint load_shader_program(const char *name, GLenum flags) {
     #undef SHADER_TYPE
 
     GLint success;
-    glLinkProgram(p);
-    glGetProgramiv(p, GL_LINK_STATUS, &success);
+    gl.LinkProgram(p);
+    gl.GetProgramiv(p, GL_LINK_STATUS, &success);
     if (!success) {
         GLint info_log_length;
-        glGetProgramiv(p, GL_INFO_LOG_LENGTH, &info_log_length);
+        gl.GetProgramiv(p, GL_INFO_LOG_LENGTH, &info_log_length);
 
         GLchar *info_log = (GLchar*) talloc(sizeof(GLchar) * (info_log_length + 1));
         assert(info_log); // NOTE: Yes I'm being lazy, fite me.
-        glGetProgramInfoLog(p, info_log_length, 0, info_log);
+        gl.GetProgramInfoLog(p, info_log_length, 0, info_log);
 
         tfprintf(STDERR, "%s\n", info_log);
         mlc_exit(1);

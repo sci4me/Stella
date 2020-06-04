@@ -1,3 +1,6 @@
+#ifndef ITEM_H
+#define ITEM_H
+
 constexpr u32 MAX_ITEM_SLOT_SIZE = 64;
 
 
@@ -23,3 +26,22 @@ enum Item_Type_ : Item_Type {
 
     N_ITEM_TYPES
 };
+
+
+struct Item_Stack {
+    Item_Type type;
+    u32 count;
+
+    Item_Stack(Item_Type _type, u32 _count) : type(_type), count(_count) {}
+
+    inline bool is_valid() const {
+        // NOTE: This does not check if count < MAX_ITEM_SLOT_SIZE on purpose!
+        // We want to be able to do things like say 
+        // inv->insert(Item_Stack(type, some_count_that_is_above_max_slot_size))
+        // in order to just insert into multiple slots.
+        //                  - sci4me, 5/18/20
+        return type < N_ITEM_TYPES && count > 0;
+    }
+};
+
+#endif

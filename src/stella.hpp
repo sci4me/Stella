@@ -1,7 +1,4 @@
-#include "platform_interface.hpp"
-
-
-#define PROFILER_DISABLE
+// #define PROFILER_DISABLE
 
 
 // TODO REMOVEME?
@@ -42,4 +39,6 @@ struct Game {
 	struct Player *player;
 };
 
+
 extern Game *g_inst;
+extern OpenGL gl;

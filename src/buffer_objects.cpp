@@ -3,32 +3,32 @@ struct GL_Buffer {
     GLuint id;
 
     void init() {
-        glCreateBuffers(1, &id);
+        gl.CreateBuffers(1, &id);
     }
 
     void init(u64 size, GLenum usage) {
         init();
-        glNamedBufferData(id, size, nullptr, usage);
+        gl.NamedBufferData(id, size, nullptr, usage);
     }
 
     void deinit() {
-        glDeleteBuffers(1, &id);
+        gl.DeleteBuffers(1, &id);
     }
 
     void bind() {
-        glBindBuffer(type, id);
+        gl.BindBuffer(type, id);
     }
 
     void unbind() {
-        glBindBuffer(type, 0);
+        gl.BindBuffer(type, 0);
     }
 
     void set_data(void *data, u32 size, GLenum usage) {
-        glNamedBufferData(id, size, data, usage);
+        gl.NamedBufferData(id, size, data, usage);
     }
 
     void set_subdata(void *data, u32 size, u32 offset = 0) {
-        glNamedBufferSubData(id, offset, size, data);
+        gl.NamedBufferSubData(id, offset, size, data);
     }
 };
 
@@ -63,20 +63,20 @@ struct Vertex_Array {
     GLuint binding_index;
 
     void init() {
-        glCreateVertexArrays(1, &id);
+        gl.CreateVertexArrays(1, &id);
         binding_index = 0;
     }
 
     void deinit() {
-        glDeleteVertexArrays(1, &id);
+        gl.DeleteVertexArrays(1, &id);
     }
 
     void bind() {
-        glBindVertexArray(id);
+        gl.BindVertexArray(id);
     }
 
     void unbind() {
-        glBindVertexArray(0);
+        gl.BindVertexArray(0);
     }
 
     template<typename... T>
@@ -91,27 +91,27 @@ struct Vertex_Array {
             stride += format[i].size();
         }
 
-        glVertexArrayVertexBuffer(id, binding_index, vbo.id, 0, stride);
+        gl.VertexArrayVertexBuffer(id, binding_index, vbo.id, 0, stride);
 
         s64 offset = 0;
         for(u32 i = 0; i < n; i++) {
-            glEnableVertexArrayAttrib(id, i);
-            glVertexArrayAttribBinding(id, i, binding_index);
+            gl.EnableVertexArrayAttrib(id, i);
+            gl.VertexArrayAttribBinding(id, i, binding_index);
 
             auto const& e = format[i];
             switch(e.type) {
                 case GL_FLOAT:
                     assert(!e.normalized);
-                    glVertexArrayAttribFormat(id, i, e.count, e.type, GL_FALSE, offset);
+                    gl.VertexArrayAttribFormat(id, i, e.count, e.type, GL_FALSE, offset);
                     break;
                 case GL_BYTE:
                 case GL_UNSIGNED_BYTE:
                 case GL_INT:
                 case GL_UNSIGNED_INT:
                     if(e.normalized) {
-                        glVertexArrayAttribFormat(id, i, e.count, e.type, GL_TRUE, offset);
+                        gl.VertexArrayAttribFormat(id, i, e.count, e.type, GL_TRUE, offset);
                     } else {
-                        glVertexArrayAttribIFormat(id, i, e.count, e.type, offset);
+                        gl.VertexArrayAttribIFormat(id, i, e.count, e.type, offset);
                     }
                     break;
                 default:
@@ -125,6 +125,6 @@ struct Vertex_Array {
     }
 
     void set_index_buffer(Index_Buffer& ibo) {
-        glVertexArrayElementBuffer(id, ibo.id);
+        gl.VertexArrayElementBuffer(id, ibo.id);
     }
 };

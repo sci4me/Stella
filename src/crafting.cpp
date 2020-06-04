@@ -38,7 +38,7 @@ struct Recipes {
 
         register_recipe(Item_Stack(ITEM_FURNACE, 1),         100, Item_Stack(ITEM_COBBLESTONE, 8));
         register_recipe(Item_Stack(ITEM_CHEST, 1),           100, Item_Stack(ITEM_COBBLESTONE, 8), Item_Stack(ITEM_IRON_PLATE, 4));
-        register_recipe(Item_Stack(ITEM_IRON_GEAR, 1),       100, Item_Stack(ITEM_IRON_PLATE, 6));
+        register_recipe(Item_Stack(ITEM_IRON_GEAR, 1),       30,  Item_Stack(ITEM_IRON_PLATE, 6));
         register_recipe(Item_Stack(ITEM_MINING_MACHINE, 1),  100, Item_Stack(ITEM_COBBLESTONE, 16), Item_Stack(ITEM_IRON_PLATE, 8), Item_Stack(ITEM_IRON_GEAR, 4));
     }
 

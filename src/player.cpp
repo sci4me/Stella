@@ -117,6 +117,7 @@ struct Player {
                                     default: assert(0); break;
                                 }
 
+                                tile->world = world;
                                 tile->x = hovered_tile_x;
                                 tile->y = hovered_tile_y;
                                 tile->init();

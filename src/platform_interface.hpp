@@ -14,6 +14,7 @@
 
 
 #include "common.hpp"
+#include "opengl.hpp"
 
 
 #if defined(STELLA_STATIC) && defined(STELLA_DYNAMIC)
@@ -140,6 +141,8 @@ struct PlatformIO {
 	f32 delta_time;
 
 	void *game_memory;
+
+	OpenGL gl;
 
 	// TODO: remove the `_button`?
 	inline bool is_button_down(Virtual_Button btn) { return (button_state[btn] & BTN_FLAG_DOWN) != 0; }

@@ -1,175 +1,155 @@
-struct Chunk {
-    #pragma pack(push, 1)
-    struct Vertex {
-        vec2 pos;
-        vec2 uv;
-        s32 tex;
-    };
-    #pragma pack(pop)
+void World::init(u32 seed) {
+    assert(seed);
+    this->seed = seed;
+    noise.reseed(seed);
 
-    static constexpr s32 SIZE = 64; // must be a power of 2!
-    static constexpr s32 LAYERS = 3;
+    chunks.init(64);
 
-    static constexpr u32 MAX_VERTICES = SIZE * SIZE * 4;
-    static constexpr u32 MAX_INDICES = SIZE * SIZE * 6;
-    static constexpr u32 MAX_TEXTURE_SLOTS = 16; // TODO
+    chunk_shader = load_shader_program("chunk", VERTEX_SHADER | FRAGMENT_SHADER);
+    u_textures = gl.GetUniformLocation(chunk_shader, "u_textures");
+    u_proj = gl.GetUniformLocation(chunk_shader, "u_proj");
+    u_view = gl.GetUniformLocation(chunk_shader, "u_view");
 
-    struct World *world;
+    s32 samplers[Chunk::MAX_TEXTURE_SLOTS];
+    for(s32 i = 0; i < Chunk::MAX_TEXTURE_SLOTS; i++) 
+        samplers[i] = i;
+    gl.ProgramUniform1iv(chunk_shader, u_textures, Chunk::MAX_TEXTURE_SLOTS, samplers);
+}
+
+void World::deinit() {
+    gl.DeleteProgram(chunk_shader);
+
+    for(u32 i = 0; i < chunks.size; i++) {
+        if(chunks.slots[i].hash == 0) continue;
+        chunks.slots[i].value->deinit();
+        mlc_free(chunks.slots[i].value);
+    }
+    chunks.deinit();
+}
+
+void World::set_projection(mat4 proj) {
+    gl.ProgramUniformMatrix4fv(chunk_shader, u_proj, 1, GL_FALSE, proj.value_ptr());
+}
+
+Chunk* World::get_chunk(s32 x, s32 y) {
+    TIMED_FUNCTION();
+
+    ivec2 key = {x, y};
+    s32 i = chunks.index_of(key);
+
+    if(i == -1) {
+        Chunk *c = (Chunk*) mlc_calloc(1, sizeof(Chunk));
+        c->init(this, x, y);
+
+        c->generate();
+        c->render();
+
+        chunks.set(key, c);
+        
+        return c;
+    }   
+
+    return chunks.slots[i].value;
+}
+
+Chunk* World::get_chunk_containing(s32 x, s32 y) {
+    TIMED_FUNCTION();
+
+    s32 cx = (s32)floorf32(x / (f32)Chunk::SIZE);
+    s32 cy = (s32)floorf32(y / (f32)Chunk::SIZE);
+    return get_chunk(cx, cy);
+}
+
+void World::update() {
+    TIMED_FUNCTION();
+
+    // TODO: So many things. So many.
+    // First of all, well, yeah. Many things. Lots of things.
+    // Every things.
+    //
+    // We should be keeping track of which chunks are "active"
+    // somehow. This will tie in with the chunk loading/unloading
+    // stuff deeply (probably). And of course we'll have "forced" chunks
+    // which are _always_ active since they contain user-placed
+    // tiles which must always be updated.
+    // etc. etc. etc.
+    //
+    //                  - sci4me, 5/13/20
+
+    // NOTE: Instead of iterating the Hash_Table,
+    // keep a list of active chunks, and have the
+    // Hash_Table either map into that, or just
+    // guarantee they're always 'in-sync'.
+    //                  - sci4me, 5/21/20
+    for(u32 i = 0; i < chunks.size; i++) {
+        if(chunks.slots[i].hash == 0) continue;
+        chunks.slots[i].value->update();
+    }
+}
+
+u32 World::draw_around(Batch_Renderer *r, vec2 pos, f32 scale, s32 window_width, s32 window_height, mat4 view) {
+    TIMED_FUNCTION();
+
+    f32 x = pos.x * scale;
+    f32 y = pos.y * scale;
+
+    s32 half_window_width = window_width / 2;
+    s32 half_window_height = window_height / 2;
+
+    s32 vp_min_x = (s32) floorf32(((x - half_window_width) / scale) / TILE_SIZE);
+    s32 vp_min_y = (s32) floorf32(((y - half_window_height) / scale) / TILE_SIZE);
+    s32 vp_max_x = (s32) ceilf32(((x + half_window_width) / scale) / TILE_SIZE);
+    s32 vp_max_y = (s32) ceilf32(((y + half_window_height) / scale) / TILE_SIZE);
+
+    s32 vp_min_cx = (s32) floorf32((f32)vp_min_x / (f32)Chunk::SIZE);
+    s32 vp_min_cy = (s32) floorf32((f32)vp_min_y / (f32)Chunk::SIZE);
+    s32 vp_max_cx = (s32) ceilf32((f32)vp_max_x / (f32)Chunk::SIZE);
+    s32 vp_max_cy = (s32) ceilf32((f32)vp_max_y / (f32)Chunk::SIZE);
+
+    // TODO: instead of taking `view` as a parameter, we could technically just get it from Batch_Renderer?
+    gl.ProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, view.value_ptr());
+
+    gl.UseProgram(chunk_shader);
+    for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
+        for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
+            Chunk *c = get_chunk(i, j);
+            c->draw(r);
+        }
+    }
+    gl.UseProgram(0);
+
+    return (vp_max_cx - vp_min_cx) * (vp_max_cy - vp_min_cy);
+}
+
+Tile* World::get_tile_at(s32 x, s32 y, s32 l) {
+    TIMED_FUNCTION();
+
+    auto chunk = get_chunk_containing(x, y);
     
-    s32 x;
-    s32 y;
+    Hash_Table<ivec2, Tile*> *layer;
+    if(l == 1)      layer = &chunk->layer1;
+    else if(l == 2) layer = &chunk->layer2;
+    else            assert(0);
 
-    Tile_Type layer0[SIZE][SIZE];
-    Hash_Table<ivec2, Tile*> layer1;
-    Hash_Table<ivec2, Tile*> layer2;
+    auto idx = layer->index_of(ivec2(x & (Chunk::SIZE - 1), y & (Chunk::SIZE - 1)));
+    if(idx == -1) return nullptr;
 
-    Vertex_Array vao;
-    Vertex_Buffer vbo;
-    Index_Buffer ibo;
-    Slot_Allocator<GLuint, MAX_TEXTURE_SLOTS> textures;
+    return layer->slots[idx].value;
+}
 
-    void init(struct World *world, s32 x, s32 y);
-    void deinit();
+bool World::remove_tile_at(s32 x, s32 y, s32 l) {
+    TIMED_FUNCTION();
 
-    void generate();
-    void update();
-    void render();
-    void draw(Batch_Renderer *r);
+    auto chunk = get_chunk_containing(x, y);
 
-    rnd_pcg_t make_rng_for_chunk();
-};
+    Hash_Table<ivec2, Tile*> *layer;
+    if(l == 1)      layer = &chunk->layer1;
+    else if(l == 2) layer = &chunk->layer2;
+    else            assert(0);
 
-struct World {
-    PerlinNoise noise;
+    return layer->remove(ivec2(x & (Chunk::SIZE - 1), y & (Chunk::SIZE - 1)));
+}
 
-    u32 seed;
-
-    Hash_Table<ivec2, Chunk*> chunks;
-
-    GLuint chunk_shader;
-    GLuint u_textures;
-    GLuint u_proj;
-    GLuint u_view;
-
-    void init(u32 seed = 1) {
-        assert(seed);
-        this->seed = seed;
-        noise.reseed(seed);
-
-        chunks.init(64);
-
-        chunk_shader = load_shader_program("chunk", VERTEX_SHADER | FRAGMENT_SHADER);
-        u_textures = glGetUniformLocation(chunk_shader, "u_textures");
-        u_proj = glGetUniformLocation(chunk_shader, "u_proj");
-        u_view = glGetUniformLocation(chunk_shader, "u_view");
-
-        s32 samplers[Chunk::MAX_TEXTURE_SLOTS];
-        for(s32 i = 0; i < Chunk::MAX_TEXTURE_SLOTS; i++) 
-            samplers[i] = i;
-        glProgramUniform1iv(chunk_shader, u_textures, Chunk::MAX_TEXTURE_SLOTS, samplers);
-    }
-
-    void deinit() {
-        glDeleteProgram(chunk_shader);
-
-        for(u32 i = 0; i < chunks.size; i++) {
-            if(chunks.slots[i].hash == 0) continue;
-            chunks.slots[i].value->deinit();
-            mlc_free(chunks.slots[i].value);
-        }
-        chunks.deinit();
-    }
-
-    void set_projection(mat4 proj) {
-        glProgramUniformMatrix4fv(chunk_shader, u_proj, 1, GL_FALSE, proj.value_ptr());
-    }
-
-    Chunk* get_chunk(s32 x, s32 y) {
-        ivec2 key = {x, y};
-        s32 i = chunks.index_of(key);
-
-        if(i == -1) {
-            Chunk *c = (Chunk*) mlc_calloc(1, sizeof(Chunk));
-            c->init(this, x, y);
-
-            c->generate();
-            c->render();
-
-            chunks.set(key, c);
-            
-            return c;
-        }   
-
-        return chunks.slots[i].value;
-    }
-
-    Chunk* get_chunk_containing(s32 x, s32 y) {
-        s32 cx = (s32)floorf32(x / (f32)Chunk::SIZE);
-        s32 cy = (s32)floorf32(y / (f32)Chunk::SIZE);
-        return get_chunk(cx, cy);
-    }
-
-    void update() {
-        TIMED_FUNCTION();
-
-        // TODO: So many things. So many.
-        // First of all, well, yeah. Many things. Lots of things.
-        // Every things.
-        //
-        // We should be keeping track of which chunks are "active"
-        // somehow. This will tie in with the chunk loading/unloading
-        // stuff deeply (probably). And of course we'll have "forced" chunks
-        // which are _always_ active since they contain user-placed
-        // tiles which must always be updated.
-        // etc. etc. etc.
-        //
-        //                  - sci4me, 5/13/20
-
-        // NOTE: Instead of iterating the Hash_Table,
-        // keep a list of active chunks, and have the
-        // Hash_Table either map into that, or just
-        // guarantee they're always 'in-sync'.
-        //                  - sci4me, 5/21/20
-        for(u32 i = 0; i < chunks.size; i++) {
-            if(chunks.slots[i].hash == 0) continue;
-            chunks.slots[i].value->update();
-        }
-    }
-
-    u32 draw_around(Batch_Renderer *r, vec2 pos, f32 scale, s32 window_width, s32 window_height, mat4 view) {
-        TIMED_FUNCTION();
-
-        f32 x = pos.x * scale;
-        f32 y = pos.y * scale;
-
-        s32 half_window_width = window_width / 2;
-        s32 half_window_height = window_height / 2;
-
-        s32 vp_min_x = (s32) floorf32(((x - half_window_width) / scale) / TILE_SIZE);
-        s32 vp_min_y = (s32) floorf32(((y - half_window_height) / scale) / TILE_SIZE);
-        s32 vp_max_x = (s32) ceilf32(((x + half_window_width) / scale) / TILE_SIZE);
-        s32 vp_max_y = (s32) ceilf32(((y + half_window_height) / scale) / TILE_SIZE);
-
-        s32 vp_min_cx = (s32) floorf32((f32)vp_min_x / (f32)Chunk::SIZE);
-        s32 vp_min_cy = (s32) floorf32((f32)vp_min_y / (f32)Chunk::SIZE);
-        s32 vp_max_cx = (s32) ceilf32((f32)vp_max_x / (f32)Chunk::SIZE);
-        s32 vp_max_cy = (s32) ceilf32((f32)vp_max_y / (f32)Chunk::SIZE);
-
-        // TODO: instead of taking `view` as a parameter, we could technically just get it from Batch_Renderer?
-        glProgramUniformMatrix4fv(chunk_shader, u_view, 1, GL_FALSE, view.value_ptr());
-
-        glUseProgram(chunk_shader);
-        for(s32 i = vp_min_cx; i < vp_max_cx; i++) {
-            for(s32 j = vp_min_cy; j < vp_max_cy; j++) {
-                Chunk *c = get_chunk(i, j);
-                c->draw(r);
-            }
-        }
-        glUseProgram(0);
-
-        return (vp_max_cx - vp_min_cx) * (vp_max_cy - vp_min_cy);
-    }
-};
 
 void Chunk::init(World *world, s32 x, s32 y) {
     this->world = world;
@@ -398,12 +378,12 @@ void Chunk::draw(Batch_Renderer *r) {
     vao.bind();
 
     for(u32 i = 0; i < textures.count; i++)
-        glBindTextureUnit(i, textures.slots[i]);
+        gl.BindTextureUnit(i, textures.slots[i]);
 
-    glDrawElements(GL_TRIANGLES, MAX_INDICES, GL_UNSIGNED_INT, 0);
+    gl.DrawElements(GL_TRIANGLES, MAX_INDICES, GL_UNSIGNED_INT, 0);
 
     for(u32 i = 0; i < textures.count; i++)
-        glBindTextureUnit(i, 0);
+        gl.BindTextureUnit(i, 0);
 
     vao.unbind();
 

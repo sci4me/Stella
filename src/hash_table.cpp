@@ -169,7 +169,7 @@ struct Hash_Table {
 		}
 	}
 
-	V get(K key) {
+	V get(K key) const {
 		s32 i = index_of(key);
 		if(i == -1) {
 			V dummy;
@@ -179,7 +179,7 @@ struct Hash_Table {
 		return slots[i].value;
 	}
 
-	s32 index_of(K key) {
+	s32 index_of(K key) const {
 		u32 hash = hash_key(key);
 		s32 i = hash & mask;
 		u32 dist = 0;
@@ -229,12 +229,12 @@ struct Hash_Table {
 		return true;
 	}
 
-	f32 load_factor() {
+	f32 load_factor() const {
 		return (f32) count / (f32) size;
 	}
 
 private:
-	u32 hash_key(K key) {
+	u32 hash_key(K key) const {
 		u32 h = hash_fn(key);
 		// NOTE: a hash of 0 represents an empty slot
 		if(h == 0) h |= 1;

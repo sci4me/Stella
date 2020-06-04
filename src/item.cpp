@@ -11,23 +11,6 @@ constexpr bool item_is_placeable[N_ITEM_TYPES] = {
 };
 
 
-struct Item_Stack {
-    Item_Type type;
-    u32 count;
-
-    Item_Stack(Item_Type _type, u32 _count) : type(_type), count(_count) {}
-
-    bool is_valid() const {
-        // NOTE: This does not check if count < MAX_ITEM_SLOT_SIZE on purpose!
-        // We want to be able to do things like say 
-        // inv->insert(Item_Stack(type, some_count_that_is_above_max_slot_size))
-        // in order to just insert into multiple slots.
-        //                  - sci4me, 5/18/20
-        return type < N_ITEM_TYPES && count > 0;
-    }
-};
-
-
 typedef u8 Item_Container_Flags;
 enum Item_Container_Flags_ : Item_Container_Flags {
     ITEM_CONTAINER_FLAG_NONE                    = 0,

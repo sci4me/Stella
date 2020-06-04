@@ -1,6 +1,10 @@
+#ifndef TILE_H
+#define TILE_H
+
 constexpr f32 TILE_SIZE = 32.0f;
 
 
+// NOTE TODO: Mining time!
 #define _TILE_DEFS(X, _X) \
     X(_X, TILE_STONE,               stone               ) \
     X(_X, TILE_GRASS,               grass               ) \
@@ -30,3 +34,25 @@ enum Tile_Flags_ : Tile_Flags {
     TILE_FLAG_WANTS_DYNAMIC_UPDATES         = 1,
     TILE_FLAG_IS_COLLIDER                   = 2
 };
+
+
+struct Tile {
+    struct World *world;
+    Tile_Type type;
+    s32 x;
+    s32 y;
+    Tile_Flags flags;
+
+    // NOTE: I don't _love_ having this here.
+    // Maybe we just compute it as needed
+    // if the flag is set? *shrugs*
+    //          - sci4me, 5/15/20
+    AABB collision_aabb;
+
+    virtual void init();
+    virtual void deinit();
+    virtual void draw(Batch_Renderer *r);
+    virtual void update();
+};
+
+#endif

@@ -82,8 +82,8 @@ struct ImGui_Backend {
         ImGui::StyleColorsDark();
 
         shader = load_shader_program("imgui", VERTEX_SHADER | FRAGMENT_SHADER);
-        u_proj = glGetUniformLocation(shader, "u_proj");
-        u_texture = glGetUniformLocation(shader, "u_texture");
+        u_proj = gl.GetUniformLocation(shader, "u_proj");
+        u_texture = gl.GetUniformLocation(shader, "u_texture");
 
         create_fonts_texture();
 
@@ -103,7 +103,7 @@ struct ImGui_Backend {
     void deinit() {
         ImGui::DestroyContext();
 
-        glDeleteProgram(shader);
+        gl.DeleteProgram(shader);
 
         font_texture.deinit();
 
@@ -156,12 +156,12 @@ struct ImGui_Backend {
         f32 t = dd->DisplayPos.y;
         f32 b = dd->DisplayPos.y + dd->DisplaySize.y;
         mat4 proj = mat4::ortho(l, r, b, t, -1.0f, 1.0f);
-        glProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, proj.value_ptr());
-        glProgramUniform1i(shader, u_texture, 0);
+        gl.ProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, proj.value_ptr());
+        gl.ProgramUniform1i(shader, u_texture, 0);
 
         bool clip_origin_lower_left = true;
         #if defined(GL_CLIP_ORIGIN) && !defined(__APPLE__)
-            GLenum last_clip_origin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&last_clip_origin);
+            GLenum last_clip_origin = 0; gl.GetIntegerv(GL_CLIP_ORIGIN, (GLint*)&last_clip_origin);
             if (last_clip_origin == GL_UPPER_LEFT)
                 clip_origin_lower_left = false;
         #endif
@@ -173,17 +173,17 @@ struct ImGui_Backend {
         vec2 clip_off = dd->DisplayPos;
         vec2 clip_scale = dd->FramebufferScale;
 
-        GLenum last_blend_src_rgb; glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)&last_blend_src_rgb);
-        GLenum last_blend_dst_rgb; glGetIntegerv(GL_BLEND_DST_RGB, (GLint*)&last_blend_dst_rgb);
-        GLenum last_blend_src_alpha; glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)&last_blend_src_alpha);
-        GLenum last_blend_dst_alpha; glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)&last_blend_dst_alpha);
-        GLenum last_blend_equation_rgb; glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)&last_blend_equation_rgb);
-        GLenum last_blend_equation_alpha; glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)&last_blend_equation_alpha);
+        GLenum last_blend_src_rgb; gl.GetIntegerv(GL_BLEND_SRC_RGB, (GLint*)&last_blend_src_rgb);
+        GLenum last_blend_dst_rgb; gl.GetIntegerv(GL_BLEND_DST_RGB, (GLint*)&last_blend_dst_rgb);
+        GLenum last_blend_src_alpha; gl.GetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)&last_blend_src_alpha);
+        GLenum last_blend_dst_alpha; gl.GetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)&last_blend_dst_alpha);
+        GLenum last_blend_equation_rgb; gl.GetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)&last_blend_equation_rgb);
+        GLenum last_blend_equation_alpha; gl.GetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)&last_blend_equation_alpha);
 
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        gl.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glEnable(GL_SCISSOR_TEST);
-        glUseProgram(shader);
+        gl.Enable(GL_SCISSOR_TEST);
+        gl.UseProgram(shader);
 
         vao.bind();
 
@@ -206,12 +206,12 @@ struct ImGui_Backend {
                     f32 ch = (cmd->ClipRect.w - clip_off.y) * clip_scale.y;
 
                     if(cx < fb_width && cy < fb_height && cw >= 0 && ch >= 0) {
-                        if(clip_origin_lower_left)  glScissor(cx, fb_height - ch, cw - cx, ch - cy);
-                        else                        glScissor(cx, cy, cw, ch);
+                        if(clip_origin_lower_left)  gl.Scissor(cx, fb_height - ch, cw - cx, ch - cy);
+                        else                        gl.Scissor(cx, cy, cw, ch);
 
-                        glBindTextureUnit(0, (GLuint)(intptr_t) cmd->TextureId);
+                        gl.BindTextureUnit(0, (GLuint)(intptr_t) cmd->TextureId);
 
-                        glDrawElementsBaseVertex(
+                        gl.DrawElementsBaseVertex(
                             GL_TRIANGLES, 
                             cmd->ElemCount,
                             sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, 
@@ -225,12 +225,12 @@ struct ImGui_Backend {
 
         vao.unbind();
 
-        glBindTextureUnit(0, 0);
-        glUseProgram(0);
-        glDisable(GL_SCISSOR_TEST);
+        gl.BindTextureUnit(0, 0);
+        gl.UseProgram(0);
+        gl.Disable(GL_SCISSOR_TEST);
 
-        glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
-        glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
+        gl.BlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
+        gl.BlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
     }
 
 private:

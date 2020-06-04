@@ -8,6 +8,7 @@
 #include "stb_sprintf.h"
 
 
+#define OPENGL_NO_DEFS
 #include "platform_interface.hpp"
 #include "mylibc.cpp"
 #include "linux_syscall.cpp"
@@ -389,29 +390,17 @@ void* load_dylib(char *dylib_path) {
         sc_exit(1);
     }
 
-    stella_attach = (Game_Attach*) dlsym(stella_dylib, "stella_attach");
-    if(!stella_attach) {
-        mlc_fwrite(STDERR, "Failed to load symbol `stella_attach`!\n");
-        sc_exit(1);
-    }
-
-    stella_init = (Game_Init*) dlsym(stella_dylib, "stella_init");
-    if(!stella_init) {
-        mlc_fwrite(STDERR, "Failed to load symbol `stella_init`!\n");
-        sc_exit(1);
-    }
-
-    stella_deinit = (Game_Deinit*) dlsym(stella_dylib, "stella_deinit");
-    if(!stella_deinit) {
-        mlc_fwrite(STDERR, "Failed to load symbol `stella_deinit`!\n");
-        sc_exit(1);
-    }
-
-    stella_update_and_render = (Game_Update_And_Render*) dlsym(stella_dylib, "stella_update_and_render");
-    if(!stella_update_and_render) {
-        mlc_fwrite(STDERR, "Failed to load symbol `stella_update_and_render`!\n");
-        sc_exit(1);
-    }
+    #define LFN(name, type) \
+        stella_##name = (type*) dlsym(stella_dylib, "stella_" #name); \
+        if(!stella_##name) { \
+            mlc_fwrite(STDERR, "Failed to load symbol `stella_" #name "`!\n"); \
+            sc_exit(1); \
+        }
+    LFN(attach, Game_Attach)
+    LFN(init, Game_Init)
+    LFN(deinit, Game_Deinit)
+    LFN(update_and_render, Game_Update_And_Render)
+    #undef LFN
 
     return stella_dylib;
 }
@@ -422,6 +411,14 @@ ino_t get_file_ino(char const* path) {
     return s.st_ino;
 }
 #endif
+
+void load_opengl(PlatformIO *pio) {
+    // NOTE TODO: This is silly :P But hey, yknow. *shrugs*
+    
+    #define PACK(name, ret, params) pio->gl.name = (gl##name##_fn*) glXGetProcAddress((GLubyte const*) "gl" #name); assert(pio->gl.name != nullptr);
+    OPENGL_FUNCTIONS(PACK)
+    #undef PACK
+}
 
 s32 main(s32 argc, char **argv) {
 	Display *dsp = XOpenDisplay(0);
@@ -547,6 +544,8 @@ s32 main(s32 argc, char **argv) {
 
 
     PlatformIO pio = {};
+
+    load_opengl(&pio);
 
     #ifdef STELLA_DYNAMIC
     #define PACK(name, ret, params) pio.api.name = name;

@@ -9,32 +9,32 @@ struct Texture {
         this->width = width;
         this->height = height;
 
-        glCreateTextures(GL_TEXTURE_2D, 1, &id);
-        glTextureStorage2D(id, levels, GL_RGBA8, width, height);
+        gl.CreateTextures(GL_TEXTURE_2D, 1, &id);
+        gl.TextureStorage2D(id, levels, GL_RGBA8, width, height);
 
         if(levels > 1) {
-            glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-            glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            gl.TextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+            gl.TextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         } else {
-            glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            gl.TextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            gl.TextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         }
 
-        glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl.TextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl.TextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
     void deinit() {
-        glDeleteTextures(1, &id);
+        gl.DeleteTextures(1, &id);
     }
 
     void set_data(void *image, u32 level = 0) {
         u32 denom = (u32)powf32(2, level);
-        glTextureSubImage2D(id, level, 0, 0, width / denom, height / denom, GL_RGBA, GL_UNSIGNED_BYTE, image);
+        gl.TextureSubImage2D(id, level, 0, 0, width / denom, height / denom, GL_RGBA, GL_UNSIGNED_BYTE, image);
     }
 
     void bind(u32 slot) {
-        glBindTextureUnit(slot, id);
+        gl.BindTextureUnit(slot, id);
     }
 };
 

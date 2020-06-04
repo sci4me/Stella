@@ -1,8 +1,9 @@
+#include "platform_interface.hpp"
 #include "stella.hpp"
 
 
 // NOTE: I have yet to decide whether I truly want these
-// to be globals or not. So far it's been fine but... eh.
+// to be gl.obals or not. So far it's been fine but... eh.
 // Sometimes I feel like I'd be more comfortable
 // accessing them through the PlatformAPI struct. EXCEPT...
 // In the static compilation case, that doesn't make sense!
@@ -60,11 +61,6 @@ PLATFORM_API_FUNCTIONS
 #include "rnd.h"
 
 
-#define GLEW_STATIC
-#define GLEW_NO_GLU
-#include "GL/glew.h"
-
-
 #include "temporary_storage.cpp"
 #include "off_the_rails.cpp"
 #include "math.cpp"
@@ -84,6 +80,7 @@ PLATFORM_API_FUNCTIONS
 #include "assets.cpp"
 #include "imgui_backend.cpp"
 #include "batch_renderer.cpp"
+#include "world.hpp"
 #include "item.cpp"
 #include "crafting.cpp"
 #include "tile.cpp"
@@ -96,14 +93,14 @@ void dump_gl_extensions() {
     tprintf("  GL_EXTENSIONS\n");
         
     s32 n_ext;
-    glGetIntegerv(GL_NUM_EXTENSIONS, &n_ext);
+    gl.GetIntegerv(GL_NUM_EXTENSIONS, &n_ext);
     
     char const** exts = (char const**) talloc(n_ext * sizeof(char const*));
     assert(exts);
 
     u32 max_len = 0;
     for(s32 i = 0; i < n_ext; i++) {
-        char const *ext = (char const*) glGetStringi(GL_EXTENSIONS, i);
+        char const *ext = (char const*) gl.GetStringi(GL_EXTENSIONS, i);
 
         exts[i] = ext;
 
@@ -141,15 +138,15 @@ void dump_gl_info() {
     tprintf("OpenGL Info:\n");
 
     GLint major, minor; 
-    glGetIntegerv(GL_MAJOR_VERSION, &major); 
-    glGetIntegerv(GL_MINOR_VERSION, &minor);
+    gl.GetIntegerv(GL_MAJOR_VERSION, &major); 
+    gl.GetIntegerv(GL_MINOR_VERSION, &minor);
     tprintf("  GL_MAJOR_VERSION              %d\n", major);
     tprintf("  GL_MINOR_VERSION              %d\n", minor);
 
-    tprintf("  GL_VENDOR                     %s\n", glGetString(GL_VENDOR));
-    tprintf("  GL_RENDERER                   %s\n", glGetString(GL_RENDERER));
-    tprintf("  GL_VERSION                    %s\n", glGetString(GL_VERSION));
-    tprintf("  GL_SHADING_LANGUAGE_VERSION   %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    tprintf("  GL_VENDOR                     %s\n", gl.GetString(GL_VENDOR));
+    tprintf("  GL_RENDERER                   %s\n", gl.GetString(GL_RENDERER));
+    tprintf("  GL_VERSION                    %s\n", gl.GetString(GL_VERSION));
+    tprintf("  GL_SHADING_LANGUAGE_VERSION   %s\n", gl.GetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
 
@@ -171,21 +168,22 @@ void stella_im_free(void *p) { mlc_free(p); }
 
 
 Game *g_inst;
+OpenGL gl;
 
 
 void init_gl(Game *g) {
     #ifdef GL_DEBUG
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback((GLDEBUGPROCARB) gl_debug_callback, 0);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+        gl.Enable(GL_DEBUG_OUTPUT);
+        gl.Enable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        gl.DebugMessageCallback((gl_debug_fn) gl_debug_callback, 0);
+        gl.DebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
     #endif
 
-    glClearColor(0, 0, 0, 0);
+    gl.ClearColor(0, 0, 0, 0);
 
-    glEnable(GL_BLEND);
-    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    gl.Enable(GL_BLEND);
+    gl.BlendEquation(GL_FUNC_ADD);
+    gl.BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 
     dump_gl_info();
@@ -202,17 +200,7 @@ extern "C" GAME_ATTACH(stella_attach) {
     _PLATFORM_API_FUNCTIONS(UNPACK)
     #undef UNPACK
 
-
-    // NOTE: This is far from ideal, but, eh,
-    // saves me a lot of time and pain, for now.
-    //
-    // In case it wasn't obvious, the reason this
-    // is unideal is that we're re-loading all of
-    // the GL functions every time we re-load the
-    // dylib (the game code). Since that only
-    // happens in dev mode anyway, maybe this is fine?
-    assert(glewInit() == GLEW_OK);
-
+    mlc_memcpy(&gl, &pio->gl, sizeof(OpenGL));
 
     if(reload) {
         g->imgui_backend->attach();
@@ -222,11 +210,6 @@ extern "C" GAME_ATTACH(stella_attach) {
 
 extern "C" GAME_INIT(stella_init) {
     // NOTE: Maybe don't duplicate this?...
-    #ifdef STELLA_STATIC
-    assert(glewInit() == GLEW_OK);
-    #endif
-
-
     void *mem = mlc_malloc(sizeof(Game));
     Game *g = new(mem) Game;
     g_inst = g;
@@ -292,7 +275,7 @@ extern "C" GAME_INIT(stella_init) {
 extern "C" GAME_DEINIT(stella_deinit) {
     Game *g = (Game*) pio->game_memory;
     
-    #define DEINIT_AND_FREE(name) g->name->deinit(); mlc_free(g->name);
+    #define DEINIT_AND_FREE(name) g->name->deinit(); mlc_free(g->name)
 
     #ifndef PROFILER_DISABLE
     DEINIT_AND_FREE(profiler);
@@ -319,7 +302,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
 
 
     if(pio->window_just_resized) {
-        glViewport(0, 0, pio->window_width, pio->window_height);
+        gl.Viewport(0, 0, pio->window_width, pio->window_height);
         
         auto projection_matrix = mat4::ortho(0.0f, (f32)pio->window_width, (f32)pio->window_height, 0.0f, 0.0f, 10000.0f);
         g->batch_renderer->set_projection(projection_matrix);
@@ -338,7 +321,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
     if(pio->was_button_pressed(VK_F12)) g->debug_pause = !g->debug_pause;
 
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    gl.Clear(GL_COLOR_BUFFER_BIT);
 
 
     // TODO: We don't want to just update, render, and loop;

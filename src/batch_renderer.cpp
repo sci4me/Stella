@@ -36,29 +36,29 @@ private:
     Static_Array<u32, MAX_INDICES> indices;
 
     Per_Frame_Stats per_frame_stats;
-public:
 
+public:
     void init() {
         shader = load_shader_program("batch", VERTEX_SHADER | FRAGMENT_SHADER);
-        u_textures = glGetUniformLocation(shader, "u_textures");
-        u_proj = glGetUniformLocation(shader, "u_proj");
-        u_view = glGetUniformLocation(shader, "u_view");
+        u_textures = gl.GetUniformLocation(shader, "u_textures");
+        u_proj = gl.GetUniformLocation(shader, "u_proj");
+        u_view = gl.GetUniformLocation(shader, "u_view");
 
 
         s32 samplers[MAX_TEXTURE_SLOTS];
         for(s32 i = 0; i < MAX_TEXTURE_SLOTS; i++) 
             samplers[i] = i;
-        glProgramUniform1iv(shader, u_textures, MAX_TEXTURE_SLOTS, samplers);
+        gl.ProgramUniform1iv(shader, u_textures, MAX_TEXTURE_SLOTS, samplers);
 
 
-        glCreateTextures(GL_TEXTURE_2D, 1, &white_texture);
-        glTextureStorage2D(white_texture, 1, GL_RGBA8, 1, 1);
+        gl.CreateTextures(GL_TEXTURE_2D, 1, &white_texture);
+        gl.TextureStorage2D(white_texture, 1, GL_RGBA8, 1, 1);
         u32 white = 0xFFFFFFFF;
-        glTextureSubImage2D(white_texture, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &white);
-        glTextureParameteri(white_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTextureParameteri(white_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTextureParameteri(white_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTextureParameteri(white_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        gl.TextureSubImage2D(white_texture, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &white);
+        gl.TextureParameteri(white_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        gl.TextureParameteri(white_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        gl.TextureParameteri(white_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        gl.TextureParameteri(white_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 
         vbo.init(sizeof(vertices.data), GL_DYNAMIC_DRAW);
@@ -76,15 +76,15 @@ public:
     }
 
     void deinit() {
-        glDeleteProgram(shader);
-        glDeleteTextures(1, &white_texture);
+        gl.DeleteProgram(shader);
+        gl.DeleteTextures(1, &white_texture);
         vao.deinit();
         vbo.deinit();
         ibo.deinit();
     }
 
     void set_projection(mat4 proj) {
-        glProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, proj.value_ptr());
+        gl.ProgramUniformMatrix4fv(shader, u_proj, 1, GL_FALSE, proj.value_ptr());
     }
 
     void flush() {
@@ -101,19 +101,19 @@ public:
         vbo.set_subdata(&vertices.data, vertices.count * sizeof(Vertex));
         ibo.set_subdata(&indices.data, indices.count * sizeof(u32));
 
-        glUseProgram(shader);
+        gl.UseProgram(shader);
         vao.bind();
 
         for(u32 i = 0; i < textures.count; i++)
-           glBindTextureUnit(i, textures.slots[i]);
+           gl.BindTextureUnit(i, textures.slots[i]);
 
-        glDrawElements(GL_TRIANGLES, indices.count, GL_UNSIGNED_INT, 0);
+        gl.DrawElements(GL_TRIANGLES, indices.count, GL_UNSIGNED_INT, 0);
 
         for(u32 i = 0; i < textures.count; i++)
-            glBindTextureUnit(i, 0);
+            gl.BindTextureUnit(i, 0);
 
         vao.unbind();
-        glUseProgram(0);
+        gl.UseProgram(0);
 
         begin();
     }
@@ -125,7 +125,7 @@ public:
     }
 
     void begin(mat4 view_matrix) {
-        glProgramUniformMatrix4fv(shader, u_view, 1, GL_FALSE, view_matrix.value_ptr());
+        gl.ProgramUniformMatrix4fv(shader, u_view, 1, GL_FALSE, view_matrix.value_ptr());
         begin();
     }
 
@@ -140,6 +140,8 @@ public:
     }
 
     Per_Frame_Stats end_frame() {
+        TIMED_FUNCTION();
+        
         end();
         auto stats = per_frame_stats;
         mlc_memset(&per_frame_stats, 0, sizeof(Per_Frame_Stats));
@@ -152,7 +154,7 @@ public:
         ensure_available(4, 6);
 
         s32 tex_index;
-        if(glIsTexture(texture)) tex_index = textures.alloc(texture);
+        if(gl.IsTexture(texture)) tex_index = textures.alloc(texture);
         else                     tex_index = textures.alloc(white_texture);
         assert(tex_index != -1); // TODO
 
