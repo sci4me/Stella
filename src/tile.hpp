@@ -14,7 +14,8 @@ constexpr f32 TILE_SIZE = 32.0f;
     X(_X, TILE_GOLD_ORE,            gold_ore            ) \
     X(_X, TILE_CHEST,               chest               ) \
     X(_X, TILE_FURNACE,             furnace             ) \
-    X(_X, TILE_MINING_MACHINE,      mining_machine      ) 
+    X(_X, TILE_MINING_MACHINE,      mining_machine      ) \
+    X(_X, TILE_TUBE,                tube                )
 #define TILE_DEFS(X) _TILE_DEFS(_IGNORE__X, X)
 
 

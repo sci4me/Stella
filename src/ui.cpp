@@ -238,6 +238,7 @@ namespace ui {
 
             ImGui::Separator();
 
+            u32 f = 0;
             for(u32 i = 0; i < g_inst->recipes->recipes.count; i++) {
                 auto r = g_inst->recipes->recipes[i];
                 
@@ -316,8 +317,15 @@ namespace ui {
                     ImGui::EndTooltip();
                 }
 
+                f++;
+                if(f == 4) {
+                    f = 0;
+                } else {
+                    ImGui::SameLine();
+                }
+
                 // TODO: Don't _always_ do this!
-                ImGui::SameLine();
+                // if(i % 4 != 0) ImGui::SameLine();
             }
 
             held_item();

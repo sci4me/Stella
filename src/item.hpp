@@ -14,7 +14,8 @@ constexpr u32 MAX_ITEM_SLOT_SIZE = 64;
     X(_X, ITEM_IRON_GEAR,           "Iron Gear",               false,           item,       iron_gear           ) \
     X(_X, ITEM_CHEST,               "Chest",                   true,            tile,       chest               ) \
     X(_X, ITEM_FURNACE,             "Furnace",                 true,            tile,       furnace             ) \
-    X(_X, ITEM_MINING_MACHINE,      "Mining Machine",          true,            tile,       mining_machine      )
+    X(_X, ITEM_MINING_MACHINE,      "Mining Machine",          true,            tile,       mining_machine      ) \
+    X(_X, ITEM_TUBE,                "Tube",                    true,            tile,       tube                )
 #define ITEM_DEFS(X) _ITEM_DEFS(_IGNORE__X, X)
 
 

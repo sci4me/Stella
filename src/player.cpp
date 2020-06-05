@@ -114,6 +114,7 @@ struct Player {
                                     case ITEM_CHEST: tile = make_tile(TILE_CHEST); break;
                                     case ITEM_FURNACE: tile = make_tile(TILE_FURNACE); break;
                                     case ITEM_MINING_MACHINE: tile = make_tile(TILE_MINING_MACHINE); break;
+                                    case ITEM_TUBE: tile = make_tile(TILE_TUBE); break;
                                     default: assert(0); break;
                                 }
 
@@ -162,7 +163,6 @@ struct Player {
                                         open_tile_ui(tile);
                                         break;
                                     default:
-                                        assert(0);
                                         break;
                                 }
                             } else {

@@ -270,6 +270,7 @@ extern "C" GAME_INIT(stella_init) {
         g->player->inventory.insert({ ITEM_GOLD_ORE, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_COAL_ORE, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_IRON_PLATE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_GOLD_PLATE, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_MINING_MACHINE, MAX_ITEM_SLOT_SIZE });

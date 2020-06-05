@@ -312,6 +312,25 @@ struct Tile_Mining_Machine : public Tile {
 };
 
 
+struct Tile_Tube : public Tile {
+    virtual void init() override {
+        Tile::init();
+        flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
+        flags |= TILE_FLAG_IS_COLLIDER;
+
+        // NOTE TODO: collision_aabb needs to be replaced
+        // We need a way of specifying >1 collision AABBs
+    }
+
+    virtual void deinit() override {
+        Tile::deinit();
+    }
+
+    virtual void update() override {
+    }
+};
+
+
 //
 //
 // NOTE: So I was just working on trying to implement Tile_Mining_Machine::update,
@@ -372,6 +391,7 @@ Tile* make_tile(Tile_Type type) {
         case TILE_CHEST: result = make_tile<Tile_Chest>(); break;
         case TILE_FURNACE: result = make_tile<Tile_Furnace>(); break;
         case TILE_MINING_MACHINE: result = make_tile<Tile_Mining_Machine>(); break;
+        case TILE_TUBE: result = make_tile<Tile_Tube>(); break;
         default: assert(0); break;
     }
     result->type = type;

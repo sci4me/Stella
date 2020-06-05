@@ -1,8 +1,8 @@
 #define _TEXTURES_ITEM_X(X, id, name, placeable, pfx, texname) X(id, texname, false, item, pfx)
 #define _TEXTURES_TILE_X(X, id, texname) X(id, texname, true, tile, tile)
 #define _TEXTURES(X) \
-    _TILE_DEFS(_TEXTURES_TILE_X, X) \
-    _ITEM_DEFS(_TEXTURES_ITEM_X, X)
+    _ITEM_DEFS(_TEXTURES_ITEM_X, X) \
+    _TILE_DEFS(_TEXTURES_TILE_X, X)
 
 struct Assets {
     Texture tile_textures[N_TILE_TYPES];
