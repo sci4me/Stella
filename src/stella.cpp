@@ -62,6 +62,7 @@ extern "C" void* mlc_realloc(void*, u64); // TODO: Cleanup!
 #include "rnd.h"
 
 
+#include "arena.cpp"
 #include "temporary_storage.cpp"
 #include "off_the_rails.cpp"
 #include "math.cpp"
@@ -210,16 +211,19 @@ extern "C" GAME_ATTACH(stella_attach) {
 #endif
 
 extern "C" GAME_INIT(stella_init) {
-    // NOTE: Maybe don't duplicate this?...
-    void *mem = mlc_alloc(sizeof(Game));
+    auto game_arena = (Arena*) mlc_alloc(sizeof(Arena));
+    game_arena->init(1024 * 1024 * 32);
+
+    void *mem = game_arena->alloc(sizeof(Game));
     Game *g = new(mem) Game;
+    g->game_arena = game_arena;
     g_inst = g;
     pio->game_memory = g;
 
     gl = pio->gl;
 
 
-    g->temp = (Temporary_Storage*) mlc_alloc(sizeof(Temporary_Storage));
+    g->temp = (Temporary_Storage*) game_arena->alloc(sizeof(Temporary_Storage));
 
 
     #ifndef PROFILER_DISABLE
@@ -228,31 +232,31 @@ extern "C" GAME_INIT(stella_init) {
     #endif
 
 
-    g->imgui_backend = (ImGui_Backend*) mlc_alloc(sizeof(ImGui_Backend));
+    g->imgui_backend = (ImGui_Backend*) game_arena->alloc(sizeof(ImGui_Backend));
     g->imgui_backend->init();
 
 
-    g->batch_renderer = (Batch_Renderer*) mlc_alloc(sizeof(Batch_Renderer));
+    g->batch_renderer = (Batch_Renderer*) game_arena->alloc(sizeof(Batch_Renderer));
     g->batch_renderer->init();
 
 
-    g->assets = (Assets*) mlc_alloc(sizeof(Assets));
+    g->assets = (Assets*) game_arena->alloc(sizeof(Assets));
     g->assets->init();
 
 
-    g->recipes = (Recipes*) mlc_alloc(sizeof(Recipes));
+    g->recipes = (Recipes*) game_arena->alloc(sizeof(Recipes));
     g->recipes->init();
 
 
     {
-        void *mem = mlc_alloc(sizeof(World));
+        void *mem = game_arena->alloc(sizeof(World));
         g->world = new(mem) World;
         g->world->init();
     }
 
 
     {
-        void *mem = mlc_alloc(sizeof(Player));
+        void *mem = game_arena->alloc(sizeof(Player));
         g->player = new(mem) Player;
         g->player->init(g, g->world);
     }
@@ -278,22 +282,17 @@ extern "C" GAME_INIT(stella_init) {
 extern "C" GAME_DEINIT(stella_deinit) {
     Game *g = (Game*) pio->game_memory;
     
-    #define DEINIT_AND_FREE(name) g->name->deinit(); mlc_free(g->name)
-
     #ifndef PROFILER_DISABLE
-    DEINIT_AND_FREE(profiler);
+    g->profiler->deinit();
+    mlc_free(g->profiler);
     #endif
 
-    DEINIT_AND_FREE(batch_renderer);
-    DEINIT_AND_FREE(assets);
-    DEINIT_AND_FREE(imgui_backend);
-    DEINIT_AND_FREE(recipes);
-    DEINIT_AND_FREE(world);
-    DEINIT_AND_FREE(player);
-
-    #undef DEINIT_AND_FREE
-
-    mlc_free(g);
+    g->batch_renderer->deinit();
+    g->assets->deinit();
+    g->imgui_backend->deinit();
+    g->recipes->deinit();
+    g->world->deinit();
+    g->player->deinit();
 }   
 
 extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
@@ -409,6 +408,16 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
                 ImGui::Text("Vertices: %u", per_frame_stats.vertices);
                 ImGui::Text("Indices: %u", per_frame_stats.indices);
                 ImGui::Text("Draw Calls: %u", per_frame_stats.draw_calls);
+            }
+
+            if(ImGui::CollapsingHeader("Memory")) {
+                Arena *game_arena = (Arena*) g->game_arena;
+
+                ImGui::Text("Game Arena");
+                ImGui::Separator();
+                ImGui::Text("Used: %'llu", game_arena->used);
+                ImGui::Text("Size: %'llu", game_arena->size);
+                ImGui::Text("%0.2f%% Full", ((f32)game_arena->used) / ((f32)game_arena->size) * 100.0f);
             }
 
             if(ImGui::CollapsingHeader("Settings")) {
