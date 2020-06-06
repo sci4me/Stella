@@ -14,8 +14,8 @@
 #define OPENGL_NO_DEFS
 #include "platform_interface.hpp"
 #include "mylibc.cpp"
-#include "linux_syscall.cpp"
-#include "linux_mylibc.cpp"
+#include "linux64_syscall.cpp"
+#include "linux64_mylibc.cpp"
 
 
 #define GLX_MAJOR 1

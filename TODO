@@ -47,7 +47,7 @@ Code/Dev Features/Quality:
        these symbols.
      - Seems feasible..
  - Clean up `linux_platform.cpp`
-   - And `linux_syscall.cpp` while you're at it :P
+   - And `linux64_syscall.cpp` while you're at it :P
    - But for realsies... like... damn.
  - Ctrl+C takes a LONG time to close the program
    - Is this just because we don't explicitly handle

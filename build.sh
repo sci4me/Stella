@@ -30,7 +30,7 @@ PLATFORM_LDFLAGS="-lGL -lX11"
 GAME_LDFLAGS="-L$VENDOR_DIR/imgui/lib -l:imgui.a"
 
 INCLUDES="-I$SRC_DIR -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math -I$VENDOR_DIR/GL"
-PLATFORM_SOURCES="$SRC_DIR/linux_syscall.s $SRC_DIR/linux_platform.s $SRC_DIR/linux_platform.cpp"
+PLATFORM_SOURCES="$SRC_DIR/linux64_syscall.s $SRC_DIR/linux64_platform.s $SRC_DIR/linux64_platform.cpp"
 GAME_SOURCES="$SRC_DIR/stella.cpp"
 
 [ -d $BUILD_DIR ] || mkdir -p $BUILD_DIR
