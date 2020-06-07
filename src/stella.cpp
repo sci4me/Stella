@@ -62,7 +62,6 @@ extern "C" void* mlc_realloc(void*, u64); // TODO: Cleanup!
 #include "rnd.h"
 
 
-#include "arena.cpp"
 #include "temporary_storage.cpp"
 #include "off_the_rails.cpp"
 #include "math.cpp"
@@ -202,6 +201,8 @@ extern "C" GAME_ATTACH(stella_attach) {
     _PLATFORM_API_FUNCTIONS(UNPACK)
     #undef UNPACK
 
+    init_allocator(mlc_alloc, mlc_free);
+
     gl = pio->gl;
 
     if(reload) {
@@ -211,6 +212,9 @@ extern "C" GAME_ATTACH(stella_attach) {
 #endif
 
 extern "C" GAME_INIT(stella_init) {
+    init_allocator(mlc_alloc, mlc_free);
+
+    
     auto game_arena = (Arena*) mlc_alloc(sizeof(Arena));
     game_arena->init(1024 * 1024 * 32);
 

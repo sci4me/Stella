@@ -1,16 +1,39 @@
+#define ALLOCATOR_ALLOC_FN(name) void* name(u64 n)
+typedef ALLOCATOR_ALLOC_FN(Alloc_Fn);
+
+#define ALLOCATOR_FREE_FN(name) void name(void* p)
+typedef ALLOCATOR_FREE_FN(Free_Fn);
+
+
+struct Allocator {
+	Alloc_Fn *alloc;
+	Free_Fn *free;
+};
+
+
+static Allocator _allocator;
+
+void init_allocator(Alloc_Fn *alloc, Free_Fn *free) {
+	_allocator.alloc = alloc;
+	_allocator.free = free;
+}
+
+
+extern "C" void* mlc_memset(void*, s32, u64);
+
 struct Arena {
 	u8 *data;
 	u64 used;
 	u64 size;
 
 	void init(u64 size) {
-		data = (u8*) mlc_alloc(size);
+		data = (u8*) _allocator.alloc(size);
 		used = 0;
 		this->size = size;
 	}
 
 	void deinit() {
-		mlc_free(data);
+		_allocator.free(data);
 	}
 
 	void* alloc(u64 x, u64 alignment = 8) {
