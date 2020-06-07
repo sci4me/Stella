@@ -28,6 +28,12 @@ struct Arena {
 		return result;
 	}
 
+	template<typename T>
+	T* alloc_new() {
+		void *p = alloc(sizeof(T), alignof(T));
+		return new(p) T;
+	}
+
 	void clear() {
 		mlc_memset(data, 0, size);
 		used = 0;

@@ -214,10 +214,10 @@ extern "C" GAME_INIT(stella_init) {
     auto game_arena = (Arena*) mlc_alloc(sizeof(Arena));
     game_arena->init(1024 * 1024 * 32);
 
-    void *mem = game_arena->alloc(sizeof(Game));
-    Game *g = new(mem) Game;
+    g_inst = game_arena->alloc_new<Game>();
+
+    Game *g = g_inst;
     g->game_arena = game_arena;
-    g_inst = g;
     pio->game_memory = g;
 
     gl = pio->gl;
@@ -249,15 +249,13 @@ extern "C" GAME_INIT(stella_init) {
 
 
     {
-        void *mem = game_arena->alloc(sizeof(World));
-        g->world = new(mem) World;
+        g->world = game_arena->alloc_new<World>();
         g->world->init();
     }
 
 
     {
-        void *mem = game_arena->alloc(sizeof(Player));
-        g->player = new(mem) Player;
+        g->player = game_arena->alloc_new<Player>();
         g->player->init(g, g->world);
     }
 
