@@ -313,6 +313,8 @@ struct Tile_Mining_Machine : public Tile {
 
 
 struct Tile_Tube : public Tile {
+    Direction connected_directions;
+
     virtual void init() override {
         Tile::init();
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
@@ -329,13 +331,24 @@ struct Tile_Tube : public Tile {
     virtual void draw(Batch_Renderer *r) override {
         Tile::draw(r);
 
-        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_NORTH]);
-        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_SOUTH]);
-        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_EAST]);
-        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_WEST]);
+        if(connected_directions & DIR_NORTH) r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_NORTH]);
+        if(connected_directions & DIR_SOUTH) r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_SOUTH]);
+        if(connected_directions & DIR_EAST)  r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_EAST]);
+        if(connected_directions & DIR_WEST)  r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_WEST]);
     }
 
     virtual void update() override {
+        connected_directions = 0;
+        if(Tile *t = world->get_tile_at(x, y - 1, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_NORTH;
+        if(Tile *t = world->get_tile_at(x, y + 1, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_SOUTH;
+        if(Tile *t = world->get_tile_at(x + 1, y, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_EAST;
+        if(Tile *t = world->get_tile_at(x - 1, y, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_WEST;
+
+
+        if(connected_directions & DIR_NORTH) tprintf("DIR_NORTH\n");
+        if(connected_directions & DIR_SOUTH) tprintf("DIR_SOUTH\n");
+        if(connected_directions & DIR_EAST) tprintf("DIR_EAST\n");
+        if(connected_directions & DIR_WEST) tprintf("DIR_WEST\n");
     }
 };
 

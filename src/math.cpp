@@ -343,3 +343,14 @@ struct AABB {
         return { true, entry, normal };
     }
 };
+
+
+typedef u8 Direction;
+enum Direction_ : Direction {
+    DIR_NONE  = 0,
+
+    DIR_NORTH = 1,
+    DIR_SOUTH = 2,
+    DIR_EAST  = 4,
+    DIR_WEST  = 8
+};
