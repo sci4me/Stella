@@ -325,9 +325,6 @@ struct Tile_Tube : public Tile {
         Tile::init();
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
         flags |= TILE_FLAG_IS_COLLIDER;
-
-        // NOTE TODO: collision_aabb needs to be replaced
-        // We need a way of specifying >1 collision AABBs
     }
 
     virtual void deinit() override {

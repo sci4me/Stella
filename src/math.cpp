@@ -345,12 +345,33 @@ struct AABB {
 };
 
 
+#define _DIRECTIONS(X) \
+    X(DIR_NORTH,  1,   0,  -1  ) \
+    X(DIR_SOUTH,  2,   0,   1  ) \
+    X(DIR_EAST,   4,   1,   0  ) \
+    X(DIR_WEST,   8,  -1,   0  ) \
+
 typedef u8 Direction;
 enum Direction_ : Direction {
     DIR_NONE  = 0,
 
-    DIR_NORTH = 1,
-    DIR_SOUTH = 2,
-    DIR_EAST  = 4,
-    DIR_WEST  = 8
+    #define _X(id, value, dx, dy) id = value,
+    _DIRECTIONS(_X)
+    #undef _X
+
+    N_DIR     = 4
 };
+
+constexpr s32 DIR_X_OFFSET[N_DIR] = {
+#define _X(id, value, dx, dy) dx,
+_DIRECTIONS(_X)
+#undef _X
+};
+
+constexpr s32 DIR_Y_OFFSET[N_DIR] = {
+#define _X(id, value, dx, dy) dy,
+_DIRECTIONS(_X)
+#undef _X
+};
+
+#undef _DIRECTIONS

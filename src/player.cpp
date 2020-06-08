@@ -273,6 +273,9 @@ private:
         f32 half_size = 0.5f * SIZE;
         vec2 v_half_size = { half_size, half_size };
 
+        Dynamic_Array<AABB> bbs;
+        bbs.init();
+
         u32 iteration = 0;
         while(delta.length() > EPSILON && iteration++ < MAX_ITER) {
             auto player_bb = AABB::from_center(pos, v_half_size);
@@ -286,9 +289,6 @@ private:
 
             AABB::Hit best = { false, 1.0f };
 
-            Dynamic_Array<AABB> bbs;
-            bbs.init();
-
             // NOTE TODO: We don't really have to check EVERY tile
             // for collisions! Just check the ones close to us.
             for(u32 i = 0; i < chunk->layer2.size; i++) {
@@ -297,7 +297,9 @@ private:
                 auto tile = chunk->layer2.slots[i].value;
                 if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
+                bbs.clear();
                 tile->get_bounding_boxes(&bbs);
+                assert(bbs.count);
 
                 for(auto i = 0; i < bbs.count; i++) {
                     auto const& tile_bb = bbs[i];
@@ -308,11 +310,7 @@ private:
                         }
                     }
                 }
-
-                bbs.clear();
             }
-
-            bbs.deinit();
 
             pos += delta * best.h;
             last_dpos += delta * best.h;
@@ -325,6 +323,8 @@ private:
                 break;
             }
         }
+
+        bbs.deinit();
 
         // NOTE: Just doing this as a sanity check.
         // A gift that keeps on giving :P
