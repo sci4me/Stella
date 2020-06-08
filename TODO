@@ -33,6 +33,17 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Find a better way to deal with global data
+   - At a minimum, we need a better way to locate all the global
+     data that needs to be restored on hot reload events
+     - Perhaps we mark up our globals with a macro or something
+       But, well, this is sort of the opposite of what we want
+       We don't want to have to explicitly say what they are, we
+       want to be able to ask a tool to tell us what they are.
+       However, if we were able to make it an error to declare a
+       global without our markup, that would be a viable option too
+       - However, not all globals are bad; only globals that go in
+         the shared library which contains the game code
  - Abstract the renderer (and the OpenGL interface)
    - i.e. Game code will use our abstracted renderer to do all
      rendering instead of calling OpenGL.
