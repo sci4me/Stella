@@ -193,9 +193,9 @@ enum KeyCode_ : KeyCode {
 
 typedef u8 MouseButtonCode;
 enum MouseButtonCode_ : MouseButtonCode {
-    MB_LEFT = 1,
-    MB_MIDDLE = 2,
-    MB_RIGHT = 3
+    MB_LEFT             = 1,
+    MB_MIDDLE           = 2,
+    MB_RIGHT            = 3
 };
 
 
@@ -321,6 +321,7 @@ static void update_button_state(PlatformIO *pio, Virtual_Button vb, bool state) 
         pio->button_state[vb] |= BTN_FLAG_RELEASED;
     }
 }
+
 
 #ifdef STELLA_DYNAMIC
 void* load_dylib(char *dylib_path) {
