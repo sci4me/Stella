@@ -326,6 +326,15 @@ struct Tile_Tube : public Tile {
         Tile::deinit();
     }
 
+    virtual void draw(Batch_Renderer *r) override {
+        Tile::draw(r);
+
+        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_NORTH]);
+        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_SOUTH]);
+        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_EAST]);
+        r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_WEST]);
+    }
+
     virtual void update() override {
     }
 };
