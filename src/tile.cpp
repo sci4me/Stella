@@ -343,12 +343,6 @@ struct Tile_Tube : public Tile {
         if(Tile *t = world->get_tile_at(x, y + 1, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_SOUTH;
         if(Tile *t = world->get_tile_at(x + 1, y, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_EAST;
         if(Tile *t = world->get_tile_at(x - 1, y, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_WEST;
-
-
-        if(connected_directions & DIR_NORTH) tprintf("DIR_NORTH\n");
-        if(connected_directions & DIR_SOUTH) tprintf("DIR_SOUTH\n");
-        if(connected_directions & DIR_EAST) tprintf("DIR_EAST\n");
-        if(connected_directions & DIR_WEST) tprintf("DIR_WEST\n");
     }
 };
 
