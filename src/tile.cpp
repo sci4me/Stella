@@ -6,6 +6,7 @@ void Tile::draw(Batch_Renderer *r) {
     r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->tile_textures[(u32) type]);
 }
 void Tile::update() {}
+void Tile::get_bounding_boxes(Dynamic_Array<AABB> *bbs) {}
 
 
 struct Tile_Ore : public Tile {
@@ -54,13 +55,6 @@ struct Tile_Chest : public Tile {
         Tile::init();
         flags |= TILE_FLAG_IS_COLLIDER;
 
-        // NOTE: See comment in Tile_Furnace::init about this.
-        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
-        collision_aabb = {
-            wp + vec2(4.0f, 4.0f),
-            wp + vec2(28.0f, 28.0f)
-        };
-
         container.init(25);
     }
 
@@ -68,6 +62,14 @@ struct Tile_Chest : public Tile {
         Tile::deinit();
 
         container.deinit();
+    }
+
+    virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs) override {
+        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        bbs->push({
+            wp + vec2(4.0f, 4.0f),
+            wp + vec2(28.0f, 28.0f)
+        });
     }
 };
 
@@ -111,19 +113,6 @@ struct Tile_Furnace : public Tile {
         fuel_points = 0;
         is_smelting = false;
         smelting_progress = 0;
-
-        // NOTE TODO: Don't hardcode these numbers!!
-        // They're 4 and 28 because our tile size is 32;
-        // if our tile size were the same as the pixel width
-        // and height of our textures (16), this would be 2
-        // and 14, in order to select the inner 12x12 pixels,
-        // with a 2 pixel border on all sides.
-        //              - sci4me, 5/15/20
-        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
-        collision_aabb = {
-            wp + vec2(4.0f, 4.0f),
-            wp + vec2(28.0f, 28.0f)
-        };
 
         input.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);
         
@@ -204,6 +193,21 @@ struct Tile_Furnace : public Tile {
             smelting_progress++;
         }
     }
+
+    virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs) override {
+        // NOTE TODO: Don't hardcode these numbers!!
+        // They're 4 and 28 because our tile size is 32;
+        // if our tile size were the same as the pixel width
+        // and height of our textures (16), this would be 2
+        // and 14, in order to select the inner 12x12 pixels,
+        // with a 2 pixel border on all sides.
+        //              - sci4me, 5/15/20
+        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        bbs->push({
+            wp + vec2(4.0f, 4.0f),
+            wp + vec2(28.0f, 28.0f)
+        });
+    }
 };
 
 
@@ -219,13 +223,6 @@ struct Tile_Mining_Machine : public Tile {
         Tile::init();
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
         flags |= TILE_FLAG_IS_COLLIDER;
-
-        // NOTE: See comment in Tile_Furnace::init about this.
-        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
-        collision_aabb = {
-            wp + vec2(2.0f, 2.0f),
-            wp + vec2(30.0f, 30.0f)
-        };
 
         fuel.init(1, ITEM_CONTAINER_FLAG_FILTER_INSERTIONS);
         fuel.insertion_filter.set(ITEM_COAL_ORE);
@@ -309,6 +306,15 @@ struct Tile_Mining_Machine : public Tile {
             mining_progress++;
         }
     }
+
+    virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs) override {
+        // NOTE: See comment in Tile_Furnace::init about this.
+        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        bbs->push({
+            wp + vec2(2.0f, 2.0f),
+            wp + vec2(30.0f, 30.0f)
+        });
+    }
 };
 
 
@@ -343,6 +349,43 @@ struct Tile_Tube : public Tile {
         if(Tile *t = world->get_tile_at(x, y + 1, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_SOUTH;
         if(Tile *t = world->get_tile_at(x + 1, y, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_EAST;
         if(Tile *t = world->get_tile_at(x - 1, y, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_WEST;
+    }
+
+    virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs) override {
+        // NOTE: See comment in Tile_Furnace::init about this.
+        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
+        bbs->push({
+            wp + vec2(10.0f, 10.0f),
+            wp + vec2(22.0f, 22.0f)
+        });
+    
+        if(connected_directions & DIR_NORTH) {
+            bbs->push({
+                wp + vec2(10.0f, 0.0f),
+                wp + vec2(22.0f, 10.0f),
+            });
+        }
+
+        if(connected_directions & DIR_SOUTH) {
+            bbs->push({
+                wp + vec2(10.0f, 22.0f),
+                wp + vec2(22.0f, 32.0f),
+            });
+        }
+
+        if(connected_directions & DIR_EAST) {
+            bbs->push({
+                wp + vec2(22.0f, 10.0f),
+                wp + vec2(32.0f, 22.0f),
+            });
+        }
+
+        if(connected_directions & DIR_WEST) {
+            bbs->push({
+                wp + vec2(0.0f, 10.0f),
+                wp + vec2(10.0f, 22.0f),
+            });
+        }
     }
 };
 

@@ -286,6 +286,9 @@ private:
 
             AABB::Hit best = { false, 1.0f };
 
+            Dynamic_Array<AABB> bbs;
+            bbs.init();
+
             // NOTE TODO: We don't really have to check EVERY tile
             // for collisions! Just check the ones close to us.
             for(u32 i = 0; i < chunk->layer2.size; i++) {
@@ -294,14 +297,22 @@ private:
                 auto tile = chunk->layer2.slots[i].value;
                 if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
-                auto const& tile_bb = tile->collision_aabb;
-                if(tile_bb.intersects(broad)) {
-                    auto hit = AABB::sweep(player_bb, tile_bb, delta);
-                    if(hit.hit && hit.h < best.h) {
-                        best = hit;
+                tile->get_bounding_boxes(&bbs);
+
+                for(auto i = 0; i < bbs.count; i++) {
+                    auto const& tile_bb = bbs[i];
+                    if(tile_bb.intersects(broad)) {
+                        auto hit = AABB::sweep(player_bb, tile_bb, delta);
+                        if(hit.hit && hit.h < best.h) {
+                            best = hit;
+                        }
                     }
                 }
+
+                bbs.clear();
             }
+
+            bbs.deinit();
 
             pos += delta * best.h;
             last_dpos += delta * best.h;

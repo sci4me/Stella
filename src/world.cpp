@@ -401,6 +401,21 @@ void Chunk::draw(Batch_Renderer *r) {
         if(layer2.slots[k].hash == 0) continue;
         auto tile = layer2.slots[k].value;
         tile->draw(r);
+
+        if(g_inst->show_tile_aabbs && tile->flags & TILE_FLAG_IS_COLLIDER) {
+            Dynamic_Array<AABB> bbs;
+            bbs.init();
+
+            tile->get_bounding_boxes(&bbs);
+
+            for(auto i = 0; i < bbs.count; i++) {
+                auto const& bb = bbs[i];
+                r->push_solid_quad(bb.min.x, bb.min.y, bb.max.x - bb.min.x, bb.max.y - bb.min.y, vec4(1.0f, 0.0f, 0.0f, 1.0f));
+                r->push_solid_quad(bb.min.x + 1, bb.min.y + 1, bb.max.x - bb.min.x - 2, bb.max.y - bb.min.y - 2, vec4(0.0f, 0.0f, 1.0f, 1.0f));
+            }
+
+            bbs.deinit();
+        }
     }
 }
 

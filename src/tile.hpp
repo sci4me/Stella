@@ -44,16 +44,13 @@ struct Tile {
     s32 y;
     Tile_Flags flags;
 
-    // NOTE: I don't _love_ having this here.
-    // Maybe we just compute it as needed
-    // if the flag is set? *shrugs*
-    //          - sci4me, 5/15/20
-    AABB collision_aabb;
-
     virtual void init();
     virtual void deinit();
     virtual void draw(Batch_Renderer *r);
     virtual void update();
+
+    // TODO: Change these AABBs to be tile-relative!
+    virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs);
 };
 
 #endif

@@ -214,7 +214,7 @@ extern "C" GAME_ATTACH(stella_attach) {
 extern "C" GAME_INIT(stella_init) {
     init_allocator(mlc_alloc, mlc_free);
 
-    
+
     auto game_arena = (Arena*) mlc_alloc(sizeof(Arena));
     game_arena->init(1024 * 1024 * 32);
 
@@ -276,6 +276,7 @@ extern "C" GAME_INIT(stella_init) {
         g->player->inventory.insert({ ITEM_CHEST, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_FURNACE, MAX_ITEM_SLOT_SIZE });
         g->player->inventory.insert({ ITEM_MINING_MACHINE, MAX_ITEM_SLOT_SIZE });
+        g->player->inventory.insert({ ITEM_TUBE, MAX_ITEM_SLOT_SIZE });
     }
 
 
@@ -426,6 +427,7 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
             if(ImGui::CollapsingHeader("Settings")) {
                 ImGui::Checkbox("Fast Mining", &g->fast_mining);
                 ImGui::Checkbox("Show ImGui Metrics", &g->show_imgui_metrics_window);
+                ImGui::Checkbox("Show Tile AABBs", &g->show_tile_aabbs);
             }
         }
 

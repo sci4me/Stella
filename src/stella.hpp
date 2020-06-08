@@ -17,6 +17,7 @@ struct Game {
 
 	bool show_debug_window = false;
 	bool show_imgui_metrics_window = false;
+	bool show_tile_aabbs = false;
 
 	bool fast_mining = false;
 
