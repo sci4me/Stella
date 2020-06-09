@@ -414,16 +414,8 @@ private:
     void draw_connection(Batch_Renderer *r, Direction dir, s32 ord) {
         if(connected_directions & dir) {
             r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[ord]]);
-        
-            s32 tx = x + DIR_X_OFFSET[dir];
-            s32 ty = y + DIR_Y_OFFSET[dir];
-            Tile *t = world->get_tile_at(tx, ty, 2);
-            if(t == nullptr) return;
-            assert(t != nullptr);
-            if(t->type != TILE_TUBE) {
-                auto opp = DIR_OPPOSITE[dir];
-                r->push_textured_quad(tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[opp]]);
-            }
+
+            // TODO: Figure out how to handle connecting to arbitrary tiles
         }
     }
 };
