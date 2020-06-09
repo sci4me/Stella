@@ -334,18 +334,18 @@ struct Tile_Tube : public Tile {
     virtual void draw(Batch_Renderer *r) override {
         Tile::draw(r);
 
-        if(connected_directions & DIR_NORTH) r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_NORTH]);
-        if(connected_directions & DIR_SOUTH) r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_SOUTH]);
-        if(connected_directions & DIR_EAST)  r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_EAST]);
-        if(connected_directions & DIR_WEST)  r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[TEX_TUBE_WEST]);
+        constexpr u32 tube_tex[] = { TEX_TUBE_NORTH, TEX_TUBE_SOUTH, TEX_TUBE_EAST, TEX_TUBE_WEST };
+        #define _X(id, value, dx, dy, ord) if(connected_directions & value) r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[ord]]);
+        DIRECTIONS(_X)
+        #undef _X
     }
 
     virtual void update() override {
         connected_directions = 0;
-        if(Tile *t = world->get_tile_at(x, y - 1, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_NORTH;
-        if(Tile *t = world->get_tile_at(x, y + 1, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_SOUTH;
-        if(Tile *t = world->get_tile_at(x + 1, y, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_EAST;
-        if(Tile *t = world->get_tile_at(x - 1, y, 2); t && t->type == TILE_TUBE) connected_directions |= DIR_WEST;
+
+        #define _X(id, value, dx, dy, ord) if(Tile *t = world->get_tile_at(x + dx, y + dy, 2); t && t->type == TILE_TUBE) connected_directions |= value;
+        DIRECTIONS(_X)
+        #undef _X
     }
 
     virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs) override {
