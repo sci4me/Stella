@@ -342,16 +342,14 @@ struct Tile_Tube : public Tile {
     virtual void draw(Batch_Renderer *r) override {
         Tile::draw(r);
 
-        constexpr u32 tube_tex[] = { TEX_TUBE_NORTH, TEX_TUBE_SOUTH, TEX_TUBE_EAST, TEX_TUBE_WEST };
-        #define _X(id, value, dx, dy, ord) if(connected_directions & value) r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[ord]]);
+        #define _X(id, value, dx, dy, ord, opp) draw_connection(r, id, ord);
         DIRECTIONS(_X)
         #undef _X
     }
 
     virtual void update() override {
         connected_directions = 0;
-
-        #define _X(id, value, dx, dy, ord) if(Tile *t = world->get_tile_at(x + dx, y + dy, 2); t && connection_filter.get(t->type)) connected_directions |= value;
+        #define _X(id, value, dx, dy, ord, opp) if(Tile *t = world->get_tile_at(x + dx, y + dy, 2); t && connection_filter.get(t->type)) connected_directions |= value;
         DIRECTIONS(_X)
         #undef _X
     }
@@ -390,6 +388,25 @@ struct Tile_Tube : public Tile {
                 wp + vec2(0.0f, 10.0f),
                 wp + vec2(10.0f, 22.0f),
             });
+        }
+    }
+
+private:
+    static constexpr u32 tube_tex[] = { TEX_TUBE_NORTH, TEX_TUBE_SOUTH, TEX_TUBE_EAST, TEX_TUBE_WEST };
+
+    void draw_connection(Batch_Renderer *r, Direction dir, s32 ord) {
+        if(connected_directions & dir) {
+            r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[ord]]);
+        
+            s32 tx = x + DIR_X_OFFSET[dir];
+            s32 ty = y + DIR_Y_OFFSET[dir];
+            Tile *t = world->get_tile_at(tx, ty, 2);
+            if(t == nullptr) return;
+            assert(t != nullptr);
+            if(t->type != TILE_TUBE) {
+                auto opp = DIR_OPPOSITE[dir];
+                r->push_textured_quad(tx * TILE_SIZE, ty * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[opp]]);
+            }
         }
     }
 };

@@ -346,16 +346,16 @@ struct AABB {
 
 
 #define DIRECTIONS(X) \
-    X(DIR_NORTH,  1,   0,  -1,  0) \
-    X(DIR_SOUTH,  2,   0,   1,  1) \
-    X(DIR_EAST,   4,   1,   0,  2) \
-    X(DIR_WEST,   8,  -1,   0,  3)
+    X(DIR_NORTH,  1,   0,  -1,  0,  DIR_SOUTH  ) \
+    X(DIR_SOUTH,  2,   0,   1,  1,  DIR_NORTH  ) \
+    X(DIR_EAST,   4,   1,   0,  2,  DIR_WEST   ) \
+    X(DIR_WEST,   8,  -1,   0,  3,  DIR_EAST   )
 
 typedef u8 Direction;
 enum Direction_ : Direction {
     DIR_NONE  = 0,
 
-    #define _X(id, value, dx, dy, ord) id = value,
+    #define _X(id, value, dx, dy, ord, opp) id = value,
     DIRECTIONS(_X)
     #undef _X
 
@@ -363,13 +363,19 @@ enum Direction_ : Direction {
 };
 
 constexpr s32 DIR_X_OFFSET[N_DIR] = {
-#define _X(id, value, dx, dy, ord) dx,
+#define _X(id, value, dx, dy, ord, opp) dx,
 DIRECTIONS(_X)
 #undef _X
 };
 
 constexpr s32 DIR_Y_OFFSET[N_DIR] = {
-#define _X(id, value, dx, dy, ord) dy,
+#define _X(id, value, dx, dy, ord, opp) dy,
+DIRECTIONS(_X)
+#undef _X
+};
+
+constexpr Direction DIR_OPPOSITE[N_DIR] = {
+#define _X(id, value, dx, dy, ord, opp) [ord] = opp,
 DIRECTIONS(_X)
 #undef _X
 };

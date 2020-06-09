@@ -104,6 +104,7 @@ struct Player {
                         auto wtf = chunk->layer2.index_of(key);
                         if(wtf != -1) {
                             placement_valid = false;
+                            tile_hovered = true;
                         } else if(item_is_placeable[held_stack->type]) { // NOTE: Doing this check after the index_of is silly.
                             placement_valid = true;
 
