@@ -394,6 +394,23 @@ struct Tile_Tube : public Tile {
 private:
     static constexpr u32 tube_tex[] = { TEX_TUBE_NORTH, TEX_TUBE_SOUTH, TEX_TUBE_EAST, TEX_TUBE_WEST };
 
+    //
+    // NOTE TODO: Putting this here because idk where to put it or whatever; could be in TODO but I want this to be
+    // something that changes very soon so, meh.
+    //
+    // The reason this doesn't work is because Direction is not a traditional enum, it is flags for a 'bitfield'.
+    // So, it goes 1, 2, 4, 8, rather than 0, 1, 2, 3. This seemed like a good idea but has proven to be more
+    // problematic than it's worth.
+    // We _do_ want the ability to have a bitfield for directions, perhaps... but it seems that we should make
+    // this a separate thing from Direction itself.
+    //
+    // Regardless of that (^), this hacky solution will not actually work even as a temporary solution.
+    // It will not work when a tube is connected to a mining machine since the mining machine has transparency
+    // where the tube would be visible beneath, when it obviously shouldn't be.
+    //
+    // So, we have to do something smarter no matter what.
+    //
+
     void draw_connection(Batch_Renderer *r, Direction dir, s32 ord) {
         if(connected_directions & dir) {
             r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[ord]]);
