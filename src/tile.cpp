@@ -48,6 +48,7 @@ struct Tile_Ore : public Tile {
     }
 };
 
+
 struct Tile_Chest : public Tile {
     Item_Container container;
 
@@ -89,7 +90,7 @@ struct Smelting_Recipe {
     Item_Type output;
 };
 
-const Smelting_Recipe smelting_recipes[] = {
+constexpr Smelting_Recipe smelting_recipes[] = {
     { ITEM_IRON_ORE, ITEM_IRON_PLATE },
     { ITEM_GOLD_ORE, ITEM_GOLD_PLATE }
 };
@@ -321,10 +322,17 @@ struct Tile_Mining_Machine : public Tile {
 struct Tile_Tube : public Tile {
     Direction connected_directions;
 
+    Static_Bitset<4> connection_filter;
+
     virtual void init() override {
         Tile::init();
         flags |= TILE_FLAG_WANTS_DYNAMIC_UPDATES;
         flags |= TILE_FLAG_IS_COLLIDER;
+
+        connection_filter.set(TILE_CHEST);
+        connection_filter.set(TILE_FURNACE);
+        connection_filter.set(TILE_MINING_MACHINE);
+        connection_filter.set(TILE_TUBE);
     }
 
     virtual void deinit() override {
@@ -343,7 +351,7 @@ struct Tile_Tube : public Tile {
     virtual void update() override {
         connected_directions = 0;
 
-        #define _X(id, value, dx, dy, ord) if(Tile *t = world->get_tile_at(x + dx, y + dy, 2); t && t->type == TILE_TUBE) connected_directions |= value;
+        #define _X(id, value, dx, dy, ord) if(Tile *t = world->get_tile_at(x + dx, y + dy, 2); t && connection_filter.get(t->type)) connected_directions |= value;
         DIRECTIONS(_X)
         #undef _X
     }
