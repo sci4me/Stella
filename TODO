@@ -33,6 +33,12 @@ Features:
      - Inventory, Chest, Furnace, etc.?
 
 Code/Dev Features/Quality:
+ - Generate rotations for tube connection textures programatically
+   - Just do what we did for layer 0 tile rotation; rotate the UVs.
+   - This way, we only need a single texture for all four sides.
+ - Fix hot code reloading!
+   - Unsure of what's wrong; spurious bugs, hard to explain,
+     hard to debug, etc.
  - Find a better way to deal with global data
    - At a minimum, we need a better way to locate all the global
      data that needs to be restored on hot reload events
