@@ -337,6 +337,10 @@ struct Tile_Tube : public Tile {
     }
 
     virtual void draw(Batch_Renderer *r) override {
+        TIMED_FUNCTION();
+
+        // NOTE TODO BUG: The timing for Tile::draw doesn't get marked as a child
+        // of the timing for Tile_Tube::draw, for some reason! :(
         Tile::draw(r);
 
         #define _X(id, value, dx, dy, ord, opp) draw_connection(r, id, ord);
@@ -345,6 +349,8 @@ struct Tile_Tube : public Tile {
     }
 
     virtual void update() override {
+        TIMED_FUNCTION();
+
         connected_directions = 0;
         #define _X(id, value, dx, dy, ord, opp) if(Tile *t = world->get_tile_at(x + dx, y + dy, 2); t && connection_filter.get(t->type)) connected_directions |= value;
         DIRECTIONS(_X)
@@ -385,6 +391,14 @@ struct Tile_Tube : public Tile {
                 vec2(10.0f, 22.0f),
             });
         }
+
+        // TODO: Either expand the connection AABBs or add more AABBs for the
+        // "extra" part of the connection (i.e. what we do in `draw_connection` but
+        // for collision bounding boxes)
+        // It's probably better to _expand_ rather than to use _more AABBs_;
+        // it will be faster to process less AABBs and there's no real reason
+        // _not_ to expand them.
+        //                  - sci4me, 6/9/20
     }
 
 private:
