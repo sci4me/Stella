@@ -6,10 +6,7 @@
 
 
 #define _ANCILLARY_TEXTURES(X) \
-    X(TEX_TUBE_NORTH,       tile,       tube_north,        true  ) \
-    X(TEX_TUBE_SOUTH,       tile,       tube_south,        true  ) \
-    X(TEX_TUBE_EAST,        tile,       tube_east,         true  ) \
-    X(TEX_TUBE_WEST,        tile,       tube_west,         true  )
+    X(TEX_TUBE_NORTH,       tile,       tube_north,        true  )
 
 
 typedef u8 Ancillary_Texture_ID;

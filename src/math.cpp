@@ -33,12 +33,19 @@ struct vec2 {
         y -= b.y;
         return *this;
     }
+
+    vec2 operator*=(vec2 const& b) {
+        x *= b.x;
+        y *= b.y;
+        return *this;
+    }
 };
 
 vec2 operator+(vec2 const& a, vec2 const& b) { return { a.x + b.x, a.y + b.y }; }
 vec2 operator-(vec2 const& a, vec2 const& b) { return { a.x - b.x, a.y - b.y }; }
 vec2 operator*(vec2 a, f32 b) { return { a.x * b, a.y * b }; }
 vec2 operator*(f32 b, vec2 a) { return a * b; }
+vec2 operator*(vec2 a, vec2 b) { return { a.x * b.x, a.y * b.y }; }
 
 vec2 normalize(vec2 a) {
     f32 len = a.length();
@@ -388,3 +395,11 @@ constexpr s32 dir_ordinal(Direction dir) {
         default: return -1;
     }
 }
+
+
+static constexpr vec2 QUAD_UVS[4][4] = {
+    { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } }, // DIR_NORTH
+    { { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } }, // DIR_SOUTH
+    { { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } }, // DIR_EAST
+    { { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f } }  // DIR_WEST
+};

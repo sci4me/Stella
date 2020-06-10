@@ -402,8 +402,6 @@ struct Tile_Tube : public Tile {
     }
 
 private:
-    static constexpr u32 tube_tex[] = { TEX_TUBE_NORTH, TEX_TUBE_SOUTH, TEX_TUBE_EAST, TEX_TUBE_WEST };
-
     //
     // NOTE TODO: Putting this here because idk where to put it or whatever; could be in TODO but I want this to be
     // something that changes very soon so, meh.
@@ -423,95 +421,102 @@ private:
 
     void draw_connection(Batch_Renderer *r, Direction dir, s32 ord) {
         if(connected_directions & dir) {
-            r->push_textured_quad(
-                x * TILE_SIZE, 
-                y * TILE_SIZE, 
-                TILE_SIZE, 
-                TILE_SIZE, 
-                &g_inst->assets->ancillary_textures[tube_tex[ord]]
-            );
+            {
+                vec2 uvs[4];
+                mlc_memcpy(&uvs, QUAD_UVS[ord], sizeof(uvs));
 
-            //
-            // NOTE: Okay, here's our first pass at solving this problem. Just gonna do the stupid simple thing.
-            // We'll use the AABB of the other tile to figure out what region of the tube piece needs to be rendered.
-            // Definltely hacky as hell! But for now it should work. UNTIL we want tubes to connect to _other_ tiles
-            // that have >1 AABB.
-            //
-
-            s32 tx = x + DIR_X_OFFSET[ord];
-            s32 ty = y + DIR_Y_OFFSET[ord];
-            Tile *t = world->get_tile_at(tx, ty, 2);
-            assert(t);
-
-            if(t->type == TILE_TUBE) return;
-
-            Dynamic_Array<AABB> bbs;
-            bbs.init();
-
-            t->get_bounding_boxes(&bbs);
-            assert(bbs.count == 1);
-
-            AABB const& bb = bbs[0];
-
-            AABB draw_box = { vec2(0.0f, 0.0f), vec2(TILE_SIZE, TILE_SIZE) };
-            vec2 uvs[] = {
-                vec2(0.0f, 0.0f),
-                vec2(1.0f, 0.0f),
-                vec2(1.0f, 1.0f),
-                vec2(0.0f, 1.0f)
-            };
-
-            Direction opp = DIR_OPPOSITE[ord];
-            switch(opp) {
-                case DIR_NORTH: {
-                    draw_box.max.y = bb.min.y;
-                    for(s32 i = 0; i <  array_length(uvs); i++) uvs[i].y *= (f32)draw_box.max.y / TILE_SIZE;
-                    break;
-                }
-                case DIR_SOUTH: {
-                    draw_box.min.y = bb.max.y;
-                    draw_box.max.y = TILE_SIZE - bb.max.y;
-                    for(s32 i = 0; i <  array_length(uvs); i++) {
-                        f32 s = (f32)draw_box.max.y / TILE_SIZE;
-                        uvs[i].y *= s;
-                        uvs[i].y += 1.0f - s;
-                    }
-                    break;
-                }
-                case DIR_EAST: {
-                    draw_box.min.x = bb.max.x;
-                    draw_box.max.x = TILE_SIZE - bb.max.x;
-                    for(s32 i = 0; i <  array_length(uvs); i++) {
-                        f32 s = (f32)draw_box.max.x / TILE_SIZE;
-                        uvs[i].x *= s;
-                        uvs[i].x += 1.0f - s;
-                    }
-                    break;
-                }
-                case DIR_WEST: {
-                    draw_box.max.x = bb.min.x;
-                    for(s32 i = 0; i <  array_length(uvs); i++) uvs[i].x *= (f32)draw_box.max.x / TILE_SIZE;
-                    break;
-                }
-                default: {
-                    assert(0);
-                }
+                r->push_quad(
+                    x * TILE_SIZE, 
+                    y * TILE_SIZE, 
+                    TILE_SIZE, 
+                    TILE_SIZE,
+                    vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                    uvs,
+                    g_inst->assets->ancillary_textures[TEX_TUBE_NORTH].id
+                );
             }
 
-            s32 opp_ord = dir_ordinal(opp);
-            assert(opp_ord != -1);
+            {
+                //
+                // NOTE: Okay, here's our first pass at solving this problem. Just gonna do the stupid simple thing.
+                // We'll use the AABB of the other tile to figure out what region of the tube piece needs to be rendered.
+                // Definltely hacky as hell! But for now it should work. UNTIL we want tubes to connect to _other_ tiles
+                // that have >1 AABB.
+                //
 
-            r->push_quad(
-                tx * TILE_SIZE + draw_box.min.x, 
-                ty * TILE_SIZE + draw_box.min.y, 
-                draw_box.max.x, 
-                draw_box.max.y, 
-                vec4(1.0f, 1.0f, 1.0f, 1.0f), 
-                uvs, 
-                g_inst->assets->ancillary_textures[tube_tex[opp_ord]].id
-            );
+                s32 tx = x + DIR_X_OFFSET[ord];
+                s32 ty = y + DIR_Y_OFFSET[ord];
+                Tile *t = world->get_tile_at(tx, ty, 2);
+                assert(t);
 
-            bbs.deinit();
+                if(t->type == TILE_TUBE) return;
+
+                Dynamic_Array<AABB> bbs;
+                bbs.init();
+
+                t->get_bounding_boxes(&bbs);
+                assert(bbs.count == 1);
+
+                AABB const& bb = bbs[0];
+
+                AABB draw_box = { vec2(0.0f, 0.0f), vec2(TILE_SIZE, TILE_SIZE) };
+                vec2 uv_offset = vec2(0.0f, 0.0f);
+                vec2 uv_scale = vec2(1.0f, 1.0f);
+
+                auto opp = DIR_OPPOSITE[ord];
+                switch(opp) {
+                    case DIR_NORTH: {
+                        draw_box.max.y = bb.min.y;
+                        uv_scale.y = draw_box.max.y / TILE_SIZE;
+                        break;
+                    }
+                    case DIR_SOUTH: {
+                        draw_box.min.y = bb.max.y;
+                        draw_box.max.y = TILE_SIZE - bb.max.y;
+                        uv_scale.y = draw_box.max.y / TILE_SIZE;
+                        uv_offset.y =  uv_scale.y;
+                        break;
+                    }
+                    case DIR_EAST: {
+                        draw_box.min.x = bb.max.x;
+                        draw_box.max.x = TILE_SIZE - bb.max.x;
+                        uv_scale.x = draw_box.max.x / TILE_SIZE;
+                        uv_offset.x = uv_scale.x;
+                        break;
+                    }
+                    case DIR_WEST: {
+                        draw_box.max.x = bb.min.x;
+                        uv_scale.x = draw_box.max.x / TILE_SIZE;
+                        break;
+                    }
+                    default: {
+                        assert(0);
+                    }
+                }
+
+                s32 opp_ord = dir_ordinal(opp);
+                assert(opp_ord != -1);
+
+                vec2 uvs[4];
+                mlc_memcpy(&uvs, QUAD_UVS[opp_ord], sizeof(uvs));
+
+                for(s32 i = 0; i < array_length(uvs); i++) {
+                    uvs[i] *= uv_scale;
+                    uvs[i] += uv_offset;
+                }
+
+                r->push_quad(
+                    tx * TILE_SIZE + draw_box.min.x, 
+                    ty * TILE_SIZE + draw_box.min.y, 
+                    draw_box.max.x, 
+                    draw_box.max.y, 
+                    vec4(1.0f, 1.0f, 1.0f, 1.0f), 
+                    uvs, 
+                    g_inst->assets->ancillary_textures[TEX_TUBE_NORTH].id
+                );
+
+                bbs.deinit();
+            }
         }
     }
 };

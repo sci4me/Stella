@@ -1,12 +1,3 @@
-// TODO: Do something about this; no sense having a file with just this in it...
-static constexpr vec2 QUAD_UVS[4][4] = {
-    { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } },
-    { { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } },
-    { { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } },
-    { { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f } }
-};
-
-
 char* tvsprintf(char const* fmt, va_list args) {
     va_list args2;
     va_copy(args2, args);
