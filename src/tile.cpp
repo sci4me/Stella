@@ -409,7 +409,13 @@ private:
 
     void draw_connection(Batch_Renderer *r, Direction dir, s32 ord) {
         if(connected_directions & dir) {
-            r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[ord]]);
+            r->push_textured_quad(
+                x * TILE_SIZE, 
+                y * TILE_SIZE, 
+                TILE_SIZE, 
+                TILE_SIZE, 
+                &g_inst->assets->ancillary_textures[tube_tex[ord]]
+            );
 
             //
             // NOTE: Okay, here's our first pass at solving this problem. Just gonna do the stupid simple thing.
@@ -434,7 +440,6 @@ private:
             AABB const& bb = bbs[0];
 
             AABB draw_box = { vec2(0.0f, 0.0f), vec2(TILE_SIZE, TILE_SIZE) };
-
             vec2 uvs[] = {
                 vec2(0.0f, 0.0f),
                 vec2(1.0f, 0.0f),
@@ -478,10 +483,19 @@ private:
                     assert(0);
                 }
             }
+
             s32 opp_ord = dir_ordinal(opp);
             assert(opp_ord != -1);
 
-            r->push_quad(tx * TILE_SIZE + draw_box.min.x, ty * TILE_SIZE + draw_box.min.y, draw_box.max.x, draw_box.max.y, vec4(1.0f, 1.0f, 1.0f, 1.0f), uvs, g_inst->assets->ancillary_textures[tube_tex[opp_ord]].id);
+            r->push_quad(
+                tx * TILE_SIZE + draw_box.min.x, 
+                ty * TILE_SIZE + draw_box.min.y, 
+                draw_box.max.x, 
+                draw_box.max.y, 
+                vec4(1.0f, 1.0f, 1.0f, 1.0f), 
+                uvs, 
+                g_inst->assets->ancillary_textures[tube_tex[opp_ord]].id
+            );
         }
     }
 };
