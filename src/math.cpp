@@ -379,3 +379,12 @@ constexpr Direction DIR_OPPOSITE[N_DIR] = {
 DIRECTIONS(_X)
 #undef _X
 };
+
+constexpr s32 dir_ordinal(Direction dir) {
+    switch(dir) {
+        #define _X(id, value, dx, dy, ord, opp) case id: return ord;
+        DIRECTIONS(_X)
+        #undef _X
+        default: return -1;
+    }
+}

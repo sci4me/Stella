@@ -66,10 +66,9 @@ struct Tile_Chest : public Tile {
     }
 
     virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs) override {
-        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
         bbs->push({
-            wp + vec2(4.0f, 4.0f),
-            wp + vec2(28.0f, 28.0f)
+            vec2(4.0f, 4.0f),
+            vec2(28.0f, 28.0f)
         });
     }
 };
@@ -203,10 +202,9 @@ struct Tile_Furnace : public Tile {
         // and 14, in order to select the inner 12x12 pixels,
         // with a 2 pixel border on all sides.
         //              - sci4me, 5/15/20
-        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
         bbs->push({
-            wp + vec2(4.0f, 4.0f),
-            wp + vec2(28.0f, 28.0f)
+            vec2(4.0f, 4.0f),
+            vec2(28.0f, 28.0f)
         });
     }
 };
@@ -310,10 +308,9 @@ struct Tile_Mining_Machine : public Tile {
 
     virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs) override {
         // NOTE: See comment in Tile_Furnace::init about this.
-        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
         bbs->push({
-            wp + vec2(2.0f, 2.0f),
-            wp + vec2(30.0f, 30.0f)
+            vec2(2.0f, 2.0f),
+            vec2(30.0f, 30.0f)
         });
     }
 };
@@ -356,37 +353,36 @@ struct Tile_Tube : public Tile {
 
     virtual void get_bounding_boxes(Dynamic_Array<AABB> *bbs) override {
         // NOTE: See comment in Tile_Furnace::init about this.
-        vec2 wp = { (f32)x * TILE_SIZE, (f32)y * TILE_SIZE };
         bbs->push({
-            wp + vec2(10.0f, 10.0f),
-            wp + vec2(22.0f, 22.0f)
+            vec2(10.0f, 10.0f),
+            vec2(22.0f, 22.0f)
         });
     
         if(connected_directions & DIR_NORTH) {
             bbs->push({
-                wp + vec2(10.0f, 0.0f),
-                wp + vec2(22.0f, 10.0f),
+                vec2(10.0f, 0.0f),
+                vec2(22.0f, 10.0f),
             });
         }
 
         if(connected_directions & DIR_SOUTH) {
             bbs->push({
-                wp + vec2(10.0f, 22.0f),
-                wp + vec2(22.0f, 32.0f),
+                vec2(10.0f, 22.0f),
+                vec2(22.0f, 32.0f),
             });
         }
 
         if(connected_directions & DIR_EAST) {
             bbs->push({
-                wp + vec2(22.0f, 10.0f),
-                wp + vec2(32.0f, 22.0f),
+                vec2(22.0f, 10.0f),
+                vec2(32.0f, 22.0f),
             });
         }
 
         if(connected_directions & DIR_WEST) {
             bbs->push({
-                wp + vec2(0.0f, 10.0f),
-                wp + vec2(10.0f, 22.0f),
+                vec2(0.0f, 10.0f),
+                vec2(10.0f, 22.0f),
             });
         }
     }
@@ -415,7 +411,77 @@ private:
         if(connected_directions & dir) {
             r->push_textured_quad(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, &g_inst->assets->ancillary_textures[tube_tex[ord]]);
 
-            // TODO: Figure out how to handle connecting to arbitrary tiles
+            //
+            // NOTE: Okay, here's our first pass at solving this problem. Just gonna do the stupid simple thing.
+            // We'll use the AABB of the other tile to figure out what region of the tube piece needs to be rendered.
+            // Definltely hacky as hell! But for now it should work. UNTIL we want tubes to connect to _other_ tiles
+            // that have >1 AABB.
+            //
+
+            s32 tx = x + DIR_X_OFFSET[ord];
+            s32 ty = y + DIR_Y_OFFSET[ord];
+            Tile *t = world->get_tile_at(tx, ty, 2);
+            assert(t);
+
+            if(t->type == TILE_TUBE) return;
+
+            Dynamic_Array<AABB> bbs;
+            bbs.init();
+
+            t->get_bounding_boxes(&bbs);
+            assert(bbs.count == 1);
+
+            AABB const& bb = bbs[0];
+
+            AABB draw_box = { vec2(0.0f, 0.0f), vec2(TILE_SIZE, TILE_SIZE) };
+
+            vec2 uvs[] = {
+                vec2(0.0f, 0.0f),
+                vec2(1.0f, 0.0f),
+                vec2(1.0f, 1.0f),
+                vec2(0.0f, 1.0f)
+            };
+
+            Direction opp = DIR_OPPOSITE[ord];
+            switch(opp) {
+                case DIR_NORTH: {
+                    draw_box.max.y = bb.min.y;
+                    for(s32 i = 0; i <  array_length(uvs); i++) uvs[i].y *= (f32)draw_box.max.y / TILE_SIZE;
+                    break;
+                }
+                case DIR_SOUTH: {
+                    draw_box.min.y = bb.max.y;
+                    draw_box.max.y = TILE_SIZE - bb.max.y;
+                    for(s32 i = 0; i <  array_length(uvs); i++) {
+                        f32 s = (f32)draw_box.max.y / TILE_SIZE;
+                        uvs[i].y *= s;
+                        uvs[i].y += 1.0f - s;
+                    }
+                    break;
+                }
+                case DIR_EAST: {
+                    draw_box.min.x = bb.max.x;
+                    draw_box.max.x = TILE_SIZE - bb.max.x;
+                    for(s32 i = 0; i <  array_length(uvs); i++) {
+                        f32 s = (f32)draw_box.max.x / TILE_SIZE;
+                        uvs[i].x *= s;
+                        uvs[i].x += 1.0f - s;
+                    }
+                    break;
+                }
+                case DIR_WEST: {
+                    draw_box.max.x = bb.min.x;
+                    for(s32 i = 0; i <  array_length(uvs); i++) uvs[i].x *= (f32)draw_box.max.x / TILE_SIZE;
+                    break;
+                }
+                default: {
+                    assert(0);
+                }
+            }
+            s32 opp_ord = dir_ordinal(opp);
+            assert(opp_ord != -1);
+
+            r->push_quad(tx * TILE_SIZE + draw_box.min.x, ty * TILE_SIZE + draw_box.min.y, draw_box.max.x, draw_box.max.y, vec4(1.0f, 1.0f, 1.0f, 1.0f), uvs, g_inst->assets->ancillary_textures[tube_tex[opp_ord]].id);
         }
     }
 };

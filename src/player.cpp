@@ -298,12 +298,15 @@ private:
                 auto tile = chunk->layer2.slots[i].value;
                 if(tile->flags & TILE_FLAG_IS_COLLIDER == 0) continue;
 
+                vec2 wp = { (f32)tile->x * TILE_SIZE, (f32)tile->y * TILE_SIZE };
+
                 bbs.clear();
                 tile->get_bounding_boxes(&bbs);
                 assert(bbs.count);
 
                 for(auto i = 0; i < bbs.count; i++) {
-                    auto const& tile_bb = bbs[i];
+                    auto const& tile_relative_bb = bbs[i];
+                    AABB tile_bb = { tile_relative_bb.min + wp, tile_relative_bb.max + wp };
                     if(tile_bb.intersects(broad)) {
                         auto hit = AABB::sweep(player_bb, tile_bb, delta);
                         if(hit.hit && hit.h < best.h) {

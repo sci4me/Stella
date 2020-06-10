@@ -403,13 +403,16 @@ void Chunk::draw(Batch_Renderer *r) {
         tile->draw(r);
 
         if(g_inst->show_tile_aabbs && tile->flags & TILE_FLAG_IS_COLLIDER) {
+            vec2 wp = { (f32)tile->x * TILE_SIZE, (f32)tile->y * TILE_SIZE };
+    
             Dynamic_Array<AABB> bbs;
             bbs.init();
 
             tile->get_bounding_boxes(&bbs);
 
             for(auto i = 0; i < bbs.count; i++) {
-                auto const& bb = bbs[i];
+                auto const& relative_bb = bbs[i];
+                AABB bb = { relative_bb.min + wp, relative_bb.max + wp };
                 r->push_solid_quad(bb.min.x, bb.min.y, bb.max.x - bb.min.x, bb.max.y - bb.min.y, vec4(1.0f, 0.0f, 0.0f, 1.0f));
                 r->push_solid_quad(bb.min.x + 1, bb.min.y + 1, bb.max.x - bb.min.x - 2, bb.max.y - bb.min.y - 2, vec4(0.0f, 0.0f, 1.0f, 1.0f));
             }
