@@ -510,6 +510,8 @@ private:
                 uvs, 
                 g_inst->assets->ancillary_textures[tube_tex[opp_ord]].id
             );
+
+            bbs.deinit();
         }
     }
 };
