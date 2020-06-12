@@ -463,6 +463,8 @@ private:
                 vec2 uv_offset = vec2(0.0f, 0.0f);
                 vec2 uv_scale = vec2(1.0f, 1.0f);
 
+                // TODO: east and west don't work?!
+
                 auto opp = DIR_OPPOSITE[ord];
                 switch(opp) {
                     case DIR_NORTH: {
