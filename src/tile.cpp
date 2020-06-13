@@ -464,6 +464,10 @@ private:
                 vec2 uv_scale = vec2(1.0f, 1.0f);
 
                 // TODO: east and west don't work?!
+                // Would it be a good idea to create something like `push_textured_quad_subregion`?
+                // Which takes in some min and max from 0 to 1 type of thing? And ... er.. maybe
+                // the rotation too? errrr....
+                // Hmmh.
 
                 auto opp = DIR_OPPOSITE[ord];
                 switch(opp) {
