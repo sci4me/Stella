@@ -28,28 +28,28 @@ struct ImGui_Backend {
         io.BackendPlatformName = "Stella_imsupoort";
         io.BackendRendererName = "Stella_imsupoort";
 
-        io.KeyMap[ImGuiKey_Tab] = VK_TAB;
-        io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
-        io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
-        io.KeyMap[ImGuiKey_UpArrow] = VK_UP;
-        io.KeyMap[ImGuiKey_DownArrow] = VK_DOWN;
-        io.KeyMap[ImGuiKey_PageUp] = VK_PAGE_UP;
-        io.KeyMap[ImGuiKey_PageDown] = VK_PAGE_DOWN;
-        io.KeyMap[ImGuiKey_Home] = VK_HOME;
-        io.KeyMap[ImGuiKey_End] = VK_END;
-        io.KeyMap[ImGuiKey_Insert] = VK_INSERT;
-        io.KeyMap[ImGuiKey_Delete] = VK_DELETE;
-        io.KeyMap[ImGuiKey_Backspace] = VK_BACKSPACE;
-        io.KeyMap[ImGuiKey_Space] = VK_SPACE;
-        io.KeyMap[ImGuiKey_Enter] = VK_ENTER;
-        io.KeyMap[ImGuiKey_Escape] = VK_ESC;
-        io.KeyMap[ImGuiKey_KeyPadEnter] = VK_KP_ENTER;
-        io.KeyMap[ImGuiKey_A] = VK_A;
-        io.KeyMap[ImGuiKey_C] = VK_C;
-        io.KeyMap[ImGuiKey_V] = VK_V;
-        io.KeyMap[ImGuiKey_X] = VK_X;
-        io.KeyMap[ImGuiKey_Y] = VK_Y;
-        io.KeyMap[ImGuiKey_Z] = VK_Z;
+        io.KeyMap[ImGuiKey_Tab] = VB_TAB;
+        io.KeyMap[ImGuiKey_LeftArrow] = VB_LEFT;
+        io.KeyMap[ImGuiKey_RightArrow] = VB_RIGHT;
+        io.KeyMap[ImGuiKey_UpArrow] = VB_UP;
+        io.KeyMap[ImGuiKey_DownArrow] = VB_DOWN;
+        io.KeyMap[ImGuiKey_PageUp] = VB_PAGE_UP;
+        io.KeyMap[ImGuiKey_PageDown] = VB_PAGE_DOWN;
+        io.KeyMap[ImGuiKey_Home] = VB_HOME;
+        io.KeyMap[ImGuiKey_End] = VB_END;
+        io.KeyMap[ImGuiKey_Insert] = VB_INSERT;
+        io.KeyMap[ImGuiKey_Delete] = VB_DELETE;
+        io.KeyMap[ImGuiKey_Backspace] = VB_BACKSPACE;
+        io.KeyMap[ImGuiKey_Space] = VB_SPACE;
+        io.KeyMap[ImGuiKey_Enter] = VB_ENTER;
+        io.KeyMap[ImGuiKey_Escape] = VB_ESC;
+        io.KeyMap[ImGuiKey_KeyPadEnter] = VB_KP_ENTER;
+        io.KeyMap[ImGuiKey_A] = VB_A;
+        io.KeyMap[ImGuiKey_C] = VB_C;
+        io.KeyMap[ImGuiKey_V] = VB_V;
+        io.KeyMap[ImGuiKey_X] = VB_X;
+        io.KeyMap[ImGuiKey_Y] = VB_Y;
+        io.KeyMap[ImGuiKey_Z] = VB_Z;
 
         /*
         io.SetClipboardTextFn = ImGui_ImplGlfw_SetClipboardText;
@@ -130,14 +130,14 @@ struct ImGui_Backend {
             io.KeysDown[j] = pio->is_button_down(j);
         }
 
-        io.KeyCtrl  = pio->is_button_down(VK_CTRL_LEFT)  || pio->is_button_down(VK_CTRL_RIGHT);
-        io.KeyShift = pio->is_button_down(VK_SHIFT_LEFT) || pio->is_button_down(VK_SHIFT_RIGHT);
-        io.KeyAlt   = pio->is_button_down(VK_ALT_LEFT)   || pio->is_button_down(VK_ALT_RIGHT);
+        io.KeyCtrl  = pio->is_button_down(VB_CTRL_LEFT)  || pio->is_button_down(VB_CTRL_RIGHT);
+        io.KeyShift = pio->is_button_down(VB_SHIFT_LEFT) || pio->is_button_down(VB_SHIFT_RIGHT);
+        io.KeyAlt   = pio->is_button_down(VB_ALT_LEFT)   || pio->is_button_down(VB_ALT_RIGHT);
 
         #ifdef _WIN32
             io.KeySuper = false;
         #else
-            io.KeySuper = pio->is_button_down(VK_SUPER_LEFT) || pio->is_button_down(VK_SUPER_RIGHT);
+            io.KeySuper = pio->is_button_down(VB_SUPER_LEFT) || pio->is_button_down(VB_SUPER_RIGHT);
         #endif
 
         // TODO: DisplayFramebufferScale (if we ever care...)

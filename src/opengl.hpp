@@ -2,6 +2,7 @@
 #define OPENGL_H
 
 
+// NOTE TODO: Clean this up. 
 #ifndef OPENGL_NO_DEFS
 #include "gl_defs.h"
 #include "glext_defs.h"

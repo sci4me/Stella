@@ -32,6 +32,8 @@ Features:
    - For in-game UIs? Or, some of them?
      - Inventory, Chest, Furnace, etc.?
 
+ - Remove mlc_fwrite
+
 Code/Dev Features/Quality:
  - Generate rotations for tube connection textures programatically
    - Just do what we did for layer 0 tile rotation; rotate the UVs.

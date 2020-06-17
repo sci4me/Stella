@@ -322,9 +322,9 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
     }
 
 
-    if(pio->was_button_pressed(VK_F2))  g->show_profiler = !g->show_profiler;
-    if(pio->was_button_pressed(VK_F3))  g->show_debug_window = !g->show_debug_window;
-    if(pio->was_button_pressed(VK_F12)) g->debug_pause = !g->debug_pause;
+    if(pio->was_button_pressed(VB_F2))  g->show_profiler = !g->show_profiler;
+    if(pio->was_button_pressed(VB_F3))  g->show_debug_window = !g->show_debug_window;
+    if(pio->was_button_pressed(VB_F12)) g->debug_pause = !g->debug_pause;
 
 
     gl.Clear(GL_COLOR_BUFFER_BIT);

@@ -1,5 +1,4 @@
 extern "C" {
-	void* mlc_memcpy(void *dst, void const* src, u64 n);
 	void mlc_free(void* p);
 
 	void* mlc_alloc(u64 n) {
