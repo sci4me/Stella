@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef COMMON_H
+#define COMMON_H
 
 
 #if defined(_MSC_VER)
@@ -110,23 +110,53 @@ inline void __assert(bool x) {
 #define F64_MIN		((f64)2.22507385850720138309023271733240406e-308L)
 #define F64_MAX 	((f64)1.79769313486231570814527423731704357e+308L)
 
+#ifndef INT_MAX
 #define INT_MIN 	S32_MIN
+#endif
+
+#ifndef INT_MAX
 #define INT_MAX 	S32_MAX
+#endif
 
+#ifndef UINT_MAX
 #define UINT_MIN 	U32_MIN
+#endif
+
+#ifndef UINT_MAX
 #define UINT_MAX 	U32_MAX
+#endif
 
+#ifndef LONG_MIN
 #define LONG_MIN 	S64_MIN
+#endif
+
+#ifndef LONG_MAX
 #define LONG_MAX 	S64_MAX
+#endif
 
+#ifndef ULONG_MIN
 #define ULONG_MIN 	U64_MIN
+#endif
+
+#ifndef ULONG_MAX
 #define ULONG_MAX 	U64_MAX
+#endif
 
+#ifndef FLT_MIN
 #define FLT_MIN		F32_MIN
-#define FLT_MAX 	F32_MAX
+#endif
 
+#ifndef FLT_MAX
+#define FLT_MAX 	F32_MAX
+#endif
+
+#ifndef DBL_MIN
 #define DBL_MIN 	F64_MIN
+#endif
+
+#ifndef DBL_MAX
 #define DBL_MAX 	F64_MAX
+#endif
 
 
 struct Buffer {

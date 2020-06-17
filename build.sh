@@ -29,7 +29,7 @@ LDFLAGS="-lgcc -msse4.1"
 PLATFORM_LDFLAGS="-lGL -lX11"
 GAME_LDFLAGS="-L$VENDOR_DIR/imgui/lib -l:imgui.a"
 
-INCLUDES="-I$SRC_DIR -I$VENDOR_DIR/GLFW/include -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math -I$VENDOR_DIR/GL"
+INCLUDES="-I$SRC_DIR -I$VENDOR_DIR/imgui -I$VENDOR_DIR/sci.h -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$VENDOR_DIR/pt_math -I$VENDOR_DIR/GL"
 PLATFORM_SOURCES="$SRC_DIR/linux64_syscall.s $SRC_DIR/linux64_platform.s $SRC_DIR/linux64_platform.cpp"
 GAME_SOURCES="$SRC_DIR/stella.cpp"
 
@@ -45,9 +45,7 @@ elif [ "$BUILD_MODE" = "dynamic" ]; then
 	if [ "$STATUS" -eq 0 ]; then
 		[ -f $BUILD_DIR/$DYLIB ] && rm $BUILD_DIR/$DYLIB
 		mv $BUILD_DIR/build_$DYLIB $BUILD_DIR/$DYLIB
-	fi
-
-	if [ "$STATUS" -eq 0 ]; then
+        
 		g++ $CXXFLAGS $INCLUDES $PLATFORM_SOURCES -DSTELLA_DYNAMIC -o $BUILD_DIR/$EXECUTABLE $LDFLAGS $PLATFORM_LDFLAGS -ldl
 		STATUS=$?
 	fi

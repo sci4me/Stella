@@ -8,10 +8,18 @@
 
 
 #include <stdint.h>
+
+
+// TODO: Clean this up. Ya nasty.
+#ifdef STELLA_OS_WINDOWS
+#include <malloc.h>
+#else
 #include <alloca.h>
+#endif
 
 
 extern "C" {
+    // TOOD: CLEAN THIS UP YA FKIN NASTYY FCK.
 	void* stella_im_malloc(u64);
 	void stella_im_free(void*);
 
