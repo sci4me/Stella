@@ -11,6 +11,10 @@
 #include "win32_mylibc.cpp"
 
 
+typedef BOOL WINAPI wgl_choose_pixel_format_arb(HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
+
+
+
 // NOTE:
 //  - DllMainCRTStartup will be needed(?) for dynamic mode
 
@@ -20,14 +24,18 @@
 // else too; I forget.
 
 
-LRESULT CALLBACK Win32MainWindowCallback(HWND window, UINT message, WPARAM wparam, LPARAM lparam) {
-    switch(message) {
-        case WM_CREATE:
-            break;
-        case WM_CLOSE:
-            PostQuitMessage(0);
+volatile static bool running = true;
+
+
+LRESULT CALLBACK window_callback(HWND window, UINT msg, WPARAM wparam, LPARAM lparam) {
+    switch(msg) {
+        case WM_CLOSE: {
+            running = false;
+            return 0;
+        }
     }
-    return DefWindowProc(window, message, wparam, lparam);
+
+    return DefWindowProcA(window, msg, wparam, lparam);
 }
 
 
@@ -37,7 +45,7 @@ extern "C" void __stdcall win32_main() {
 
     WNDCLASSA window_class = {};
     window_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    window_class.lpfnWndProc = Win32MainWindowCallback;
+    window_class.lpfnWndProc = window_callback;
     window_class.hInstance = instance;
     window_class.hCursor = LoadCursor(0, IDC_ARROW);
     window_class.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
@@ -61,17 +69,37 @@ extern "C" void __stdcall win32_main() {
     );
     assert(window); // TODO
 
+    HDC dc = GetDC(window);
+
+
 
     ShowWindow(window, SW_SHOW);
     UpdateWindow(window);
 
     MSG msg;
-    while(GetMessage(&msg, nullptr, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-
-        switch(msg.message) {
+    while(running) {
+        MSG msg;
+        while(GetMessage(&msg, 0, 0, 0) && running) {
+            switch(msg.message) {
+                case WM_QUIT: {
+                    running = false;
+                    break;
+                }
+                case WM_SYSKEYDOWN:
+                case WM_SYSKEYUP:
+                case WM_KEYDOWN:
+                case WM_KEYUP: {
+                    break;
+                }
+                default: {
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
+                    break;
+                }
+            }
         }
+
+
     }
 
     mlc_exit(0);
