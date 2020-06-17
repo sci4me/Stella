@@ -1,28 +1,21 @@
 @echo off
 
-ctime -begin stella.ctm
+set BUILD_MODE=static
+rem set BUILD_MODE=dynamic
 
-set BasePath=%~dp0
-set VendorPath=%BasePath%vendor
+set SRC_DIR=src
+set BUILD_DIR=build
+set VENDOR_DIR=vendor
 
-set CFlags=/FeStella.exe /std:c++17 -D_CRT_SECURE_NO_WARNINGS /Zi /DEBUG:FULL
-set LDFlags=/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib /ignore:4099 /NOLOGO /INCREMENTAL:NO /OPT:REF
-set Includes=/I %VendorPath%\GLEW\include /I %VendorPath%\GLFW\include /I %VendorPath%\glm /I %VendorPath%\imgui /I %VendorPath%\sci.h /I %VendorPath%\stb /I %VendorPath%\rnd
-set Libs=%VendorPath%\GLEW\lib\glew32s.lib %VendorPath%\GLFW\lib\glfw3.lib %VendorPath%\imgui\lib\imgui.lib opengl32.lib gdi32.lib user32.lib shell32.lib
+set EXECUTABLE=stella
+set DYLIB=stella.so
 
-REM we use goto because blocks don't work; thx microsoft
-if exist %BasePath%\vendor\imgui\lib\imgui.lib goto :imgui_exists
-pushd %BasePath%\vendor\imgui
-call build_static.bat
-popd
-:imgui_exists
+set CXXFLAGS=-std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector
+set DEFINES=-DSTELLA_STATIC -DSTBI_NO_THREAD_LOCALS
+set LDFLAGS=-msse4.1
+set PLATFORM_LDFLAGS=-lopengl32 -luser32 -lkernel32 -lgcc -Wl,-eWinMainCRTStartup
+set GAME_LDFLAGS=-L%VENDOR_DIR%/imgui/lib -l:imgui.a
+set INCLUDES=-I%SRC_DIR% -I%VENDOR_DIR%/imgui -I%VENDOR_DIR%/stb -I%VENDOR_DIR%/rnd -I%VENDOR_DIR%/pt_math -I%VENDOR_DIR%/GL
+set PLATFORM_SOURCES=%SRC_DIR%/win32_platform.cpp %SRC_DIR%/stella.cpp
 
-if not exist build mkdir build
-
-REM remove the pushd/popd! it's more annoyance than it's worth
-pushd build
-cl %CFlags% %Includes% %BasePath%src\main.cpp /link %LDFlags% %Libs%
-set LastError=%ERRORLEVEL%
-popd
-
-ctime -end stella.ctm %LastError%
+g++ %CXXFLAGS% %INCLUDES% %PLATFORM_SOURCES% %GAME_SOURCES% %DEFINES% -mwindows -o %BUILD_DIR%/%EXECUTABLE% %GAME_LDFLAGS% %LDFLAGS% %PLATFORM_LDFLAGS%

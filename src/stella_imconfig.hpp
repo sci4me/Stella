@@ -8,7 +8,12 @@
 
 
 #include <stdint.h>
+
+#ifdef STELLA_OS_WINDOWS
+#include <malloc.h>
+#else
 #include <alloca.h>
+#endif
 
 
 extern "C" {
