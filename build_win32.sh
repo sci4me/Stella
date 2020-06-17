@@ -25,7 +25,7 @@ DYLIB=stella.so
 
 if [ "$STATUS" -eq 0 ]; then
 DEFINES="-DSTBI_NO_THREAD_LOCALS"
-CXXFLAGS="-std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-stack-protector -mwindows"  # -s -Wa,--noexecstack
+CXXFLAGS="-std=c++17 -g -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-stack-protector -m64 -mwindows"  # -s -Wa,--noexecstack -fno-unwind-tables -fno-asynchronous-unwind-tables
 LDFLAGS="-lgcc -msse4.1"
 PLATFORM_LDFLAGS="-lopengl32 -lgdi32 -luser32 -lshell32 -lkernel32 -Wl,-ewin32_main"
 GAME_LDFLAGS="-L$VENDOR_DIR/imgui/lib -l:imgui.a"
@@ -34,20 +34,23 @@ INCLUDES="-I$SRC_DIR -I$VENDOR_DIR/imgui -I$VENDOR_DIR/stb -I$VENDOR_DIR/rnd -I$
 PLATFORM_SOURCES="$SRC_DIR/win32_platform.cpp"
 GAME_SOURCES="$SRC_DIR/stella.cpp"
 
+CC=x86_64-w64-mingw32-g++
+#CC=g++
+
 [ -d $BUILD_DIR ] || mkdir -p $BUILD_DIR
 
 if [ "$BUILD_MODE" = "static" ]; then
-	g++ $CXXFLAGS $DEFINES $INCLUDES $PLATFORM_SOURCES $GAME_SOURCES -DSTELLA_STATIC -o $BUILD_DIR/$EXECUTABLE $LDFLAGS $GAME_LDFLAGS $PLATFORM_LDFLAGS
+	$CC $CXXFLAGS $DEFINES $INCLUDES $PLATFORM_SOURCES $GAME_SOURCES -DSTELLA_STATIC -o $BUILD_DIR/$EXECUTABLE $LDFLAGS $GAME_LDFLAGS $PLATFORM_LDFLAGS
 	STATUS=$?
 elif [ "$BUILD_MODE" = "dynamic" ]; then
-	g++ -shared -fPIC $CXXFLAGS $DEFINES $INCLUDES $GAME_SOURCES -DSTELLA_DYNAMIC -o $BUILD_DIR/build_$DYLIB $LDFLAGS $GAME_LDFLAGS
+	$CC -shared -fPIC $CXXFLAGS $DEFINES $INCLUDES $GAME_SOURCES -DSTELLA_DYNAMIC -o $BUILD_DIR/build_$DYLIB $LDFLAGS $GAME_LDFLAGS
 	STATUS=$?
 
 	if [ "$STATUS" -eq 0 ]; then
 		[ -f $BUILD_DIR/$DYLIB ] && rm $BUILD_DIR/$DYLIB
 		mv $BUILD_DIR/build_$DYLIB $BUILD_DIR/$DYLIB
 
-		g++ $CXXFLAGS $INCLUDES $DEFINES $PLATFORM_SOURCES -DSTELLA_DYNAMIC -o $BUILD_DIR/$EXECUTABLE $LDFLAGS $PLATFORM_LDFLAGS -ldl
+		$CC $CXXFLAGS $INCLUDES $DEFINES $PLATFORM_SOURCES -DSTELLA_DYNAMIC -o $BUILD_DIR/$EXECUTABLE $LDFLAGS $PLATFORM_LDFLAGS -ldl
 		STATUS=$?
 	fi
 else

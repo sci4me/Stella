@@ -18,6 +18,8 @@ extern "C" {
     }
 
     void mlc_free(void *p) {
+        if(!p) return;
+        
         u64 *s = ((u64*)p) - 1;
         VirtualFree(p, *s, MEM_RELEASE);
     }
@@ -28,7 +30,24 @@ extern "C" {
 
 
     Buffer read_entire_file(char const* name) {
-        // TODO   
+        HANDLE fh = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+        if(!fh) {
+            return { 0, 0 };
+        }
+
+        DWORD size;
+        assert(GetFileSizeEx(fh, (PLARGE_INTEGER) &size));
+
+        u8 *data = (u8*) mlc_alloc(size + 1);
+        DWORD n_read;
+        assert(ReadFile(fh, data, size, &n_read, 0));
+        assert(n_read == size);
+
+        data[size] = 0;
+
+        CloseHandle(fh);
+
+        return { data, (u64)size };
     }
 
     void mlc_exit(s32 code) {

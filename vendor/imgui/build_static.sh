@@ -12,11 +12,14 @@ INCLUDES="-I ${VENDOR_DIR}/stb -I ${VENDOR_DIR}/pt_math -I ${VENDOR_DIR}/../src"
 SOURCES="${SRC_DIR}/imgui.cpp ${SRC_DIR}/imgui_draw.cpp ${SRC_DIR}/imgui_widgets.cpp"
 OBJECTS="imgui.o imgui_draw.o imgui_widgets.o"
 
+CC=x86_64-w64-mingw32-g++
+#CC=g++
+
 mkdir -p $BUILD_DIR
 rm -f $BUILD_DIR/*
 
 # remove the pushd/popd
 pushd $BUILD_DIR
-g++ $CXXFLAGS $DEFINES $INCLUDES -c $SOURCES
+$CC $CXXFLAGS $DEFINES $INCLUDES -c $SOURCES
 ar rvs imgui.a $OBJECTS
 popd
