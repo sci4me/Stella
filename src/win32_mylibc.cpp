@@ -25,7 +25,7 @@ extern "C" {
     }
 
     void mlc_fwrite(s32 fd, char const* str) {
-        HANDLE stream;
+        HANDLE stream = 0;
 
         switch(fd) {
             case STDOUT:
@@ -38,6 +38,8 @@ extern "C" {
                 assert(0);
                 break;
         }
+
+        if(!stream) return;
 
         DWORD _n;
         WriteConsoleA(stream, str, mlc_strlen(str), &_n, 0);

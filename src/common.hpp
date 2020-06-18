@@ -75,11 +75,12 @@ static_assert(sizeof(f64) == 8);
 
 
 // TODO: Make this less terrible.
-inline void __assert(bool x) {
-	if(!x) {
-		*(volatile int*)0 = 0;
-	}
+[[noreturn]] inline void __assert_fail() {
+	*(volatile int*)0 = 0;
+	for(;;){}
 }
+
+inline void __assert(bool x) { if(!x) __assert_fail(); }
 
 #ifdef assert
 #undef assert

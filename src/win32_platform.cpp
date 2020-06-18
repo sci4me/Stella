@@ -256,7 +256,10 @@ LRESULT CALLBACK window_callback(HWND window, UINT msg, WPARAM wparam, LPARAM lp
 
 
 static void init_console() {
-    assert(AllocConsole());
+    if(!AllocConsole()) {
+        // TODO :(
+        return;
+    }
 
     HANDLE hConOut = CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     HANDLE hConIn = CreateFile("CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -460,7 +463,10 @@ int platform_main() {
 
     stella_deinit(&pio);
 
-    // TODO: deinit windows shit
+    wglMakeCurrent(0, 0);
+    wglDeleteContext(glrc);
+    ReleaseDC(window, dc);
+    DestroyWindow(window);
 
     return 0;
 }
