@@ -25,7 +25,22 @@ extern "C" {
     }
 
     void mlc_fwrite(s32 fd, char const* str) {
-        // TODO
+        HANDLE stream;
+
+        switch(fd) {
+            case STDOUT:
+                stream = GetStdHandle(STD_OUTPUT_HANDLE);
+                break;
+            case STDERR:
+                stream = GetStdHandle(STD_ERROR_HANDLE);
+                break;
+            default:
+                assert(0);
+                break;
+        }
+
+        DWORD _n;
+        WriteConsoleA(stream, str, mlc_strlen(str), &_n, 0);
     }
 
 
