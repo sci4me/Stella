@@ -18,6 +18,7 @@ DYLIB=stella.so
 # Couldn't get it to "work" (define __STDC_HOSTED__ as 0)
 
 # TODO (IMPORTANT): Call vendor/imgui/build_static.sh (if needed?)
+# TODO: make sure we pass $CC correctly
 # pushd $VENDOR_DIR/imgui
 # ./build_static.sh
 # STATUS=$?
@@ -37,8 +38,6 @@ GAME_SOURCES="$SRC_DIR/stella.cpp"
 if [ ! -n "$CC" ]; then
 CC=g++
 fi
-
-echo $CC
 
 [ -d $BUILD_DIR ] || mkdir -p $BUILD_DIR
 
