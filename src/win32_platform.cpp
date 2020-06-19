@@ -215,20 +215,31 @@ static void init_key_map() {
     key_map[VK_END] = VB_END;
     key_map[VK_BACK] = VB_BACKSPACE;
     key_map[VK_RETURN] = VB_ENTER;
-    // TODO: Finish him! er.. uh, implement the commented cases.. somehow.
-    // Probably won't be able to do it in the `key_map` unless we add a step
-    // where we translate things beforehand but ehhh.
     // key_map[KC_KP_ENTER] = VB_KP_ENTER;
     key_map[VK_TAB] = VB_TAB;
     key_map[VK_SPACE] = VB_SPACE;
-    //key_map[KC_CTRL_LEFT] = VB_CTRL_LEFT;
-    //key_map[KC_CTRL_RIGHT] = VB_CTRL_RIGHT;
-    //key_map[KC_SHIFT_LEFT] = VB_SHIFT_LEFT;
-    //key_map[KC_SHIFT_RIGHT] = VB_SHIFT_RIGHT;
-    //key_map[KC_ALT_LEFT] = VB_ALT_LEFT;
-    //key_map[KC_ALT_RIGHT] = VB_ALT_RIGHT;
+    key_map[VK_LCONTROL] = VB_CTRL_LEFT;
+    key_map[VK_RCONTROL] = VB_CTRL_RIGHT;
+    key_map[VK_LSHIFT] = VB_SHIFT_LEFT;
+    key_map[VK_RSHIFT] = VB_SHIFT_RIGHT;
+    key_map[VK_LMENU] = VB_ALT_LEFT;
+    key_map[VK_RMENU] = VB_ALT_RIGHT;
     //key_map[KC_SUPER_LEFT] = VB_SUPER_LEFT;
     //key_map[KC_SUPER_RIGHT] = VB_SUPER_RIGHT;
+}
+
+
+static WPARAM map_sided_keys(WPARAM vk, LPARAM lParam) {
+    u32 scancode = (lParam & 0x00ff0000) >> 16;
+    bool extended  = (lParam & 0x01000000) != 0;
+
+    switch (vk) {
+        case VK_SHIFT:   return MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+        case VK_CONTROL: return extended ? VK_RCONTROL : VK_LCONTROL;
+        case VK_MENU:    return extended ? VK_RMENU : VK_LMENU;
+    }
+
+    return vk;
 }
 
 
@@ -429,10 +440,7 @@ int platform_main() {
                 case WM_SYSKEYUP:
                 case WM_KEYDOWN:
                 case WM_KEYUP: {
-                    u32 key = (u32) msg.wParam;
-
-                    bool alt_down = (msg.lParam & (1 << 29));
-                    bool shift_down = (GetKeyState(VK_SHIFT) & (1 << 15));
+                    u32 key = map_sided_keys(msg.wParam, msg.lParam);
 
                     bool was_down = ((msg.lParam & (1 << 30)) != 0);
                     bool is_down = ((msg.lParam & (1UL << 31)) == 0);
