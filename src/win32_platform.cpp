@@ -215,6 +215,9 @@ static void init_key_map() {
     key_map[VK_END] = VB_END;
     key_map[VK_BACK] = VB_BACKSPACE;
     key_map[VK_RETURN] = VB_ENTER;
+    // TODO: Finish him! er.. uh, implement the commented cases.. somehow.
+    // Probably won't be able to do it in the `key_map` unless we add a step
+    // where we translate things beforehand but ehhh.
     // key_map[KC_KP_ENTER] = VB_KP_ENTER;
     key_map[VK_TAB] = VB_TAB;
     key_map[VK_SPACE] = VB_SPACE;
@@ -346,14 +349,30 @@ int platform_main() {
     stella_init(&pio);
 
 
+    LARGE_INTEGER freq_li;
+    QueryPerformanceFrequency(&freq_li);
+    s64 perf_freq = freq_li.QuadPart;
+
+
     ShowWindow(window, SW_SHOW);
     UpdateWindow(window);
 
 
     // TODO: window focus
 
+
+    LARGE_INTEGER last_time;
+    QueryPerformanceCounter(&last_time);
+
+
     MSG msg;
     while(running) {
+        LARGE_INTEGER curr_time;
+        QueryPerformanceCounter(&curr_time);
+        pio.delta_time = (f32)(curr_time.QuadPart - last_time.QuadPart) / (f32)perf_freq;
+        last_time = curr_time;
+
+
         pio.mouse_wheel_x = 0.0f;
         pio.mouse_wheel_y = 0.0f;
 
@@ -452,8 +471,6 @@ int platform_main() {
             pio.window_height = (s32)(size.bottom - size.top);
         }
 
-
-        pio.delta_time = 1.0f; // TODO
 
         stella_update_and_render(&pio);
 
