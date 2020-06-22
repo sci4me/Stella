@@ -6,7 +6,6 @@
 #include "stb_sprintf.h"
 
 
-// #define OPENGL_NO_DEFS
 #include "platform_interface.hpp"
 #include "mylibc.cpp"
 #include "win32_mylibc.cpp"
@@ -34,11 +33,6 @@ wgl_create_context_attribs_arb *wglCreateContextAttribsARB;
 
 // NOTE:
 //  - DllMainCRTStartup will be needed(?) for dynamic mode
-
-
-// NOTE: In addition to the line above, we'll have to
-// create an implement for memset and probably something
-// else too; I forget.
 
 
 void set_pixel_format(HDC dc) {
