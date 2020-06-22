@@ -321,7 +321,14 @@ extern "C" GAME_UPDATE_AND_RENDER(stella_update_and_render) {
 
     ImGuiIO& io = ImGui::GetIO();
     if(!io.WantCaptureMouse && pio->mouse_wheel_y != 0.0f) {
-        g->scale = clamp<f32>(g->scale + pio->mouse_wheel_y * 0.05f, 0.1f, 5.0f);
+        //g->scale = clamp<f32>(g->scale * pio->mouse_wheel_y * 0.05f, 0.1f, 5.0f);
+        constexpr struct {
+            float step = 0.25f;
+            float scale_min = 0.1f;
+            float scale_max = 10.0f;
+        } zoom_vars;
+
+        g->scale = clamp(g->scale * powf32(1.0f + zoom_vars.step, pio->mouse_wheel_y), zoom_vars.scale_min, zoom_vars.scale_max);
     }
 
 
