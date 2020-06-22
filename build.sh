@@ -4,8 +4,8 @@ STATUS=0
 
 ctime -begin stella_linux.ctm
 
-# BUILD_MODE=static
-BUILD_MODE=dynamic
+BUILD_MODE=static
+# BUILD_MODE=dynamic
 
 SRC_DIR=src
 BUILD_DIR=build

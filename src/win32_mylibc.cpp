@@ -45,12 +45,9 @@ extern "C" {
         WriteConsoleA(stream, str, mlc_strlen(str), &_n, 0);
     }
 
-
     Buffer read_entire_file(char const* name) {
         HANDLE fh = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-        if(!fh) {
-            return { 0, 0 };
-        }
+        if(!fh) return { 0, 0 };
 
         DWORD size;
         assert(GetFileSizeEx(fh, (PLARGE_INTEGER) &size));
