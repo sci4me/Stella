@@ -2,7 +2,7 @@
 
 STATUS=0
 
-ctime -begin stella_linux.ctm
+# ctime -begin stella_linux.ctm
 
 BUILD_MODE=static
 # BUILD_MODE=dynamic
@@ -61,5 +61,5 @@ else
 fi
 fi
 
-ctime -end stella_linux.ctm $STATUS
+# ctime -end stella_linux.ctm $STATUS
 exit $STATUS
