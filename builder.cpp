@@ -23,9 +23,10 @@ extern "C" bool build() {
     
     string cxxflags =
         "-std=c++17 "
-        "-gstabs "
+        "-g "
         "-nostdlib "
         "-fno-builtin -fno-rtti -fno-exceptions -fno-stack-protector "
+        "-Wfatal-errors "
         "-m64 -mwindows";
     
     string ldflags = "-lgcc -msse4.1";
@@ -43,8 +44,9 @@ extern "C" bool build() {
         "-I%/stb "
         "-I%/rnd "
         "-I%/pt_math "
-        "-I%/GL",
-        src_dir, vendor_dir, vendor_dir, vendor_dir, vendor_dir, vendor_dir);
+        "-I%/GL "
+        "-I%/yevano.cpp ",
+        src_dir, vendor_dir, vendor_dir, vendor_dir, vendor_dir, vendor_dir, vendor_dir);
     
     string platform_sources = formatv("%/win32_platform.cpp", src_dir);
     string game_sources = formatv("%/stella.cpp", src_dir);

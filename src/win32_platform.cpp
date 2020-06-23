@@ -9,6 +9,7 @@
 #include "platform_interface.hpp"
 #include "mylibc.cpp"
 #include "win32_mylibc.cpp"
+#include "win_error.cpp"
 
 
 #if defined(STELLA_DYNAMIC)
@@ -33,7 +34,6 @@ wgl_create_context_attribs_arb *wglCreateContextAttribsARB;
 
 // NOTE:
 //  - DllMainCRTStartup will be needed(?) for dynamic mode
-
 
 void set_pixel_format(HDC dc) {
     s32 suggested_pixel_format_index = 0;
@@ -67,18 +67,18 @@ void set_pixel_format(HDC dc) {
     }
 
     PIXELFORMATDESCRIPTOR suggested_pixel_format;
-    assert(DescribePixelFormat(dc, suggested_pixel_format_index, sizeof(suggested_pixel_format), &suggested_pixel_format));
-    assert(SetPixelFormat(dc, suggested_pixel_format_index, &suggested_pixel_format));
+    panic_if_win_null(DescribePixelFormat(dc, suggested_pixel_format_index, sizeof(suggested_pixel_format), &suggested_pixel_format));
+    panic_if_win_null(SetPixelFormat(dc, suggested_pixel_format_index, &suggested_pixel_format));
 }
 
 bool load_wgl_functions() {
     WNDCLASSA clss = {};
     clss.lpfnWndProc = DefWindowProcA;
-    clss.hInstance = GetModuleHandle(0);
+    clss.hInstance = panic_if_win_null(GetModuleHandle(0));
     clss.lpszClassName = "StellaWGLLoader";
-    assert(RegisterClassA(&clss));
+    panic_if_win_null(RegisterClassA(&clss));
 
-    HWND window = CreateWindowExA(
+    HWND window = panic_if_win_null(CreateWindowExA(
         0,
         clss.lpszClassName,
         "Stella",
@@ -91,10 +91,9 @@ bool load_wgl_functions() {
         0,
         clss.hInstance,
         0
-    );
-    assert(window); // TODO
+    ));
 
-    HDC dc = GetDC(window);
+    HDC dc = panic_if_win_null(GetDC(window));
 
     set_pixel_format(dc);
 
@@ -112,8 +111,8 @@ bool load_wgl_functions() {
 
     wglMakeCurrent(0, 0);
     wglDeleteContext(glrc);
-    ReleaseDC(window, dc);
-    DestroyWindow(window);
+    panic_if_win_null(ReleaseDC(window, dc));
+    panic_if_win_null(DestroyWindow(window));
 
     return result;
 }
@@ -135,11 +134,17 @@ static void load_opengl(OpenGL *gl) {
 
     HMODULE lib = LoadLibraryA("opengl32.dll");
 
-    #define PACK(name, ret, params) gl->name = (gl##name##_fn*) wglGetProcAddress("gl" #name); if(!gl->name) { gl->name = (gl##name##_fn*) GetProcAddress(lib, "gl" #name); } assert(gl->name != nullptr);
-    OPENGL_FUNCTIONS(PACK)
+    #define PACK(name, ret, params)                                                         \
+        gl->name = (gl##name##_fn*) wglGetProcAddress("gl" #name);                          \
+        if(!gl->name) {                                                                     \
+            gl->name = (gl##name##_fn*) panic_if_win_null(GetProcAddress(lib, "gl" #name)); \
+        }                                                                                   \
+        assert(gl->name != nullptr);
+    
+        OPENGL_FUNCTIONS(PACK)
     #undef PACK
 
-    FreeLibrary(lib); // TODO: is this safe?
+    panic_if_win_null(FreeLibrary(lib)); // TODO: is this safe?
 }
 
 
@@ -265,34 +270,35 @@ LRESULT CALLBACK window_callback(HWND window, UINT msg, WPARAM wparam, LPARAM lp
 
 static void init_console() {
     if(!AllocConsole()) {
-        // TODO :(
-        return;
+        panic_if_win_null(FreeConsole());
+        panic_if_win_null(AllocConsole());
     }
 
+    // TODO: Handle CreateFile even though it returns nonzero on failure.
     HANDLE hConOut = CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     HANDLE hConIn = CreateFile("CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    SetStdHandle(STD_OUTPUT_HANDLE, hConOut);
-    SetStdHandle(STD_ERROR_HANDLE, hConOut);
-    SetStdHandle(STD_INPUT_HANDLE, hConIn);
+    panic_if_win_null(SetStdHandle(STD_OUTPUT_HANDLE, hConOut));
+    panic_if_win_null(SetStdHandle(STD_ERROR_HANDLE, hConOut));
+    panic_if_win_null(SetStdHandle(STD_INPUT_HANDLE, hConIn));
 }
 
 
 int platform_main() {
     init_console();
 
-    auto instance = GetModuleHandle(0);
+    auto instance = panic_if_win_null(GetModuleHandle(0));
 
     WNDCLASSA window_class = {};
     window_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
     window_class.lpfnWndProc = window_callback;
     window_class.hInstance = instance;
-    window_class.hCursor = LoadCursor(0, IDC_ARROW);
-    window_class.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    window_class.hCursor = panic_if_win_null(LoadCursor(0, IDC_ARROW));
+    window_class.hbrBackground = (HBRUSH)panic_if_win_null(GetStockObject(BLACK_BRUSH));
     // window_class.hIcon = ...;
     window_class.lpszClassName = "StellaWindowClass";
-    assert(RegisterClassA(&window_class)); // TODO
+    panic_if_win_null(RegisterClassA(&window_class)); // TODO
 
-    HWND window = CreateWindowExA(
+    HWND window = panic_if_win_null(CreateWindowExA(
         0,
         window_class.lpszClassName,
         APP_NAME,
@@ -305,10 +311,9 @@ int platform_main() {
         0,
         instance,
         0
-    );
-    assert(window); // TODO
+    ));
 
-    HDC dc = GetDC(window);
+    HDC dc = panic_if_win_null(GetDC(window));
 
     assert(load_wgl_functions());
     set_pixel_format(dc);
@@ -360,20 +365,20 @@ int platform_main() {
 
 
     ShowWindow(window, SW_SHOW);
-    UpdateWindow(window);
+    panic_if_win_null(UpdateWindow(window));
 
 
     // TODO: window focus
 
 
     LARGE_INTEGER last_time;
-    QueryPerformanceCounter(&last_time);
+    panic_if_win_null(QueryPerformanceCounter(&last_time));
 
 
     MSG msg;
     while(running) {
         LARGE_INTEGER curr_time;
-        QueryPerformanceCounter(&curr_time);
+        panic_if_win_null(QueryPerformanceCounter(&curr_time));
         pio.delta_time = (f32)(curr_time.QuadPart - last_time.QuadPart) / (f32)perf_freq;
         last_time = curr_time;
 
@@ -457,8 +462,8 @@ int platform_main() {
 
         {
             POINT mp;
-            GetCursorPos(&mp);
-            ScreenToClient(window, &mp);
+            panic_if_win_null(GetCursorPos(&mp));
+            panic_if_win_null(ScreenToClient(window, &mp));
             pio.mouse_x = (f32) mp.x;
             pio.mouse_y = (f32) mp.y;
         }
@@ -468,7 +473,7 @@ int platform_main() {
         if(resized) {
             resized = false;
             RECT size;
-            GetClientRect(window, &size);
+            panic_if_win_null(GetClientRect(window, &size));
             pio.window_width = (s32)(size.right - size.left);
             pio.window_height = (s32)(size.bottom - size.top);
         }
@@ -484,8 +489,8 @@ int platform_main() {
 
     wglMakeCurrent(0, 0);
     wglDeleteContext(glrc);
-    ReleaseDC(window, dc);
-    DestroyWindow(window);
+    panic_if_win_null(ReleaseDC(window, dc));
+    panic_if_win_null(DestroyWindow(window));
 
     return 0;
 }
