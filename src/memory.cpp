@@ -19,6 +19,7 @@ void init_allocator(Alloc_Fn *alloc, Free_Fn *free) {
 }
 
 
+// TODO: Yuck
 extern "C" void* mlc_memset(void*, s32, u64);
 
 struct Arena {
