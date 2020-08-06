@@ -61,7 +61,6 @@ extern "C" void* mlc_realloc(void*, u64); // TODO: Cleanup!
 #define RND_IMPLEMENTATION
 #include "rnd.h"
 
-
 #include "temporary_storage.cpp"
 #include "off_the_rails.cpp"
 #include "math.cpp"
